@@ -148,6 +148,12 @@ body {
     font-size: 0.9rem;
 }
 
+.refresh-control .refresh-text {
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    font-size: 0.9rem;
+}
+
 .refresh-control select {
     padding: 0.5rem 2.5rem 0.5rem 0.75rem;
     border: 1px solid hsl(var(--border));
@@ -419,15 +425,18 @@ body {
 }
 
 .component-list {
-    max-height: 500px;
-    overflow: hidden;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
     transition: all 0.3s ease;
     opacity: 1;
+    padding-right: 0.5rem;
 }
 
 .component-list.collapsed {
     max-height: 0;
     opacity: 0;
+    overflow: hidden;
 }
 
 .component-item {

@@ -1,7 +1,7 @@
 class StatusDashboard {
     constructor() {
         this.websocket = null;
-        this.refreshInterval = 30; // seconds
+        this.refreshInterval = 10; // seconds - 10초 고정
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.reconnectDelay = 1000; // milliseconds
@@ -15,7 +15,6 @@ class StatusDashboard {
     
     initializeElements() {
         this.dashboardContainer = document.getElementById('dashboard');
-        this.refreshSelect = document.getElementById('refresh-interval');
         this.manualRefreshBtn = document.getElementById('manual-refresh');
         this.connectionStatus = document.getElementById('connection-status');
         this.statusIndicator = document.getElementById('status-indicator');
@@ -23,15 +22,6 @@ class StatusDashboard {
     }
     
     bindEvents() {
-        // Refresh interval change
-        this.refreshSelect.addEventListener('change', (e) => {
-            this.refreshInterval = parseInt(e.target.value);
-            this.sendMessage({
-                type: 'configure',
-                refresh_interval: this.refreshInterval
-            });
-        });
-        
         // Manual refresh button
         this.manualRefreshBtn.addEventListener('click', () => {
             this.manualRefresh();
@@ -166,22 +156,22 @@ class StatusDashboard {
             </div>
             
             <div class="status-description">
-                ${service.description || 'No additional information available.'}
+                ${service.description || '추가 정보가 없습니다.'}
             </div>
             
-            ${this.createComponentsSection(service.components)}
+            ${this.createComponentsSection(service.components, service.service_name)}
             
             <div class="last-updated">
-                Last updated: ${this.formatDateTime(service.updated_at)}
+                마지막 업데이트: ${this.formatDateTime(service.updated_at)}
             </div>
         `;
         
         return card;
     }
     
-    createComponentsSection(components) {
+    createComponentsSection(components, serviceName) {
         if (!components || components.length === 0) {
-            return '<div class="components"><em>No component information available</em></div>';
+            return '<div class="components"><em>컴포넌트 정보가 없습니다</em></div>';
         }
         
         const componentItems = components.map(component => {
@@ -197,16 +187,24 @@ class StatusDashboard {
             `;
         }).join('');
         
-        // Generate unique ID for this components section
-        const sectionId = 'components-' + Math.random().toString(36).substr(2, 9);
+        // Generate stable ID for this components section based on service name
+        const sectionId = `components-${serviceName}`;
+        
+        // Check if there's a saved state for this service
+        const savedState = this.getComponentSectionState(serviceName);
+        // If savedState is 'true', then it's collapsed. If 'false', then it's expanded. Default to collapsed if no saved state.
+        const isCollapsed = savedState === null ? true : savedState === 'true';
+        
+        const collapsedClass = isCollapsed ? 'collapsed' : '';
+        const toggleIcon = isCollapsed ? '▶' : '▼';
         
         return `
             <div class="components">
-                <div class="components-header" onclick="statusDashboard.toggleComponents('${sectionId}')">
-                    <h4>Service Components (${components.length})</h4>
-                    <button class="toggle-button collapsed" id="toggle-${sectionId}">▶</button>
+                <div class="components-header" onclick="statusDashboard.toggleComponents('${sectionId}', '${serviceName}')">
+                    <h4>서비스 구성요소 (${components.length}개)</h4>
+                    <button class="toggle-button ${collapsedClass}" id="toggle-${sectionId}">${toggleIcon}</button>
                 </div>
-                <div class="component-list collapsed" id="${sectionId}">
+                <div class="component-list ${collapsedClass}" id="${sectionId}">
                     ${componentItems}
                 </div>
             </div>
@@ -266,22 +264,22 @@ class StatusDashboard {
     
     formatStatus(status) {
         const statusLabels = {
-            'operational': 'Operational',
-            'degraded_performance': 'Degraded Performance',
-            'partial_outage': 'Partial Outage',
-            'major_outage': 'Major Outage',
-            'under_maintenance': 'Under Maintenance',
-            'unknown': 'Unknown'
+            'operational': '정상',
+            'degraded_performance': '성능 저하',
+            'partial_outage': '부분 장애',
+            'major_outage': '주요 장애',
+            'under_maintenance': '점검 중',
+            'unknown': '알 수 없음'
         };
         return statusLabels[status] || status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
     
     formatDateTime(dateString) {
-        if (!dateString) return 'Unknown';
+        if (!dateString) return '알 수 없음';
         
         try {
             const date = new Date(dateString);
-            return date.toLocaleString();
+            return date.toLocaleString('ko-KR');
         } catch (error) {
             return dateString;
         }
@@ -289,25 +287,25 @@ class StatusDashboard {
     
     updateConnectionStatus(connected) {
         if (connected) {
-            this.connectionStatus.textContent = 'Connected';
-            this.statusIndicator.className = 'status-indicator';
+            this.connectionStatus.textContent = '연결됨';
+            this.statusIndicator.className = 'status-dot connected';
         } else {
-            this.connectionStatus.textContent = 'Disconnected';
-            this.statusIndicator.className = 'status-indicator disconnected';
+            this.connectionStatus.textContent = '연결 끊김';
+            this.statusIndicator.className = 'status-dot disconnected';
         }
     }
     
     updateLastUpdated(timestamp = null) {
         const now = timestamp ? new Date(timestamp) : new Date();
         if (this.lastUpdated) {
-            this.lastUpdated.textContent = `Last updated: ${now.toLocaleString()}`;
+            this.lastUpdated.textContent = `마지막 업데이트: ${now.toLocaleString('ko-KR')}`;
         }
     }
     
     showError(message) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error';
-        errorDiv.textContent = `Error: ${message}`;
+        errorDiv.textContent = `오류: ${message}`;
         
         // Insert at the top of the dashboard
         this.dashboardContainer.insertBefore(errorDiv, this.dashboardContainer.firstChild);
@@ -323,8 +321,8 @@ class StatusDashboard {
     showLoading() {
         this.dashboardContainer.innerHTML = `
             <div class="loading">
-                <div class="spinner"></div>
-                Loading status information...
+                <div class="loading-spinner"></div>
+                <p>AI 서비스 상태를 확인하는 중...</p>
             </div>
         `;
     }
@@ -332,7 +330,7 @@ class StatusDashboard {
     manualRefresh() {
         this.isManualRefresh = true;
         this.manualRefreshBtn.disabled = true;
-        this.manualRefreshBtn.textContent = 'Refreshing...';
+        this.manualRefreshBtn.textContent = '새로고침 중...';
         
         // Send refresh request via WebSocket if connected
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
@@ -345,7 +343,7 @@ class StatusDashboard {
         // Re-enable button after 2 seconds
         setTimeout(() => {
             this.manualRefreshBtn.disabled = false;
-            this.manualRefreshBtn.textContent = 'Refresh Now';
+            this.manualRefreshBtn.textContent = '수동 새로고침';
             this.isManualRefresh = false;
         }, 2000);
     }
@@ -364,14 +362,14 @@ class StatusDashboard {
             
         } catch (error) {
             console.error('Failed to load initial data:', error);
-            this.showError(`Failed to load status data: ${error.message}`);
+            this.showError(`상태 데이터 로드 실패: ${error.message}`);
         }
     }
     
     attemptReconnect() {
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             console.log('Max reconnection attempts reached');
-            this.showError('Connection lost. Please refresh the page to reconnect.');
+            this.showError('연결이 끊어졌습니다. 페이지를 새로고침하여 다시 연결해주세요.');
             return;
         }
         
@@ -405,7 +403,7 @@ class StatusDashboard {
         }
     }
 
-    toggleComponents(sectionId) {
+    toggleComponents(sectionId, serviceName) {
         const componentList = document.getElementById(sectionId);
         const toggleButton = document.getElementById(`toggle-${sectionId}`);
         
@@ -418,12 +416,24 @@ class StatusDashboard {
             componentList.classList.remove('collapsed');
             toggleButton.classList.remove('collapsed');
             toggleButton.textContent = '▼';
+            // Save expanded state
+            this.setComponentSectionState(serviceName, false);
         } else {
             // Collapse
             componentList.classList.add('collapsed');
             toggleButton.classList.add('collapsed');
             toggleButton.textContent = '▶';
+            // Save collapsed state
+            this.setComponentSectionState(serviceName, true);
         }
+    }
+
+    getComponentSectionState(serviceName) {
+        return localStorage.getItem(`component-section-collapsed-${serviceName}`);
+    }
+
+    setComponentSectionState(serviceName, isCollapsed) {
+        localStorage.setItem(`component-section-collapsed-${serviceName}`, isCollapsed.toString());
     }
 }
 

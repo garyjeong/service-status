@@ -35,10 +35,7 @@ class OpenAIStatusService(BaseStatusService):
             overall_status = StatusType.OPERATIONAL  # Default to operational
 
             # Extract description
-            description = (
-                summary.get("name", "OpenAI")
-                + " - Status information retrieved"
-            )
+            description = summary.get("name", "OpenAI") + " - 상태 정보 조회됨"
 
             # Extract components from summary.components
             components = []
@@ -59,7 +56,7 @@ class OpenAIStatusService(BaseStatusService):
                     id=component_data.get("id", ""),
                     name=component_data.get("name", ""),
                     status=component_status,
-                    description=f"Component: {component_data.get('name', '')}",
+                    description=f"구성 요소: {component_data.get('name', '')}",
                     updated_at=self._parse_datetime(
                         component_data.get("updated_at")
                     ),

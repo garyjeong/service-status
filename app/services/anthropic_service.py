@@ -3,7 +3,7 @@ Anthropic Status Service implementation
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 from app.models.status import ServiceStatus, ComponentStatus, StatusType
@@ -19,35 +19,76 @@ class AnthropicStatusService(BaseStatusService):
     def __init__(self):
         super().__init__("anthropic", settings.anthropic_status_url)
 
+    async def fetch_components_data(self) -> list:
+        """Fetch components data from additional API endpoints"""
+        if not self.client:
+            return []
+
+        components_endpoints = [
+            "https://status.anthropic.com/api/v2/components.json",
+            "https://status.anthropic.com/api/v2/summary.json",
+        ]
+
+        for endpoint in components_endpoints:
+            try:
+                logger.info(f"Trying Anthropic components endpoint: {endpoint}")
+                response = await self.client.get(endpoint)
+                if response.status_code == 200:
+                    data = response.json()
+                    logger.info(f"Components data from {endpoint}: {data}")
+                    if "components" in data:
+                        return data["components"]
+                    elif isinstance(data, list):
+                        return data
+            except Exception as e:
+                logger.warning(
+                    f"Failed to fetch components from {endpoint}: {e}"
+                )
+                continue
+
+        return []
+
     async def parse_status_data(
         self, raw_data: Dict[str, Any]
     ) -> ServiceStatus:
         """Parse Anthropic status API response"""
         try:
-            # Validate that we have a status structure
-            if "status" not in raw_data:
-                raise ValueError("Missing 'status' field in response data")
+            logger.info(f"Raw Anthropic data keys: {list(raw_data.keys())}")
+            logger.info(f"Raw Anthropic data: {raw_data}")
 
-            # Extract overall status
-            status_indicator = raw_data.get("status", {}).get(
-                "indicator", "unknown"
-            )
-            overall_status = self._map_status_indicator(status_indicator)
+            # Extract overall status from the new API structure
+            overall_status = StatusType.OPERATIONAL  # Default
+            description = "모든 시스템 정상"  # Default
 
-            # Extract description
-            description = (
-                raw_data.get("status", {}).get("description", "")
-                or "Status information retrieved"
-            )
+            # Handle the actual API response structure
+            if "status" in raw_data:
+                status_info = raw_data["status"]
+                if isinstance(status_info, dict):
+                    # Map "none" indicator to operational
+                    status_indicator = status_info.get("indicator", "none")
+                    if status_indicator == "none":
+                        overall_status = StatusType.OPERATIONAL
+                    else:
+                        overall_status = self._map_status_indicator(
+                            status_indicator
+                        )
+                    description = status_info.get("description", description)
 
-            # Extract components
+            # Get page information
+            page_info = raw_data.get("page", {})
+            page_url = page_info.get("url", self.status_url)
+            updated_at = self._parse_datetime(page_info.get("updated_at"))
+
+            # Fetch components from additional endpoints
+            components_data = await self.fetch_components_data()
             components = []
-            for component_data in raw_data.get("components", []):
+
+            for component_data in components_data:
                 component = ComponentStatus(
                     id=component_data.get("id", ""),
                     name=component_data.get("name", ""),
                     status=self._map_status_indicator(
-                        component_data.get("status", "unknown")
+                        component_data.get("status", "operational")
                     ),
                     description=component_data.get("description"),
                     updated_at=self._parse_datetime(
@@ -58,22 +99,22 @@ class AnthropicStatusService(BaseStatusService):
 
             return ServiceStatus(
                 service_name="anthropic",
-                status=overall_status,
+                overall_status=overall_status,
                 description=description,
                 components=components,
-                last_updated=datetime.now(),
-                source_url=self.status_url,
+                updated_at=updated_at or datetime.now(timezone.utc),
+                page_url=page_url,
             )
 
         except Exception as e:
             logger.error(f"Failed to parse Anthropic status data: {e}")
             return ServiceStatus(
                 service_name="anthropic",
-                status=StatusType.UNKNOWN,
-                description=f"Error parsing status data: {str(e)}",
+                overall_status=StatusType.UNKNOWN,
+                description=f"상태 데이터 파싱 오류: {str(e)}",
                 components=[],
-                last_updated=datetime.now(),
-                source_url=self.status_url,
+                updated_at=datetime.now(timezone.utc),
+                page_url=self.status_url,
             )
 
     def _map_status_indicator(self, indicator: str) -> StatusType:
@@ -84,7 +125,7 @@ class AnthropicStatusService(BaseStatusService):
             "partial_outage": StatusType.PARTIAL_OUTAGE,
             "major_outage": StatusType.MAJOR_OUTAGE,
             "under_maintenance": StatusType.UNDER_MAINTENANCE,
-            "none": StatusType.OPERATIONAL,
+            "none": StatusType.OPERATIONAL,  # "none" means all systems operational
         }
         return mapping.get(indicator.lower(), StatusType.UNKNOWN)
 

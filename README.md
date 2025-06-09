@@ -52,7 +52,7 @@ docker build -t ai-status-dashboard .
 
 2. **컨테이너 실행**
 ```bash
-docker run -d --name ai-status-dashboard -p 8000:8000 ai-status-dashboard
+docker run -d --name ai-status-dashboard -p 8080:8000 ai-status-dashboard
 ```
 
 ### 방법 3: Docker Compose 실행 (권장)
