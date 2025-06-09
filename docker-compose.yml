@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  ai-status-dashboard:
+    build: .
+    container_name: ai-status-dashboard
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # 개발용 볼륨 마운트 (선택사항)
+      # - ./app:/app/app:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ai-status-net
+
+networks:
+  ai-status-net:
+    driver: bridge 

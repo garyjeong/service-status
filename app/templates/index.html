@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>{{ title }}</h1>
+            <p>실시간 AI 서비스 상태 모니터링</p>
+        </header>
+
+        <div class="controls">
+            <div class="refresh-control">
+                <label for="refresh-interval">갱신 주기:</label>
+                <select id="refresh-interval">
+                    <option value="5">5초</option>
+                    <option value="10">10초</option>
+                    <option value="30" selected>30초</option>
+                    <option value="60">1분</option>
+                    <option value="300">5분</option>
+                </select>
+                <button id="manual-refresh" class="manual-refresh-btn">수동 새로고침</button>
+            </div>
+
+            <div class="status-info">
+                <div class="status-indicator">
+                    <div id="status-indicator" class="status-dot connected"></div>
+                    <span id="connection-status">연결됨</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard" class="services-grid">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>AI 서비스 상태를 확인하는 중...</p>
+            </div>
+        </div>
+
+        <div id="last-updated" class="last-updated">
+            마지막 업데이트: 로딩 중...
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', path='dashboard.js') }}"></script>
+    <script>
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const dashboard = new StatusDashboard();
+        });
+    </script>
+</body>
+</html> 
