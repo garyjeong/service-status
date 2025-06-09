@@ -72,12 +72,14 @@ class StatusDashboard {
             this.websocket.onclose = (event) => {
                 console.log('WebSocket disconnected:', event.code, event.reason);
                 this.updateConnectionStatus(false);
+                this.handleDisconnection();
                 this.attemptReconnect();
             };
             
             this.websocket.onerror = (error) => {
                 console.error('WebSocket error:', error);
                 this.updateConnectionStatus(false);
+                this.handleDisconnection();
             };
             
         } catch (error) {
@@ -129,44 +131,59 @@ class StatusDashboard {
     }
     
     createServiceCard(service) {
-        const card = document.createElement('div');
-        card.className = 'service-card';
-        card.id = `service-${service.service_name}`;
+        const serviceCard = document.createElement('div');
+        serviceCard.className = `service-card ${this.getStatusClass(service.overall_status)}`;
         
-        const iconClass = this.getServiceIconClass(service.service_name);
-        const statusClass = this.getStatusClass(service.overall_status);
-        const badgeClass = this.getBadgeClass(service.overall_status);
+        const icon = this.getServiceIcon(service.service_name);
+        const displayName = this.getServiceDisplayName(service.service_name);
         
-        card.innerHTML = `
+        // Check if we should use image icon or emoji
+        const useImageIcon = this.shouldUseImageIcon(service.service_name);
+        const iconHtml = useImageIcon 
+            ? `<img src="/static/images/${this.getServiceImageFile(service.service_name)}" alt="${displayName} 아이콘" style="width: 32px; height: 32px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+               <span style="display:none; font-size: 24px;">${icon}</span>`
+            : `<span style="font-size: 24px;">${icon}</span>`;
+        
+        serviceCard.innerHTML = `
             <div class="service-header">
-                <div class="service-icon ${iconClass}">
-                    ${this.getServiceIcon(service.service_name)}
+                <div class="service-icon" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                    ${iconHtml}
                 </div>
-                <div class="service-title">
-                    <h2>${this.getServiceDisplayName(service.service_name)}</h2>
-                    <a href="${service.page_url}" target="_blank" class="service-url">
-                        ${service.page_url}
-                    </a>
+                <div class="service-info">
+                    <h3>${displayName}</h3>
+                    <div class="status-display">
+                        <div class="status-indicator ${this.getStatusClass(service.overall_status)}"></div>
+                        <span class="status-text">${this.formatStatus(service.overall_status)}</span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="overall-status ${statusClass}">
-                <div class="status-badge ${badgeClass}"></div>
-                <span>${this.formatStatus(service.overall_status)}</span>
+            <div class="service-details">
+                <div class="detail-item">
+                    <span class="label">마지막 업데이트:</span>
+                    <span class="value">${this.formatDateTime(service.updated_at)}</span>
+                </div>
+                <div class="detail-item">
+                    <a href="${service.page_url}" target="_blank" class="status-link">상태 페이지 ↗</a>
+                </div>
             </div>
-            
-            <div class="status-description">
-                ${service.description || '추가 정보가 없습니다.'}
-            </div>
-            
-            ${this.createComponentsSection(service.components, service.service_name)}
-            
-            <div class="last-updated">
-                마지막 업데이트: ${this.formatDateTime(service.updated_at)}
-            </div>
+            ${this.createComponentsSection(service.components || [], service.service_name)}
         `;
         
-        return card;
+        return serviceCard;
+    }
+    
+    getServiceImageFile(serviceName) {
+        const imageFiles = {
+            'openai': 'gpt.svg',
+            'anthropic': 'claude.jpg',
+            'cursor': 'cursor.webp'
+        };
+        return imageFiles[serviceName] || 'default-icon.png';
+    }
+    
+    shouldUseImageIcon(serviceName) {
+        // Use image files when available
+        return true;
     }
     
     createComponentsSection(components, serviceName) {
@@ -175,13 +192,13 @@ class StatusDashboard {
         }
         
         const componentItems = components.map(component => {
-            const badgeClass = this.getBadgeClass(component.status);
+            const statusClass = this.getStatusClass(component.status);
             return `
                 <div class="component-item">
                     <span class="component-name">${component.name}</span>
                     <div class="component-status">
-                        <div class="status-badge ${badgeClass}"></div>
-                        <span>${this.formatStatus(component.status)}</span>
+                        <div class="status-indicator ${statusClass}"></div>
+                        <span class="status-text">${this.formatStatus(component.status)}</span>
                     </div>
                 </div>
             `;
@@ -221,15 +238,25 @@ class StatusDashboard {
     }
     
     getServiceIcon(serviceName) {
+        // Handle undefined or null serviceName
+        if (!serviceName) {
+            return '🔧';
+        }
+        
         const icons = {
             'openai': '🤖',
-            'anthropic': '🧠',
+            'anthropic': '🧠', 
             'cursor': '⚡'
         };
         return icons[serviceName] || '🔧';
     }
     
     getServiceDisplayName(serviceName) {
+        // Handle undefined or null serviceName
+        if (!serviceName) {
+            return '알 수 없는 서비스';
+        }
+        
         const displayNames = {
             'openai': 'ChatGPT (OpenAI)',
             'anthropic': 'Claude (Anthropic)',
@@ -263,6 +290,11 @@ class StatusDashboard {
     }
     
     formatStatus(status) {
+        // Handle undefined or null status
+        if (!status) {
+            return '알 수 없음';
+        }
+        
         const statusLabels = {
             'operational': '정상',
             'degraded_performance': '성능 저하',
@@ -293,6 +325,51 @@ class StatusDashboard {
             this.connectionStatus.textContent = '연결 끊김';
             this.statusIndicator.className = 'status-dot disconnected';
         }
+    }
+
+    // 연결 끊어짐 처리
+    handleDisconnection() {
+        // 모든 서비스를 "확인 불가" 상태로 설정
+        const serviceCards = this.dashboardContainer.querySelectorAll('.service-card');
+        serviceCards.forEach(card => {
+            // 상태 인디케이터를 주황색으로 변경
+            const statusIndicator = card.querySelector('.status-indicator');
+            if (statusIndicator) {
+                statusIndicator.className = 'status-indicator status-unavailable';
+            }
+            
+            // 상태 텍스트를 "확인 불가"로 변경
+            const statusText = card.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = '확인 불가';
+            }
+            
+            // 서비스 카드 클래스도 업데이트
+            card.className = card.className.replace(/status-\w+/g, '') + ' status-unavailable';
+            
+            // 마지막 업데이트 시간을 "연결 끊어짐"으로 표시
+            const detailItems = card.querySelectorAll('.detail-item');
+            detailItems.forEach(item => {
+                const label = item.querySelector('.label');
+                const value = item.querySelector('.value');
+                if (label && value && label.textContent === '마지막 업데이트:') {
+                    value.textContent = '연결 끊어짐';
+                }
+            });
+
+            // 컴포넌트 상태도 업데이트
+            const componentItems = card.querySelectorAll('.component-item');
+            componentItems.forEach(componentItem => {
+                const componentStatusIndicator = componentItem.querySelector('.status-indicator');
+                const componentStatusText = componentItem.querySelector('.status-text');
+                if (componentStatusIndicator) {
+                    componentStatusIndicator.className = 'status-indicator status-unavailable';
+                }
+                if (componentStatusText) {
+                    componentStatusText.textContent = '확인 불가';
+                }
+            });
+        });
     }
     
     updateLastUpdated(timestamp = null) {
