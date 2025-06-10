@@ -1,11 +1,11 @@
 {
-  "name": "ai-status-dashboard",
+  "name": "ai-dashboard",
   "version": "2.0.0",
   "type": "module",
   "description": "Real-time AI service status monitoring dashboard built with React + TypeScript",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

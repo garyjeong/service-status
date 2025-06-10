@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  ai-status-dashboard:
+  ai-dashboard:
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,10 +16,10 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - ai-status-network
+      - ai-network
 
   # Optional: Development service
-  ai-status-dev:
+  ai-dev:
     image: node:18-alpine
     working_dir: /app
     ports:
@@ -35,10 +35,10 @@ services:
       - NODE_ENV=development
     restart: unless-stopped
     networks:
-      - ai-status-network
+      - ai-network
     profiles:
       - dev
 
 networks:
-  ai-status-network:
+  ai-network:
     driver: bridge 

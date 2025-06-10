@@ -1,0 +1,44 @@
+node_modules
+npm-debug.log*
+.npm
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 테스트 관련 파일들
+src/test
+tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+coverage
+.nyc_output
+
+# 개발 도구
+.git
+.gitignore
+README.md
+CONTEXT.md
+.eslintrc.json
+.prettierrc
+
+# 로그 파일
+logs
+*.log
+
+# 캐시 디렉터리
+.cache
+.parcel-cache
+
+# IDE 파일
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS 파일
+.DS_Store
+Thumbs.db 

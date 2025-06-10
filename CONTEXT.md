@@ -152,8 +152,8 @@ pnpm format      # Prettier 포맷팅
 docker-compose up -d
 
 # React 버전 (새로운 Dockerfile 필요)
-docker build -t ai-status-dashboard .
-docker run -p 3000:3000 ai-status-dashboard
+docker build -t ai-dashboard .
+docker run -p 3000:3000 ai-dashboard
 ```
 
 ## 마이그레이션 히스토리

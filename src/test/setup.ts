@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi, beforeAll, afterAll } from 'vitest';
 
 // 테스트 환경에서 필요한 전역 설정들
 
@@ -33,36 +34,54 @@ Object.defineProperty(window, 'sessionStorage', {
   value: localStorageMock,
 });
 
-// IntersectionObserver 모킹
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  observe() {
-    return null;
+// IntersectionObserver 모킹 - 타입 호환성 개선
+(global as any).IntersectionObserver = class IntersectionObserver {
+  root: Element | null = null;
+  rootMargin: string = '0px';
+  thresholds: ReadonlyArray<number> = [];
+
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    // Mock implementation
   }
-  disconnect() {
-    return null;
+
+  observe(target: Element): void {
+    // Mock implementation
   }
-  unobserve() {
-    return null;
+
+  disconnect(): void {
+    // Mock implementation
+  }
+
+  unobserve(target: Element): void {
+    // Mock implementation
+  }
+
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
   }
 };
 
 // ResizeObserver 모킹
-global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  observe() {
-    return null;
+(global as any).ResizeObserver = class ResizeObserver {
+  constructor(callback: ResizeObserverCallback) {
+    // Mock implementation
   }
-  disconnect() {
-    return null;
+
+  observe(target: Element, options?: ResizeObserverOptions): void {
+    // Mock implementation
   }
-  unobserve() {
-    return null;
+
+  disconnect(): void {
+    // Mock implementation
+  }
+
+  unobserve(target: Element): void {
+    // Mock implementation
   }
 };
 
 // fetch 모킹 (API 테스트용)
-global.fetch = vi.fn();
+(global as any).fetch = vi.fn();
 
 // console.error 억제 (테스트 중 불필요한 로그 방지)
 const originalError = console.error;
@@ -80,4 +99,4 @@ beforeAll(() => {
 
 afterAll(() => {
   console.error = originalError;
-}); 
+});
