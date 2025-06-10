@@ -1,194 +1,230 @@
-# AI Service Status Dashboard
+# AI 서비스 상태 모니터링 대시보드
 
-실시간 AI 서비스 상태 모니터링 대시보드 - ChatGPT, Claude, Cursor의 서비스 상태를 한눈에 확인하세요.
+실시간으로 주요 AI 서비스들의 상태를 모니터링하는 React 대시보드입니다.
 
-## ✨ 주요 기능
+## ⚡ 기술 스택
 
-- 🔄 **실시간 상태 모니터링**: ChatGPT (OpenAI), Claude (Anthropic), Cursor 서비스 상태 실시간 확인
-- 📊 **시각적 대시보드**: 직관적인 UI로 서비스 상태를 색상과 아이콘으로 표시
-- ⚡ **WebSocket 기반**: 새로고침 없이 실시간으로 상태 업데이트
-- 🎛️ **설정 가능한 갱신 간격**: 5초부터 5분까지 사용자 설정 가능
-- 📱 **반응형 디자인**: 데스크톱, 태블릿, 모바일 모든 환경 지원
-- 🧩 **컴포넌트별 상태**: 각 서비스의 세부 구성요소별 상태 정보
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Package Manager**: pnpm
+- **Testing**: Vitest + Testing Library
+- **Styling**: CSS Variables + Tailwind-like Utilities
+- **HTTP Client**: Axios
+- **Icons**: Lucide React
+- **State Management**: React Hooks + Context API
 
-## 🛠️ 기술 스택
+## 🚀 지원되는 서비스
 
-- **Backend**: FastAPI, Python 3.12
-- **Frontend**: Jinja2, HTML5, CSS3, JavaScript (ES6+)
-- **Real-time**: WebSocket
-- **HTTP Client**: aiohttp, httpx
-- **Web Scraping**: BeautifulSoup4
-- **Testing**: pytest, pytest-asyncio
+- **OpenAI ChatGPT** - ChatGPT 웹 인터페이스 및 API
+- **Anthropic Claude** - Claude 채팅 및 API 서비스
+- **Cursor Editor** - AI 코드 에디터 서비스
+- **Google AI Studio** - Gemini API 및 AI Studio
 
-## 🚀 실행 방법
+## 📦 설치 및 실행
 
-### 방법 1: 로컬 환경 실행
+### 요구사항
 
-1. **의존성 설치**
-```bash
-pip install -r requirements.txt
-```
+- Node.js >= 18.0.0
+- pnpm >= 8.0.0
 
-2. **서버 실행**
-```bash
-# 개발 모드 (자동 리로드)
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# 프로덕션 모드
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-3. **브라우저에서 접속**
-```
-http://localhost:8000
-```
-
-### 방법 2: Docker 실행
-
-1. **Docker 이미지 빌드**
-```bash
-docker build -t ai-status-dashboard .
-```
-
-2. **컨테이너 실행**
-```bash
-docker run -d --name ai-status-dashboard -p 8080:8000 ai-status-dashboard
-```
-
-### 방법 3: Docker Compose 실행 (권장)
-
-1. **서비스 시작**
-```bash
-docker-compose up -d
-```
-
-2. **로그 확인**
-```bash
-docker-compose logs -f ai-status-dashboard
-```
-
-3. **서비스 중지**
-```bash
-docker-compose down
-```
-
-## 📡 API 엔드포인트
-
-### REST API
-- `GET /` - 메인 대시보드 페이지
-- `GET /health` - 서버 헬스체크
-- `GET /api/status` - 모든 AI 서비스 상태 조회
-
-### WebSocket
-- `WS /ws` - 실시간 상태 업데이트
-
-## 🧪 테스트 실행
+### 설치
 
 ```bash
-# 모든 테스트 실행
-python -m pytest
+# 의존성 설치
+pnpm install
 
-# 커버리지와 함께 실행
-python -m pytest --cov=app --cov-report=html
+# 개발 서버 실행
+pnpm dev
 
-# 특정 테스트 파일 실행
-python -m pytest tests/test_openai_service.py -v
+# 프로덕션 빌드
+pnpm build
+
+# 빌드 결과 미리보기
+pnpm preview
 ```
 
-## 📁 프로젝트 구조
-
-```
-ai-status-check/
-├── app/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI 애플리케이션
-│   ├── config.py            # 설정 관리
-│   ├── api/                 # API 라우터들
-│   │   ├── __init__.py
-│   │   ├── status.py        # 상태 API
-│   │   └── websocket.py     # WebSocket 엔드포인트
-│   ├── models/              # 데이터 모델
-│   │   ├── __init__.py
-│   │   └── status.py        # 상태 관련 모델
-│   ├── services/            # 비즈니스 로직
-│   │   ├── __init__.py
-│   │   ├── base_service.py  # 기본 서비스 클래스
-│   │   ├── openai_service.py    # OpenAI 상태 서비스
-│   │   ├── anthropic_service.py # Anthropic 상태 서비스
-│   │   ├── cursor_service.py    # Cursor 상태 서비스
-│   │   └── status_service.py    # 통합 상태 서비스
-│   ├── static/              # 정적 파일
-│   │   ├── style.css        # 스타일시트
-│   │   └── dashboard.js     # 프론트엔드 JavaScript
-│   └── templates/           # HTML 템플릿
-│       └── index.html       # 메인 페이지
-├── tests/                   # 테스트 파일들
-├── requirements.txt         # Python 의존성
-├── Dockerfile              # Docker 이미지 정의
-├── docker-compose.yml      # Docker Compose 설정
-├── .dockerignore           # Docker 빌드 제외 파일
-└── README.md               # 프로젝트 문서
-```
-
-## 🎯 사용법
-
-1. **대시보드 접속**: 브라우저에서 `http://localhost:8000` 접속
-2. **갱신 간격 설정**: 상단 컨트롤에서 원하는 갱신 간격 선택
-3. **실시간 모니터링**: WebSocket을 통해 자동으로 상태 업데이트
-4. **수동 새로고침**: 필요시 "수동 새로고침" 버튼 클릭
-
-## 📊 상태 표시
-
-- 🟢 **Operational**: 모든 시스템 정상 작동
-- 🟡 **Degraded Performance**: 성능 저하 발생
-- 🔴 **Partial/Major Outage**: 부분/전체 서비스 장애
-- 🔵 **Under Maintenance**: 점검 중
-- ⚫ **Unknown**: 상태 확인 불가
-
-## 🐳 Docker 명령어 참고
+### 테스트 실행
 
 ```bash
-# 이미지 빌드
-docker build -t ai-status-dashboard .
+# 테스트 실행
+pnpm test
 
-# 컨테이너 실행
-docker run -d --name ai-status-dashboard -p 8000:8000 ai-status-dashboard
+# 테스트 UI 모드
+pnpm test:ui
 
-# 로그 확인
-docker logs -f ai-status-dashboard
-
-# 컨테이너 정지
-docker stop ai-status-dashboard
-
-# 컨테이너 삭제
-docker rm ai-status-dashboard
-
-# 이미지 삭제
-docker rmi ai-status-dashboard
+# 테스트 커버리지
+pnpm test:coverage
 ```
 
-## 🔧 환경변수
+### 코드 품질
 
-현재 이 애플리케이션은 외부 API 키가 필요하지 않으며, 모든 설정은 `app/config.py`에서 관리됩니다.
+```bash
+# ESLint 검사
+pnpm lint
 
-## 📝 개발 정보
+# ESLint 자동 수정
+pnpm lint:fix
 
-- **개발 방법론**: MVC 패턴, TDD (테스트 주도 개발)
-- **코드 품질**: Type hints, Docstrings, 단위 테스트
-- **아키텍처**: 비동기 처리, 의존성 주입, 계층화된 구조
+# Prettier 포맷팅
+pnpm format
 
-## 🤝 기여하기
+# TypeScript 타입 검사
+pnpm type-check
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## 🏗️ 프로젝트 구조
+
+```
+src/
+├── components/          # React 컴포넌트
+│   ├── Dashboard.tsx    # 메인 대시보드
+│   ├── StatusSummary.tsx # 상태 요약 카드
+│   ├── ServiceCard.tsx  # 개별 서비스 카드
+│   └── LoadingSpinner.tsx # 로딩 스피너
+├── hooks/              # Custom React Hooks
+│   └── useStatus.ts    # 상태 관리 훅
+├── services/           # API 서비스
+│   └── api.ts         # 외부 API 통신
+├── types/             # TypeScript 타입 정의
+│   └── status.ts      # 상태 관련 타입
+├── utils/             # 유틸리티 함수
+│   └── status.ts      # 상태 변환 및 계산
+└── test/              # 테스트 설정
+    └── setup.ts       # 테스트 환경 설정
+
+tests/                 # 테스트 파일
+├── components/        # 컴포넌트 테스트
+├── hooks/            # 훅 테스트
+├── services/         # 서비스 테스트
+└── utils/            # 유틸리티 테스트
+```
+
+## 🎨 주요 기능
+
+### 실시간 상태 모니터링
+- 30초마다 자동 상태 업데이트
+- 수동 새로고침 기능
+- 실시간 상태 변경 알림
+
+### 사용자 인터페이스
+- 반응형 디자인 (모바일/데스크톱 지원)
+- 다크/라이트 모드 전환
+- Sticky 상태 요약 바
+- 부드러운 애니메이션
+
+### 상태 시각화
+- 색상으로 구분된 상태 표시
+- 서비스별 컴포넌트 상태 세부 정보
+- 전체 시스템 상태 요약
+- 히스토리 및 업데이트 시간
+
+## 🧪 테스트
+
+이 프로젝트는 TDD(Test-Driven Development) 방식으로 개발되었습니다.
+
+### 테스트 커버리지
+
+- **유틸리티 함수**: 100% 커버리지
+- **React 훅**: 핵심 로직 테스트
+- **컴포넌트**: 렌더링 및 상호작용 테스트
+- **API 서비스**: 모킹을 통한 API 테스트
+
+### 테스트 종류
+
+- **단위 테스트**: 개별 함수 및 훅
+- **통합 테스트**: 컴포넌트 상호작용
+- **E2E 테스트**: 전체 사용자 플로우
+
+## 🔧 설정
+
+### 환경 변수
+
+프로젝트는 클라이언트 사이드에서 직접 외부 API를 호출합니다. 
+CORS 이슈 해결을 위해 Vite 개발 서버의 프록시를 사용합니다.
+
+```typescript
+// vite.config.ts에서 프록시 설정
+proxy: {
+  '/api/openai': {
+    target: 'https://status.openai.com',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/api\/openai/, ''),
+  },
+  // ... 기타 서비스
+}
+```
+
+### 빌드 최적화
+
+- **코드 분할**: vendor와 utils 청크 분리
+- **트리 쉐이킹**: 사용하지 않는 코드 제거
+- **번들 압축**: esbuild를 통한 최적화
+- **소스맵**: 디버깅을 위한 소스맵 생성
+
+## 🚀 배포
+
+### Netlify 배포
+
+```bash
+# 빌드
+pnpm build
+
+# dist 폴더를 Netlify에 배포
+# _redirects 파일 설정 필요 (SPA routing용)
+```
+
+### Vercel 배포
+
+```bash
+# vercel CLI 사용
+npx vercel --prod
+```
+
+### Docker 배포
+
+```dockerfile
+FROM node:18-alpine as builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+## 🤝 기여 가이드
+
+1. 프로젝트 포크
+2. 기능 브랜치 생성 (`git checkout -b feature/AmazingFeature`)
+3. 변경사항 커밋 (`git commit -m 'Add some AmazingFeature'`)
+4. 브랜치 푸시 (`git push origin feature/AmazingFeature`)
+5. Pull Request 생성
+
+### 코딩 컨벤션
+
+- TypeScript 사용 필수
+- ESLint + Prettier 규칙 준수
+- 컴포넌트는 함수형 컴포넌트 사용
+- 테스트 코드 작성 필수
 
 ## 📄 라이선스
 
-MIT License
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
----
+## 🛠️ 이전 버전 (Python FastAPI)
 
-> 💡 **Tip**: 개발 중에는 `--reload` 옵션을 사용하여 코드 변경 시 자동으로 서버가 재시작되도록 설정하세요!
+이전 Python FastAPI 버전의 코드는 `backup/` 폴더에서 확인할 수 있습니다.
+
+### 마이그레이션 사유
+
+1. **성능 향상**: 클라이언트 사이드 렌더링으로 더 빠른 응답
+2. **확장성**: 정적 호스팅으로 비용 절약 및 확장성 개선
+3. **개발 경험**: 현대적인 React + TypeScript 스택
+4. **유지보수**: 단일 언어 생태계로 일관성 향상
+
+## 📞 지원
+
+문제가 발생하거나 제안사항이 있으시면 [Issues](https://github.com/your-repo/issues)에 등록해 주세요.

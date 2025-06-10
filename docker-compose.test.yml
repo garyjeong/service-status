@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ai-status-test:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./test.html:/usr/share/nginx/html/index.html:ro
+      - ./public:/usr/share/nginx/html/public:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge 

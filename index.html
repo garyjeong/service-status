@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AI 서비스 상태 모니터링 대시보드 - OpenAI, Anthropic, Cursor, Google AI Studio의 실시간 상태를 확인하세요" />
+    <meta name="keywords" content="AI, 상태모니터링, OpenAI, Anthropic, Claude, ChatGPT, Cursor, Google AI Studio" />
+    <title>AI 서비스 상태 모니터링</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <style>
+      /* CSS Variables for theming */
+      :root {
+        --background: 255 255 255;
+        --foreground: 15 23 42;
+        --card: 255 255 255;
+        --card-foreground: 15 23 42;
+        --popover: 255 255 255;
+        --popover-foreground: 15 23 42;
+        --primary: 59 130 246;
+        --primary-foreground: 255 255 255;
+        --secondary: 241 245 249;
+        --secondary-foreground: 15 23 42;
+        --muted: 248 250 252;
+        --muted-foreground: 100 116 139;
+        --accent: 241 245 249;
+        --accent-foreground: 15 23 42;
+        --destructive: 239 68 68;
+        --destructive-foreground: 255 255 255;
+        --border: 226 232 240;
+        --input: 226 232 240;
+        --ring: 59 130 246;
+        --radius: 0.5rem;
+      }
+
+      .dark {
+        --background: 15 23 42;
+        --foreground: 248 250 252;
+        --card: 30 41 59;
+        --card-foreground: 248 250 252;
+        --popover: 30 41 59;
+        --popover-foreground: 248 250 252;
+        --primary: 59 130 246;
+        --primary-foreground: 255 255 255;
+        --secondary: 51 65 85;
+        --secondary-foreground: 248 250 252;
+        --muted: 51 65 85;
+        --muted-foreground: 148 163 184;
+        --accent: 51 65 85;
+        --accent-foreground: 248 250 252;
+        --destructive: 239 68 68;
+        --destructive-foreground: 255 255 255;
+        --border: 51 65 85;
+        --input: 51 65 85;
+        --ring: 59 130 246;
+      }
+
+      * {
+        border-color: rgb(var(--border));
+      }
+
+      body {
+        background-color: rgb(var(--background));
+        color: rgb(var(--foreground));
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-feature-settings: 'cv11', 'ss01';
+        font-variation-settings: 'opsz' 32;
+      }
+
+      /* Status specific colors */
+      .status-operational {
+        @apply text-green-600 dark:text-green-400;
+      }
+      
+      .status-degraded {
+        @apply text-yellow-600 dark:text-yellow-400;
+      }
+      
+      .status-partial-outage {
+        @apply text-red-600 dark:text-red-400;
+      }
+      
+      .status-major-outage {
+        @apply text-red-700 dark:text-red-400;
+      }
+      
+      .status-maintenance {
+        @apply text-blue-600 dark:text-blue-400;
+      }
+      
+      .status-unknown {
+        @apply text-gray-600 dark:text-gray-400;
+      }
+
+      /* Loading animation */
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+
+      /* Custom scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgb(var(--muted));
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgb(var(--border));
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgb(var(--muted-foreground));
+      }
+
+      /* Focus styles for accessibility */
+      .focus\:ring-2:focus {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 2px rgb(var(--ring));
+      }
+
+      /* Utility classes */
+      .container {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .bg-background { background-color: rgb(var(--background)); }
+      .bg-card { background-color: rgb(var(--card)); }
+      .bg-primary { background-color: rgb(var(--primary)); }
+      .bg-secondary { background-color: rgb(var(--secondary)); }
+      .bg-muted { background-color: rgb(var(--muted)); }
+      .bg-accent { background-color: rgb(var(--accent)); }
+      .bg-destructive { background-color: rgb(var(--destructive)); }
+
+      .text-foreground { color: rgb(var(--foreground)); }
+      .text-card-foreground { color: rgb(var(--card-foreground)); }
+      .text-primary { color: rgb(var(--primary)); }
+      .text-primary-foreground { color: rgb(var(--primary-foreground)); }
+      .text-secondary-foreground { color: rgb(var(--secondary-foreground)); }
+      .text-muted-foreground { color: rgb(var(--muted-foreground)); }
+      .text-accent-foreground { color: rgb(var(--accent-foreground)); }
+      .text-destructive { color: rgb(var(--destructive)); }
+      .text-destructive-foreground { color: rgb(var(--destructive-foreground)); }
+
+      .border-border { border-color: rgb(var(--border)); }
+      .border-input { border-color: rgb(var(--input)); }
+
+      .hover\:bg-accent:hover { background-color: rgb(var(--accent)); }
+      .hover\:text-accent-foreground:hover { color: rgb(var(--accent-foreground)); }
+      .hover\:bg-primary\/90:hover { background-color: rgb(var(--primary) / 0.9); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 

@@ -1,36 +1,35 @@
-# Python 3.12 slim 이미지 사용
-FROM python:3.12-slim
+# Stage 1: Build the React application
+FROM node:18-alpine AS builder
 
-# 작업 디렉토리 설정
+# Set working directory
 WORKDIR /app
 
-# 시스템 패키지 업데이트 및 필요한 패키지 설치
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
 
-# Python 의존성 파일 복사
-COPY requirements.txt .
+# Install pnpm
+RUN npm install -g pnpm
 
-# Python 패키지 설치
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
-# 애플리케이션 코드 복사
-COPY app/ ./app/
+# Copy source code
+COPY . .
 
-# 환경 변수 설정
-ENV PYTHONPATH=/app
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Build the application
+RUN pnpm build
 
-# 포트 노출
-EXPOSE 8000
+# Stage 2: Serve the application with Nginx
+FROM nginx:alpine
 
-# 헬스체크 추가
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Copy built files from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 애플리케이션 실행
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"] 

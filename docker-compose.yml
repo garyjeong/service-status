@@ -1,27 +1,44 @@
+version: '3.8'
+
 services:
   ai-status-dashboard:
-    build: .
-    container_name: ai-status-dashboard
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8888:8000"
+      - "8080:80"
     environment:
-      - PYTHONPATH=/app
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
-    volumes:
-      # 개발용 볼륨 마운트 (선택사항)
-      # - ./app:/app/app:ro
-      - /etc/localtime:/etc/localtime:ro
+      - NODE_ENV=production
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
     networks:
-      - ai-status-net
+      - ai-status-network
+
+  # Optional: Development service
+  ai-status-dev:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      sh -c "npm install -g pnpm &&
+             pnpm install &&
+             pnpm dev --host 0.0.0.0"
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    networks:
+      - ai-status-network
+    profiles:
+      - dev
 
 networks:
-  ai-status-net:
+  ai-status-network:
     driver: bridge 
