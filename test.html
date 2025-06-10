@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🤖 AI 서비스 상태 모니터링</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/site.webmanifest">
     <style>
         * {
             margin: 0;
@@ -37,11 +39,32 @@
             padding: 0 20px;
         }
 
+        .main-content {
+            padding-top: 140px;
+            padding-bottom: 120px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             border-bottom: 1px solid #e0e0e0;
             background-color: #ffffff;
             padding: 20px 0;
-            margin-bottom: 30px;
             transition: all 0.3s ease;
         }
 
@@ -249,10 +272,14 @@
         }
 
         footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             border-top: 1px solid #e0e0e0;
             background-color: #ffffff;
-            padding: 30px 20px;
-            margin-top: 50px;
+            padding: 16px 20px;
             text-align: center;
             transition: all 0.3s ease;
         }
@@ -262,10 +289,20 @@
             background-color: #2a2a2a;
         }
 
+        .footer-update {
+            font-size: 13px;
+            color: #a0a0a0;
+            margin: 0 0 6px 0;
+        }
+
+        body.dark .footer-update {
+            color: #a0a0a0;
+        }
+
         .footer-text {
-            font-size: 14px;
-            color: #666666;
-            margin: 0 0 8px 0;
+            font-size: 12px;
+            color: #a0a0a0;
+            margin: 0 0 4px 0;
         }
 
         body.dark .footer-text {
@@ -273,8 +310,8 @@
         }
 
         .footer-subtext {
-            font-size: 12px;
-            color: #888888;
+            font-size: 11px;
+            color: #808080;
             margin: 0;
         }
 
@@ -344,7 +381,7 @@
         </div>
     </header>
 
-    <div class="container">
+    <div class="container main-content">
         <div class="card summary-card">
             <div class="summary-left">
                 <svg class="status-icon" viewBox="0 0 24 24">
@@ -366,19 +403,18 @@
         </div>
     </div>
 
-    <main class="container" id="services-container">
-        <!-- 서비스 카드들이 여기에 동적으로 추가됩니다 -->
+    <main class="container" style="padding-top: 20px;">
+        <div class="services-grid" id="services-container">
+            <!-- 서비스 카드들이 여기에 동적으로 추가됩니다 -->
+        </div>
     </main>
 
-    <div class="container">
-        <div class="last-updated">
-            마지막 업데이트: <span id="update-time"></span>
-        </div>
-    </div>
 
-    <footer>
+
+    <footer id="fixed-footer">
         <div class="container">
-            <p class="footer-text">AI 서비스 상태는 30초마다 자동으로 업데이트됩니다.</p>
+            <p class="footer-update">마지막 업데이트: <span id="update-time"></span></p>
+            <p class="footer-text">AI 서비스 상태는 15초마다 자동으로 업데이트됩니다.</p>
             <p class="footer-subtext">React + TypeScript + Vite로 구축된 AI 상태 모니터링 대시보드</p>
         </div>
     </footer>
@@ -553,7 +589,7 @@
                 serviceCard.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                                                   <div style="display: flex; align-items: center; gap: 16px;">
-                            <img src="${service.icon}" alt="${service.service_name}" style="width: 48px; height: 48px; object-fit: contain;" />
+                            <img src="${service.icon}" alt="${service.service_name}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; ${service.service_name === 'cursor' ? 'transform: scale(1.2);' : ''}" />
                             <div>
                                 <h3 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">
                                     ${service.display_name}
@@ -612,11 +648,11 @@
         updateTimes();
         updateSummary();
 
-        // 30초마다 시간 업데이트
+        // 15초마다 시간 업데이트
         setInterval(() => {
             lastUpdated = new Date();
             updateTimes();
-        }, 30000);
+        }, 15000);
     </script>
 </body>
 </html> 
