@@ -366,20 +366,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                   </div>
                 )}
 
-                <div>
-                  <a 
-                    href={service.page_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{ 
-                      fontSize: '12px', 
-                      color: '#3b82f6', 
-                      textDecoration: 'none',
-                    }}
-                  >
-                    상태 페이지 보기 →
-                  </a>
-                </div>
+
               </div>
             );
           })}
