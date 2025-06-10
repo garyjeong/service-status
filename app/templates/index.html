@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
 </head>
 <body>
@@ -19,6 +20,30 @@
             <h1>{{ title }}</h1>
             <p>실시간 AI 서비스 상태 모니터링</p>
         </header>
+
+        <!-- 전체 상태 요약 -->
+        <div id="status-summary" class="status-summary">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <div class="pulse-ring"></div>
+                    <div class="summary-dot" id="overall-status-dot"></div>
+                </div>
+                <div class="summary-content">
+                    <h2 id="overall-status-text">시스템 확인 중...</h2>
+                    <p id="overall-status-desc">서비스 상태를 로딩하는 중입니다</p>
+                </div>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="operational-count">-</span>
+                        <span class="stat-label">정상</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="issue-count">-</span>
+                        <span class="stat-label">이슈</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="controls">
             <div class="header-controls">

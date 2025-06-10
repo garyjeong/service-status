@@ -11,6 +11,7 @@ from app.models.status import StatusResponse, ServiceStatus
 from app.services.openai_service import OpenAIStatusService
 from app.services.anthropic_service import AnthropicStatusService
 from app.services.cursor_service import CursorStatusService
+from app.services.google_aistudio_service import GoogleAIStudioStatusService
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class StatusService:
             "openai": OpenAIStatusService,
             "anthropic": AnthropicStatusService,
             "cursor": CursorStatusService,
+            "google_aistudio": GoogleAIStudioStatusService,
         }
 
     async def get_all_statuses(
@@ -88,6 +90,7 @@ class StatusService:
             "openai": settings.openai_status_url,
             "anthropic": settings.anthropic_status_url,
             "cursor": settings.cursor_status_url,
+            "google_aistudio": settings.google_aistudio_status_url,
         }
 
         return ServiceStatus(

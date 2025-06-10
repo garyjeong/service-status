@@ -39,6 +39,9 @@ class StatusDashboard {
         // Window focus/blur events
         window.addEventListener('focus', () => this.resumeUpdates());
         window.addEventListener('blur', () => this.pauseUpdates());
+        
+        // Scroll event for sticky header effects
+        this.initScrollHandler();
     }
     
     connect() {
@@ -118,6 +121,9 @@ class StatusDashboard {
             return;
         }
         
+        // Update overall status summary
+        this.updateStatusSummary(statusData.services);
+        
         // Clear existing content
         this.dashboardContainer.innerHTML = '';
         
@@ -128,6 +134,56 @@ class StatusDashboard {
         });
         
         this.updateLastUpdated(statusData.updated_at);
+    }
+    
+    updateStatusSummary(services) {
+        const operationalCount = services.filter(s => s.overall_status === 'operational').length;
+        const issueCount = services.length - operationalCount;
+        
+        // Determine overall status
+        let overallStatus = 'operational';
+        let statusText = 'All Systems Operational';
+        let statusDesc = '모든 AI 서비스가 정상적으로 작동하고 있습니다';
+        
+        if (issueCount > 0) {
+            const hasOutage = services.some(s => s.overall_status === 'major_outage' || s.overall_status === 'partial_outage');
+            if (hasOutage) {
+                overallStatus = 'outage';
+                statusText = 'Service Disruption';
+                statusDesc = '일부 AI 서비스에 장애가 발생했습니다';
+            } else {
+                overallStatus = 'degraded';
+                statusText = 'Performance Issues';
+                statusDesc = '일부 AI 서비스의 성능이 저하되었습니다';
+            }
+        }
+        
+        // Update summary elements
+        const overallStatusDot = document.getElementById('overall-status-dot');
+        const overallStatusText = document.getElementById('overall-status-text');
+        const overallStatusDesc = document.getElementById('overall-status-desc');
+        const operationalCountEl = document.getElementById('operational-count');
+        const issueCountEl = document.getElementById('issue-count');
+        
+        if (overallStatusDot) {
+            overallStatusDot.className = `summary-dot status-${overallStatus}`;
+        }
+        
+        if (overallStatusText) {
+            overallStatusText.textContent = statusText;
+        }
+        
+        if (overallStatusDesc) {
+            overallStatusDesc.textContent = statusDesc;
+        }
+        
+        if (operationalCountEl) {
+            operationalCountEl.textContent = operationalCount;
+        }
+        
+        if (issueCountEl) {
+            issueCountEl.textContent = issueCount;
+        }
     }
     
     createServiceCard(service) {
@@ -146,12 +202,12 @@ class StatusDashboard {
         
         serviceCard.innerHTML = `
             <div class="service-header">
-                <div class="service-icon" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                <div class="service-icon">
                     ${iconHtml}
                 </div>
                 <div class="service-info">
                     <h3>${displayName}</h3>
-                    <div class="status-display">
+                    <div class="service-status-badge ${this.getStatusClass(service.overall_status)}">
                         <div class="status-indicator ${this.getStatusClass(service.overall_status)}"></div>
                         <span class="status-text">${this.formatStatus(service.overall_status)}</span>
                     </div>
@@ -161,6 +217,10 @@ class StatusDashboard {
                 <div class="detail-item">
                     <span class="label">마지막 업데이트:</span>
                     <span class="value">${this.formatDateTime(service.updated_at)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">구성요소:</span>
+                    <span class="value">${service.components ? service.components.length : 0}개</span>
                 </div>
                 <div class="detail-item">
                     <a href="${service.page_url}" target="_blank" class="status-link">상태 페이지 ↗</a>
@@ -175,8 +235,9 @@ class StatusDashboard {
     getServiceImageFile(serviceName) {
         const imageFiles = {
             'openai': 'gpt.svg',
-            'anthropic': 'claude.jpg',
-            'cursor': 'cursor.webp'
+            'anthropic': 'claude.png',
+            'cursor': 'cursor.webp',
+            'google_aistudio': 'google-ai-studio.svg'
         };
         return imageFiles[serviceName] || 'default-icon.png';
     }
@@ -246,7 +307,8 @@ class StatusDashboard {
         const icons = {
             'openai': '🤖',
             'anthropic': '🧠', 
-            'cursor': '⚡'
+            'cursor': '⚡',
+            'google_aistudio': '🎨'
         };
         return icons[serviceName] || '🔧';
     }
@@ -260,7 +322,8 @@ class StatusDashboard {
         const displayNames = {
             'openai': 'ChatGPT (OpenAI)',
             'anthropic': 'Claude (Anthropic)',
-            'cursor': 'Cursor'
+            'cursor': 'Cursor',
+            'google_aistudio': 'Google AI Studio'
         };
         return displayNames[serviceName] || serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
     }
@@ -511,6 +574,31 @@ class StatusDashboard {
 
     setComponentSectionState(serviceName, isCollapsed) {
         localStorage.setItem(`component-section-collapsed-${serviceName}`, isCollapsed.toString());
+    }
+    
+    initScrollHandler() {
+        let ticking = false;
+        
+        const handleScroll = () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const statusSummary = document.querySelector('.status-summary');
+                    if (statusSummary) {
+                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                        
+                        if (scrollTop > 50) {
+                            statusSummary.classList.add('scrolled');
+                        } else {
+                            statusSummary.classList.remove('scrolled');
+                        }
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+        
+        window.addEventListener('scroll', handleScroll, { passive: true });
     }
 }
 

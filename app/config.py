@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     """Application settings"""
 
     # App Configuration
-    app_name: str = "AI Service Status Dashboard"
+    app_name: str = "AI Dashboard"
     debug: bool = False
     host: str = "0.0.0.0"
     port: int = 8000
@@ -28,6 +28,7 @@ class Settings(BaseSettings):
         "https://status.anthropic.com/api/v2/status.json"
     )
     cursor_status_url: str = "https://status.cursor.com/api/v2/status.json"
+    google_aistudio_status_url: str = "https://aistudio.google.com/status"
 
     # Request Configuration
     request_timeout: int = 10

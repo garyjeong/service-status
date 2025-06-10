@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   ai-status-dashboard:
     build: .
     container_name: ai-status-dashboard
     ports:
-      - "8000:8000"
+      - "8888:8000"
     environment:
       - PYTHONPATH=/app
       - PYTHONDONTWRITEBYTECODE=1
