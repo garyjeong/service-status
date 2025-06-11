@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, Clock, Settings, Star } from 'lucide-react';
+import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp } from 'lucide-react';
 
-// 이미지 import
-import gptIcon from '../assets/gpt.svg';
-import claudeIcon from '../assets/claude.png';
-import cursorIcon from '../assets/cursor.webp';
-import googleAiIcon from '../assets/google-ai-studio.svg';
+// 이미지 import 추가
+import openaiIcon from '@/assets/gpt.png';
+import anthropicIcon from '@/assets/claude.png';
+import cursorIcon from '@/assets/cursor.png';
+import googleaiIcon from '@/assets/google-ai-studio.png';
+import githubIcon from '@/assets/github.png';
+import netlifyIcon from '@/assets/netlify.png';
+import dockerIcon from '@/assets/docker.png';
+import awsIcon from '@/assets/aws.png';
+import slackIcon from '@/assets/slack.png';
+import firebaseIcon from '@/assets/firebase.png';
 
 interface DashboardProps {
   className?: string;
@@ -38,70 +44,164 @@ interface Favorites {
   };
 }
 
-// 간단한 mock 데이터 (하위 컴포넌트 포함)
+interface ServiceExpansion {
+  [serviceName: string]: boolean;
+}
+
+// 새로운 AI 서비스 및 외부 서비스 데이터
 const mockServices: Service[] = [
+  // AI 서비스들
   {
     service_name: 'openai',
     display_name: 'OpenAI ChatGPT',
-    description: 'GPT-4, GPT-3.5 API 및 웹 인터페이스',
+    description: 'ChatGPT 웹 인터페이스 및 OpenAI API',
     status: 'operational',
     page_url: 'https://status.openai.com',
-    icon: 'gpt',
+    icon: 'openai',
     components: [
       { name: 'ChatGPT Web', status: 'operational' },
-      { name: 'GPT-4 API', status: 'operational' },
-      { name: 'GPT-3.5 API', status: 'operational' },
-      { name: 'DALL-E API', status: 'operational' },
-      { name: 'GPT-4 Turbo', status: 'operational' },
-      { name: 'Whisper API', status: 'operational' },
-    ],
+      { name: 'OpenAI API', status: 'operational' },
+      { name: 'DALL-E', status: 'operational' },
+      { name: 'Whisper API', status: 'operational' }
+    ]
   },
   {
     service_name: 'anthropic',
     display_name: 'Anthropic Claude',
-    description: 'Claude-3 Opus, Sonnet, Haiku',
+    description: 'Claude 채팅 인터페이스 및 Anthropic API',
     status: 'operational',
     page_url: 'https://status.anthropic.com',
-    icon: 'claude',
+    icon: 'anthropic',
     components: [
-      { name: 'Claude Web', status: 'operational' },
-      { name: 'Claude-3 Opus', status: 'operational' },
-      { name: 'Claude-3 Sonnet', status: 'operational' },
-      { name: 'Claude-3 Haiku', status: 'operational' },
-      { name: 'Claude API', status: 'operational' },
-    ],
+      { name: 'Claude Chat', status: 'operational' },
+      { name: 'Anthropic API', status: 'operational' },
+      { name: 'Claude Pro', status: 'operational' },
+      { name: 'API Console', status: 'operational' }
+    ]
   },
   {
     service_name: 'cursor',
-    display_name: 'Cursor AI',
-    description: 'AI 기반 코드 에디터',
+    display_name: 'Cursor Editor',
+    description: 'AI 기반 코드 에디터 및 개발 도구',
     status: 'operational',
-    page_url: 'https://cursor.sh',
+    page_url: 'https://status.cursor.sh',
     icon: 'cursor',
     components: [
-      { name: 'Editor Core', status: 'operational' },
-      { name: 'AI Assistant', status: 'operational' },
-      { name: 'Code Completion', status: 'operational' },
-      { name: 'Chat Interface', status: 'operational' },
-    ],
+      { name: 'Desktop App', status: 'operational' },
+      { name: 'AI Copilot', status: 'operational' },
+      { name: 'Sync Service', status: 'operational' },
+      { name: 'Extensions', status: 'operational' }
+    ]
   },
   {
     service_name: 'googleai',
     display_name: 'Google AI Studio',
-    description: 'Gemini Pro API 및 웹 인터페이스',
+    description: 'Google Gemini API 및 AI Studio 플랫폼',
     status: 'operational',
     page_url: 'https://aistudio.google.com',
     icon: 'googleai',
     components: [
-      { name: 'AI Studio Web', status: 'operational' },
-      { name: 'Gemini Pro API', status: 'operational' },
-      { name: 'Gemini Vision', status: 'operational' },
-      { name: 'Vertex AI', status: 'operational' },
-    ],
+      { name: 'Gemini API', status: 'operational' },
+      { name: 'AI Studio', status: 'operational' },
+      { name: 'Model Garden', status: 'operational' },
+      { name: 'Vertex AI', status: 'operational' }
+    ]
   },
+  // 외부 서비스들
+  {
+    service_name: 'github',
+    display_name: 'GitHub',
+    description: '코드 저장소 및 협업 플랫폼',
+    status: 'operational',
+    page_url: 'https://www.githubstatus.com',
+    icon: 'github',
+    components: [
+      { name: 'Git Operations', status: 'operational' },
+      { name: 'API Requests', status: 'operational' },
+      { name: 'Issues & PRs', status: 'operational' },
+      { name: 'Actions', status: 'operational' },
+      { name: 'Pages', status: 'operational' },
+      { name: 'Packages', status: 'operational' }
+    ]
+  },
+  {
+    service_name: 'netlify',
+    display_name: 'Netlify',
+    description: '정적 사이트 호스팅 및 배포 플랫폼',
+    status: 'operational',
+    page_url: 'https://www.netlifystatus.com',
+    icon: 'netlify',
+    components: [
+      { name: 'CDN', status: 'operational' },
+      { name: 'Builds', status: 'operational' },
+      { name: 'Edge Functions', status: 'operational' },
+      { name: 'Forms', status: 'operational' },
+      { name: 'DNS', status: 'operational' }
+    ]
+  },
+  {
+    service_name: 'dockerhub',
+    display_name: 'Docker Hub',
+    description: '컨테이너 이미지 레지스트리 및 저장소',
+    status: 'operational',
+    page_url: 'https://status.docker.com',
+    icon: 'dockerhub',
+    components: [
+      { name: 'Registry', status: 'operational' },
+      { name: 'Build Service', status: 'operational' },
+      { name: 'Webhooks', status: 'operational' },
+      { name: 'Organizations', status: 'operational' }
+    ]
+  },
+  {
+    service_name: 'aws',
+    display_name: 'AWS',
+    description: '아마존 웹 서비스 클라우드 플랫폼',
+    status: 'operational',
+    page_url: 'https://status.aws.amazon.com',
+    icon: 'aws',
+    components: [
+      { name: 'EC2', status: 'operational' },
+      { name: 'S3', status: 'operational' },
+      { name: 'RDS', status: 'operational' },
+      { name: 'Lambda', status: 'operational' },
+      { name: 'CloudFront', status: 'operational' },
+      { name: 'Route 53', status: 'operational' }
+    ]
+  },
+  {
+    service_name: 'slack',
+    display_name: 'Slack',
+    description: '팀 커뮤니케이션 및 협업 플랫폼',
+    status: 'operational',
+    page_url: 'https://status.slack.com',
+    icon: 'slack',
+    components: [
+      { name: 'Messaging', status: 'operational' },
+      { name: 'Calls', status: 'operational' },
+      { name: 'File Sharing', status: 'operational' },
+      { name: 'Apps & Integrations', status: 'operational' },
+      { name: 'Notifications', status: 'operational' }
+    ]
+  },
+  {
+    service_name: 'firebase',
+    display_name: 'Firebase',
+    description: 'Google 백엔드 서비스 플랫폼',
+    status: 'operational',
+    page_url: 'https://status.firebase.google.com',
+    icon: 'firebase',
+    components: [
+      { name: 'Realtime Database', status: 'operational' },
+      { name: 'Firestore', status: 'operational' },
+      { name: 'Authentication', status: 'operational' },
+      { name: 'Hosting', status: 'operational' },
+      { name: 'Functions', status: 'operational' },
+      { name: 'Storage', status: 'operational' }
+    ]
+  }
 ];
 
-// 기본 필터 설정 (모든 컴포넌트 표시)
 const getDefaultFilters = (): ComponentFilter => {
   const filters: ComponentFilter = {};
   mockServices.forEach(service => {
@@ -113,550 +213,510 @@ const getDefaultFilters = (): ComponentFilter => {
   return filters;
 };
 
-// 기본 즐겨찾기 설정 (모두 false)
-const getDefaultFavorites = (): Favorites => {
-  const favorites: Favorites = {};
-  mockServices.forEach(service => {
-    favorites[service.service_name] = {};
-    service.components.forEach(component => {
-      favorites[service.service_name][component.name] = false;
+  const getDefaultFavorites = (): Favorites => {
+    const favorites: Favorites = {};
+    mockServices.forEach(service => {
+      favorites[service.service_name] = {};
+      service.components.forEach(component => {
+        favorites[service.service_name][component.name] = false;
+      });
     });
-  });
-  return favorites;
+    return favorites;
+  };
+
+  const getDefaultExpansion = (): ServiceExpansion => {
+    const expansion: ServiceExpansion = {};
+    mockServices.forEach(service => {
+      expansion[service.service_name] = false; // 기본적으로 모두 접힌 상태
+    });
+    return expansion;
+  };
+
+// 이미지 아이콘 매핑
+const getServiceIcon = (iconName: string): string => {
+  const iconMap: { [key: string]: string } = {
+    openai: openaiIcon,
+    anthropic: anthropicIcon,
+    cursor: cursorIcon,
+    googleai: googleaiIcon,
+    github: githubIcon,
+    netlify: netlifyIcon,
+    dockerhub: dockerIcon,
+    aws: awsIcon,
+    slack: slackIcon,
+    firebase: firebaseIcon,
+  };
+  return iconMap[iconName] || '';
 };
 
-// localStorage 키들
-const STORAGE_KEYS = {
-  THEME: 'ai-status-theme',
-  COMPONENT_FILTERS: 'ai-status-component-filters',
-  FAVORITES: 'ai-status-favorites',
-};
-
-// 아이콘 컴포넌트 매핑 - 실제 이미지 사용
 const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number }) => {
-  const imageStyle: React.CSSProperties = {
-    width: size,
-    height: size,
-    minWidth: size,
-    minHeight: size,
-    objectFit: 'cover',
-    borderRadius: '8px',
-  };
-
-  // Cursor 아이콘만 특별히 크기 조정
-  const cursorStyle: React.CSSProperties = {
-    ...imageStyle,
-    transform: 'scale(1.2)', // 20% 크게
-  };
+  const iconSrc = getServiceIcon(iconName);
   
-  switch (iconName) {
-    case 'gpt':
-      return <img src={gptIcon} alt="GPT" style={imageStyle} />;
-    case 'claude':
-      return <img src={claudeIcon} alt="Claude" style={imageStyle} />;
-    case 'cursor':
-      return <img src={cursorIcon} alt="Cursor" style={cursorStyle} />;
-    case 'googleai':
-      return <img src={googleAiIcon} alt="Google AI" style={imageStyle} />;
-    default:
-      return <img src={gptIcon} alt="Default" style={imageStyle} />;
+  if (iconSrc) {
+    // GitHub과 Cursor 아이콘에만 흰색 배경 적용
+    const needsWhiteBackground = iconName === 'github' || iconName === 'cursor';
+    
+    return (
+      <img 
+        src={iconSrc} 
+        alt={iconName}
+        style={{ 
+          width: `${size}px`, 
+          height: `${size}px`,
+          objectFit: 'contain',
+          borderRadius: '6px',
+          backgroundColor: needsWhiteBackground ? '#ffffff' : 'transparent',
+          padding: needsWhiteBackground ? '2px' : '0'
+        }} 
+      />
+    );
   }
-};
-
-// 상태에 따른 스타일과 텍스트
-const getStatusInfo = (status: string) => {
-  switch (status) {
-    case 'operational':
-      return { color: '#10b981', text: '정상 운영' };
-    case 'degraded':
-      return { color: '#f59e0b', text: '성능 저하' };
-    case 'outage':
-      return { color: '#ef4444', text: '서비스 장애' };
-    default:
-      return { color: '#6b7280', text: '알 수 없음' };
-  }
+  
+  // 폴백 아이콘
+  return <Wifi style={{ width: `${size}px`, height: `${size}px` }} />;
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
-  const [services, setServices] = useState<Service[]>(mockServices);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [theme] = useState<'light' | 'dark'>('dark'); // 다크모드 전용
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showComponentSettings, setShowComponentSettings] = useState(false);
-  const [componentFilters, setComponentFilters] = useState<ComponentFilter>(getDefaultFilters());
-  const [favorites, setFavorites] = useState<Favorites>(getDefaultFavorites());
+  const [componentFilters, setComponentFilters] = useState<ComponentFilter>(getDefaultFilters);
+  const [favorites, setFavorites] = useState<Favorites>(getDefaultFavorites);
+  const [expandedServices, setExpandedServices] = useState<ServiceExpansion>(getDefaultExpansion);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
-  // localStorage에서 설정 로드
+  // localStorage 저장
   useEffect(() => {
-    try {
-      // 다크모드 전용으로 테마 강제 설정
-      localStorage.setItem(STORAGE_KEYS.THEME, 'dark');
-
-      // 컴포넌트 필터 설정 로드
-      const savedFilters = localStorage.getItem(STORAGE_KEYS.COMPONENT_FILTERS);
-      if (savedFilters) {
-        setComponentFilters(JSON.parse(savedFilters));
-      }
-
-      // 즐겨찾기 설정 로드
-      const savedFavorites = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
-      }
-    } catch (error) {
-      console.error('설정을 불러오는 중 오류가 발생했습니다:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.COMPONENT_FILTERS, JSON.stringify(componentFilters));
+    localStorage.setItem('service-status-component-filters', JSON.stringify(componentFilters));
   }, [componentFilters]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+    localStorage.setItem('service-status-favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // 다크모드 전용으로 테마 토글 기능 제거
+  // 윈도우 리사이즈 이벤트 리스너
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      // 시뮬레이션: 랜덤 상태 변경
-      const statuses: Array<'operational' | 'degraded' | 'outage'> = ['operational', 'degraded', 'outage'];
-      const newServices = services.map(service => ({
-        ...service,
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        components: service.components.map(component => ({
-          ...component,
-          status: statuses[Math.floor(Math.random() * statuses.length)]
-        }))
-      }));
-      setServices(newServices);
-      setLastUpdated(new Date());
-      setIsRefreshing(false);
-    }, 1000);
-  };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // 컴포넌트 필터 토글
   const toggleComponentFilter = (serviceName: string, componentName: string) => {
     setComponentFilters(prev => ({
       ...prev,
       [serviceName]: {
         ...prev[serviceName],
-        [componentName]: !prev[serviceName][componentName]
+        [componentName]: !prev[serviceName]?.[componentName]
       }
     }));
   };
 
-  // 즐겨찾기 토글
   const toggleFavorite = (serviceName: string, componentName: string) => {
     setFavorites(prev => ({
       ...prev,
       [serviceName]: {
         ...prev[serviceName],
-        [componentName]: !prev[serviceName][componentName]
+        [componentName]: !prev[serviceName]?.[componentName]
       }
     }));
   };
 
-  // 빠른 필터 프리셋
-  const applyPreset = (preset: 'all' | 'favorites' | 'core') => {
-    const newFilters = { ...componentFilters };
-    
-    mockServices.forEach(service => {
-      service.components.forEach(component => {
-        switch (preset) {
-          case 'all':
-            newFilters[service.service_name][component.name] = true;
-            break;
-          case 'favorites':
-            newFilters[service.service_name][component.name] = favorites[service.service_name][component.name];
-            break;
-          case 'core':
-            // 각 서비스의 처음 3개 컴포넌트만 표시
-            const componentIndex = service.components.indexOf(component);
-            newFilters[service.service_name][component.name] = componentIndex < 3;
-            break;
-        }
-      });
-    });
-    
-    setComponentFilters(newFilters);
+  const toggleServiceExpansion = (serviceName: string) => {
+    setExpandedServices(prev => ({
+      ...prev,
+      [serviceName]: !prev[serviceName]
+    }));
   };
 
-  // 필터링된 컴포넌트 가져오기
-  const getFilteredComponents = (service: Service) => {
-    return service.components.filter(component => 
-      componentFilters[service.service_name]?.[component.name] !== false
-    );
+  const refreshData = async () => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setLastUpdate(new Date());
+    setIsLoading(false);
   };
 
-  // 선택된 컴포넌트 수 계산
-  const getSelectedCount = () => {
-    let total = 0;
-    let selected = 0;
-    mockServices.forEach(service => {
-      service.components.forEach(component => {
-        total++;
-        if (componentFilters[service.service_name]?.[component.name] !== false) {
-          selected++;
-        }
-      });
-    });
-    return { selected, total };
-  };
-
-  // body 스타일 적용
-  useEffect(() => {
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    
-    if (theme === 'dark') {
-      document.body.style.backgroundColor = '#1a1a1a';
-      document.body.style.color = '#ffffff';
-    } else {
-      document.body.style.backgroundColor = '#f5f5f5';
-      document.body.style.color = '#000000';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'operational': return '#10b981';
+      case 'degraded': return '#f59e0b';
+      case 'outage': return '#ef4444';
+      default: return '#6b7280';
     }
-  }, [theme]);
+  };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLastUpdated(new Date());
-    }, 15000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // 설정 드롭다운 외부 클릭 시 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (showComponentSettings && !target.closest('.component-settings-dropdown')) {
-        setShowComponentSettings(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showComponentSettings]);
-
+  // 스타일 정의들
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    backgroundColor: '#111827',
+    color: '#f9fafb',
+    fontFamily: "'Inter', sans-serif",
+    display: 'flex',
+    flexDirection: 'column',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: '#1f2937',
+    borderBottom: '1px solid #374151',
+    padding: windowWidth <= 900 ? '1rem 2rem' : '1.5rem 2rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: windowWidth <= 900 ? '80px' : '120px',
+    transition: 'all 0.3s ease',
+  };
+
+  const controlsStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  };
+
+  const primaryButtonStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: '#3b82f6',
+    color: 'white',
+  };
+
+  const secondaryButtonStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: '#374151',
+    color: '#f9fafb',
+  };
+
+  const mainContentStyle: React.CSSProperties = {
+    flex: 1,
+    paddingTop: windowWidth <= 900 ? '140px' : '200px', // 헤더 높이에 따라 조정
+    paddingBottom: '120px', // 푸터 높이 고려
+    paddingLeft: windowWidth <= 900 ? '1rem' : '2rem',
+    paddingRight: windowWidth <= 900 ? '1rem' : '2rem',
+    transition: 'all 0.3s ease',
+  };
+
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+    gap: '1.5rem',
+    maxWidth: '1400px',
+    margin: '0 auto',
+    transition: 'all 0.3s ease',
   };
 
   const cardStyle: React.CSSProperties = {
-    backgroundColor: theme === 'dark' ? '#2a2a2a' : '#ffffff',
-    border: `1px solid ${theme === 'dark' ? '#404040' : '#e0e0e0'}`,
-    borderRadius: '8px',
-    padding: '20px',
-    marginBottom: '15px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+    padding: '1.5rem',
+    borderRadius: '12px',
+    border: '1px solid #374151',
+    backgroundColor: '#1f2937',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s ease',
+    transform: 'translateZ(0)', // GPU 가속을 위한 속성
   };
 
-  // 전체 상태 계산
-  const operationalCount = services.filter(s => s.status === 'operational').length;
-  const totalCount = services.length;
-  const { selected, total } = getSelectedCount();
+  const serviceHeaderStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '1rem',
+  };
+
+  const serviceInfoStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+  };
+
+  const serviceNameStyle: React.CSSProperties = {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    color: '#f9fafb',
+    margin: 0,
+  };
+
+  const serviceDescStyle: React.CSSProperties = {
+    fontSize: '0.875rem',
+    color: '#d1d5db',
+    margin: 0,
+  };
+
+  const statusDotStyle = (status: string): React.CSSProperties => ({
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    backgroundColor: getStatusColor(status),
+  });
+
+  const componentStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0.5rem',
+    backgroundColor: '#374151',
+    borderRadius: '6px',
+    marginBottom: '0.5rem',
+  };
+
+  const componentNameStyle: React.CSSProperties = {
+    fontSize: '0.875rem',
+    color: '#d1d5db',
+  };
+
+  const settingsPanelStyle: React.CSSProperties = {
+    marginBottom: '2rem',
+    padding: '1.5rem',
+    backgroundColor: '#1f2937',
+    borderRadius: '12px',
+    border: '1px solid #374151',
+  };
+
+  const footerStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: '#1f2937',
+    borderTop: '1px solid #374151',
+    padding: '1rem 2rem',
+    textAlign: 'center',
+    color: '#9ca3af',
+  };
+
+
 
   return (
     <div style={containerStyle} className={className}>
-      <header style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        borderBottom: `1px solid ${theme === 'dark' ? '#404040' : '#e0e0e0'}`,
-        backgroundColor: theme === 'dark' ? '#2a2a2a' : '#ffffff',
-        padding: '20px 0',
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
-                🤖 AI 서비스 상태 모니터링
-              </h1>
-              <p style={{ fontSize: '14px', color: theme === 'dark' ? '#a0a0a0' : '#666666', margin: 0 }}>
-                실시간으로 AI 서비스들의 상태를 확인하세요
-              </p>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* 컴포넌트 설정 드롭다운 */}
-              <div className="component-settings-dropdown" style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setShowComponentSettings(!showComponentSettings)}
-                  style={{
-                    background: 'none',
-                    border: `1px solid ${theme === 'dark' ? '#404040' : '#e0e0e0'}`,
-                    borderRadius: '6px',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    color: 'inherit',
-                    fontSize: '13px',
-                  }}
-                >
-                  <Settings size={16} />
-                  <span>필터 ({selected}/{total})</span>
-                </button>
-
-                {showComponentSettings && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    backgroundColor: theme === 'dark' ? '#2a2a2a' : '#ffffff',
-                    border: `1px solid ${theme === 'dark' ? '#404040' : '#e0e0e0'}`,
-                    borderRadius: '8px',
-                    padding: '16px',
-                    minWidth: '300px',
-                    maxHeight: '400px',
-                    overflowY: 'auto',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                  }}>
-                    {/* 빠른 필터 */}
-                    <div style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: `1px solid ${theme === 'dark' ? '#404040' : '#e0e0e0'}` }}>
-                      <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>빠른 필터</div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => applyPreset('all')} style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>전체</button>
-                        <button onClick={() => applyPreset('favorites')} style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>즐겨찾기</button>
-                        <button onClick={() => applyPreset('core')} style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>핵심만</button>
-                      </div>
-                    </div>
-
-                    {/* 서비스별 컴포넌트 설정 */}
-                    {mockServices.map(service => (
-                      <div key={service.service_name} style={{ marginBottom: '16px' }}>
-                        <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <ServiceIcon iconName={service.icon} size={16} />
-                          {service.display_name}
-                        </div>
-                        <div style={{ marginLeft: '24px' }}>
-                          {service.components.map(component => (
-                            <div key={component.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={componentFilters[service.service_name]?.[component.name] !== false}
-                                  onChange={() => toggleComponentFilter(service.service_name, component.name)}
-                                  style={{ cursor: 'pointer' }}
-                                />
-                                {component.name}
-                              </label>
-                              <button
-                                onClick={() => toggleFavorite(service.service_name, component.name)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  padding: '2px',
-                                  color: favorites[service.service_name]?.[component.name] ? '#f59e0b' : (theme === 'dark' ? '#666' : '#ccc'),
-                                }}
-                              >
-                                <Star size={14} fill={favorites[service.service_name]?.[component.name] ? '#f59e0b' : 'none'} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 다크모드 전용으로 테마 토글 버튼 제거 */}
-              
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                style={{
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  opacity: isRefreshing ? 0.7 : 1,
-                }}
-              >
-                <RefreshCw size={16} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
-                새로고침
-              </button>
-            </div>
+      {/* 고정 헤더 */}
+      <header style={headerStyle}>
+        {windowWidth > 900 && (
+          <div style={{ flex: 1 }}>
+            <h1 style={{ 
+              margin: 0, 
+              fontSize: '28px', 
+              fontWeight: 'bold', 
+              color: '#f9fafb' 
+            }}>
+              🤖 AI 및 외부 서비스 상태 모니터링
+            </h1>
+            <p style={{ 
+              margin: '4px 0 0 0', 
+              fontSize: '16px', 
+              color: '#d1d5db' 
+            }}>
+              실시간으로 AI 서비스와 외부 서비스들의 상태를 확인하세요
+            </p>
           </div>
+        )}
+        
+        <div style={{
+          ...controlsStyle,
+          justifyContent: windowWidth <= 900 ? 'center' : 'flex-end',
+          width: windowWidth <= 900 ? '100%' : 'auto'
+        }}>
+          <button
+            onClick={refreshData}
+            disabled={isLoading}
+            style={{
+              ...primaryButtonStyle,
+              opacity: isLoading ? 0.5 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <RefreshCw style={{ width: '16px', height: '16px', animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
+            새로 고침
+          </button>
+          
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            style={secondaryButtonStyle}
+          >
+            <Settings style={{ width: '16px', height: '16px' }} />
+            설정
+          </button>
+          
+          {windowWidth > 900 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#9ca3af' }}>
+              <Clock style={{ width: '16px', height: '16px' }} />
+              마지막 업데이트: {lastUpdate.toLocaleTimeString()}
+            </div>
+          )}
         </div>
       </header>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '140px 20px 30px 20px' }}>
-        <div style={{
-          ...cardStyle,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Wifi size={24} style={{ color: operationalCount === totalCount ? '#10b981' : '#f59e0b' }} />
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 4px 0' }}>
-                전체 시스템 상태: {operationalCount === totalCount ? '정상' : '일부 문제'}
-              </h2>
-              <p style={{ fontSize: '14px', color: theme === 'dark' ? '#a0a0a0' : '#666666', margin: 0 }}>
-                {operationalCount}/{totalCount} 서비스 정상 운영 중 | {selected}/{total} 컴포넌트 표시 중
-              </p>
+      {/* 메인 콘텐츠 */}
+      <main style={mainContentStyle}>
+        {/* 설정 패널 */}
+        {showSettings && (
+          <div style={settingsPanelStyle}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#f9fafb', marginBottom: '1rem' }}>표시 설정</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+              {mockServices.map((service) => (
+                <div key={service.service_name} style={{ marginBottom: '1rem' }}>
+                  <h4 style={{ fontWeight: '500', color: '#f9fafb', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ServiceIcon iconName={service.icon} size={24} />
+                    {service.display_name}
+                  </h4>
+                  {service.components.map((component) => (
+                    <label key={component.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={componentFilters[service.service_name]?.[component.name] ?? true}
+                        onChange={() => toggleComponentFilter(service.service_name, component.name)}
+                        style={{ borderRadius: '4px' }}
+                      />
+                      <span style={{ color: '#d1d5db' }}>{component.name}</span>
+                    </label>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: theme === 'dark' ? '#a0a0a0' : '#666666' }}>
-            <Clock size={16} />
-            <span>{lastUpdated.toLocaleString('ko-KR')}</span>
-          </div>
-        </div>
-      </div>
+        )}
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', paddingTop: '20px', paddingBottom: '120px' }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(2, 1fr)', 
-          gap: '20px'
-        }}>
-          {services.map((service) => {
-            const statusInfo = getStatusInfo(service.status);
-            const filteredComponents = getFilteredComponents(service);
-            
-            return (
-              <div key={service.service_name} style={cardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <ServiceIcon iconName={service.icon} size={48} />
-                    <div>
-                      <h3 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 8px 0' }}>
-                        {service.display_name}
-                      </h3>
-                      <p style={{ fontSize: '14px', color: theme === 'dark' ? '#a0a0a0' : '#666666', margin: 0 }}>
-                        {service.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      backgroundColor: statusInfo.color,
-                    }} />
-                    <span style={{ fontSize: '14px', fontWeight: '500', color: statusInfo.color }}>
-                      {statusInfo.text}
-                    </span>
+        {/* 서비스 그리드 */}
+        <div style={gridStyle}>
+          {mockServices.map((service) => (
+            <div 
+              key={service.service_name} 
+              style={cardStyle}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px) translateZ(0)';
+                e.currentTarget.style.boxShadow = '0 8px 25px -1px rgba(0, 0, 0, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) translateZ(0)';
+                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)';
+              }}
+            >
+              {/* 서비스 헤더 */}
+              <div style={serviceHeaderStyle}>
+                <div style={serviceInfoStyle}>
+                  <ServiceIcon iconName={service.icon} size={32} />
+                  <div>
+                    <h3 style={serviceNameStyle}>{service.display_name}</h3>
+                    <p style={serviceDescStyle}>{service.description}</p>
                   </div>
                 </div>
+                <div style={statusDotStyle(service.status)} />
+              </div>
 
-                {/* 하위 컴포넌트 상태 - 필터링 적용 */}
-                {filteredComponents.length > 0 && (
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 style={{ 
-                      fontSize: '14px', 
-                      fontWeight: '500', 
-                      color: theme === 'dark' ? '#a0a0a0' : '#666666', 
-                      margin: '0 0 12px 0' 
-                    }}>
-                      컴포넌트 상태 ({filteredComponents.length}/{service.components.length})
-                    </h4>
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                      gap: '8px' 
-                    }}>
-                      {filteredComponents.map((component) => {
-                        const compStatusInfo = getStatusInfo(component.status);
-                        const isFavorite = favorites[service.service_name]?.[component.name];
-                        return (
-                          <div 
-                            key={component.name} 
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: '8px 12px',
-                              borderRadius: '6px',
-                              backgroundColor: theme === 'dark' ? '#1a1a1a' : '#f8f9fa',
-                              border: `1px solid ${theme === 'dark' ? '#404040' : '#e9ecef'}`,
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              {isFavorite && <Star size={12} fill="#f59e0b" style={{ color: '#f59e0b' }} />}
-                              <span style={{ fontSize: '13px', fontWeight: '500' }}>
-                                {component.name}
-                              </span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <div style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                backgroundColor: compStatusInfo.color,
-                              }} />
-                              <span style={{ 
-                                fontSize: '11px', 
-                                color: theme === 'dark' ? '#a0a0a0' : '#666666' 
-                              }}>
-                                {compStatusInfo.text}
-                              </span>
-                            </div>
+              {/* 전체 상태 */}
+              <div style={{
+                marginBottom: '1rem',
+                padding: '0.75rem',
+                backgroundColor: '#374151',
+                borderRadius: '8px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#d1d5db' }}>전체 상태</span>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: getStatusColor(service.status) }}>
+                    {service.status === 'operational' ? '정상' : 
+                     service.status === 'degraded' ? '성능 저하' : '장애'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 컴포넌트 상태 */}
+              <div>
+                <div 
+                  onClick={() => toggleServiceExpansion(service.service_name)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    marginBottom: '0.5rem',
+                    padding: '0.25rem 0',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#d1d5db', margin: 0 }}>
+                    컴포넌트 상태 ({service.components.filter(component => componentFilters[service.service_name]?.[component.name] ?? true).length}개)
+                  </h4>
+                  {expandedServices[service.service_name] ? (
+                    <ChevronUp style={{ width: '16px', height: '16px', color: '#9ca3af' }} />
+                  ) : (
+                    <ChevronDown style={{ width: '16px', height: '16px', color: '#9ca3af' }} />
+                  )}
+                </div>
+                
+                {expandedServices[service.service_name] && (
+                  <div>
+                    {service.components
+                      .filter(component => componentFilters[service.service_name]?.[component.name] ?? true)
+                      .map((component) => (
+                        <div key={component.name} style={componentStyle}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <button
+                              onClick={() => toggleFavorite(service.service_name, component.name)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: favorites[service.service_name]?.[component.name] ? '#f59e0b' : '#6b7280',
+                                padding: '0',
+                              }}
+                            >
+                              <Star style={{ width: '12px', height: '12px' }} />
+                            </button>
+                            <span style={componentNameStyle}>{component.name}</span>
                           </div>
-                        );
-                      })}
-                    </div>
+                          <div style={statusDotStyle(component.status)} />
+                        </div>
+                      ))}
                   </div>
                 )}
-
               </div>
-            );
-          })}
+
+
+            </div>
+          ))}
         </div>
       </main>
 
-      <footer style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        borderTop: `1px solid ${theme === 'dark' ? '#404040' : '#e0e0e0'}`,
-        backgroundColor: theme === 'dark' ? '#2a2a2a' : '#ffffff',
-        padding: '16px 20px',
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: theme === 'dark' ? '#a0a0a0' : '#666666', margin: '0 0 6px 0' }}>
-            마지막 업데이트: {lastUpdated.toLocaleString('ko-KR')}
+      {/* 고정 푸터 */}
+      <footer style={footerStyle}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ 
+            margin: '0 0 8px 0', 
+            fontSize: '14px', 
+            color: '#9ca3af' 
+          }}>
+            🔄 자동 업데이트: 30초마다 | 📊 모니터링 중인 서비스: {mockServices.length}개
           </p>
-          <p style={{ fontSize: '12px', color: theme === 'dark' ? '#a0a0a0' : '#666666', margin: '0 0 4px 0' }}>
-            AI 서비스 상태는 15초마다 자동으로 업데이트됩니다.
-          </p>
-          <p style={{ fontSize: '11px', color: theme === 'dark' ? '#808080' : '#888888', margin: 0 }}>
-            React + TypeScript + Vite로 구축된 AI 상태 모니터링 대시보드
+          <p style={{ 
+            margin: 0, 
+            fontSize: '13px', 
+            color: '#6b7280' 
+          }}>
+            AI 서비스(OpenAI, Anthropic, Cursor, Google AI)와 외부 서비스(GitHub, Netlify, Docker Hub, AWS, Slack, Firebase)의 실시간 상태를 모니터링합니다.
           </p>
         </div>
       </footer>
-
-      <style>
-        {`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

@@ -1,6 +1,6 @@
-# AI 서비스 상태 모니터링 대시보드
+# 🌐 외부 서비스 상태 모니터링 대시보드
 
-실시간으로 주요 AI 서비스들의 상태를 모니터링하는 React 대시보드입니다.
+실시간으로 개발자가 자주 사용하는 외부 서비스들의 상태를 모니터링하는 다크 테마 전용 React 대시보드입니다.
 
 ## ⚡ 기술 스택
 
@@ -15,14 +15,18 @@
 
 ## 🚀 지원되는 서비스
 
-- **OpenAI ChatGPT** - ChatGPT 웹 인터페이스 및 API
-  - 하위 컴포넌트: ChatGPT Web, GPT-4 API, GPT-3.5 API, DALL-E API
-- **Anthropic Claude** - Claude 채팅 및 API 서비스
-  - 하위 컴포넌트: Claude Web, Claude-3 Opus, Claude-3 Sonnet, Claude-3 Haiku
-- **Cursor Editor** - AI 코드 에디터 서비스
-  - 하위 컴포넌트: Editor Core, AI Assistant, Code Completion, Chat Interface
-- **Google AI Studio** - Gemini API 및 AI Studio
-  - 하위 컴포넌트: AI Studio Web, Gemini Pro API, Gemini Vision, Vertex AI
+- **GitHub** - 코드 저장소 및 협업 플랫폼
+  - 하위 컴포넌트: Git Operations, API Requests, Issues & PRs, Actions, Pages, Packages
+- **Netlify** - 정적 사이트 호스팅 및 배포
+  - 하위 컴포넌트: CDN, Builds, Edge Functions, Forms, DNS
+- **Docker Hub** - 컨테이너 이미지 레지스트리
+  - 하위 컴포넌트: Registry, Build Service, Webhooks, Organizations
+- **AWS** - 클라우드 컴퓨팅 플랫폼
+  - 하위 컴포넌트: EC2, S3, RDS, Lambda, CloudFront, Route 53
+- **Slack** - 팀 커뮤니케이션 플랫폼
+  - 하위 컴포넌트: Messaging, Calls, File Sharing, Apps & Integrations, Notifications
+- **Firebase** - 백엔드 서비스 플랫폼
+  - 하위 컴포넌트: Realtime Database, Firestore, Authentication, Hosting, Functions, Storage
 
 ## 📦 설치 및 실행
 
@@ -123,14 +127,14 @@ public/               # 정적 파일
 - 실시간 상태 변경 알림
 
 ### 아이콘 시스템
-- **실제 AI 서비스 로고**: 각 서비스의 공식 로고 이미지 사용
-- **48px × 48px 크기**: 선명하고 인식하기 쉬운 크기
-- **다양한 포맷 지원**: SVG, PNG, WebP 형식
-- **TypeScript 지원**: 이미지 import에 대한 완전한 타입 안전성
+- **벡터 아이콘**: 각 서비스에 최적화된 SVG 아이콘 내장
+- **일관된 크기**: 20px/24px 크기로 최적화
+- **TypeScript 지원**: 완전한 타입 안전성 보장
+- **커스터마이징**: 색상 및 크기 조정 가능
 
 ### 사용자 인터페이스
 - 반응형 디자인 (모바일/데스크톱 지원)
-- 다크/라이트 모드 전환
+- 다크 테마 전용 (개발자 친화적 인터페이스)
 - 전체 시스템 상태 요약
 - 부드러운 애니메이션 및 트랜지션
 

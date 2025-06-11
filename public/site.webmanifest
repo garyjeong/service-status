@@ -1,7 +1,7 @@
 {
-  "name": "AI 서비스 상태 모니터링",
-  "short_name": "AI Status",
-  "description": "AI 서비스 상태 모니터링 대시보드 - OpenAI, Anthropic, Cursor, Google AI Studio의 실시간 상태를 확인하세요",
+  "name": "외부 서비스 상태 모니터링",
+  "short_name": "Service Status",
+  "description": "외부 서비스 상태 모니터링 대시보드 - 다양한 외부 서비스들의 실시간 상태를 확인하세요",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
