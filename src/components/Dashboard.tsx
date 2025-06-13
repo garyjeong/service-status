@@ -62,7 +62,9 @@ const mockServices: Service[] = [
       { name: 'ChatGPT Web', status: 'operational' },
       { name: 'OpenAI API', status: 'operational' },
       { name: 'DALL-E', status: 'operational' },
-      { name: 'Whisper API', status: 'operational' }
+      { name: 'Whisper API', status: 'operational' },
+      { name: 'GPT-4 API', status: 'operational' },
+      { name: 'GPT-3.5 API', status: 'operational' }
     ]
   },
   {
@@ -76,7 +78,10 @@ const mockServices: Service[] = [
       { name: 'Claude Chat', status: 'operational' },
       { name: 'Anthropic API', status: 'operational' },
       { name: 'Claude Pro', status: 'operational' },
-      { name: 'API Console', status: 'operational' }
+      { name: 'API Console', status: 'operational' },
+      { name: 'Claude-3 Opus', status: 'operational' },
+      { name: 'Claude-3 Sonnet', status: 'operational' },
+      { name: 'Claude-3 Haiku', status: 'operational' }
     ]
   },
   {
@@ -90,7 +95,11 @@ const mockServices: Service[] = [
       { name: 'Desktop App', status: 'operational' },
       { name: 'AI Copilot', status: 'operational' },
       { name: 'Sync Service', status: 'operational' },
-      { name: 'Extensions', status: 'operational' }
+      { name: 'Extensions', status: 'operational' },
+      { name: 'Editor Core', status: 'operational' },
+      { name: 'AI Assistant', status: 'operational' },
+      { name: 'Code Completion', status: 'operational' },
+      { name: 'Chat Interface', status: 'operational' }
     ]
   },
   {
@@ -104,7 +113,8 @@ const mockServices: Service[] = [
       { name: 'Gemini API', status: 'operational' },
       { name: 'AI Studio', status: 'operational' },
       { name: 'Model Garden', status: 'operational' },
-      { name: 'Vertex AI', status: 'operational' }
+      { name: 'Vertex AI', status: 'operational' },
+      { name: 'Gemini Vision', status: 'operational' }
     ]
   },
   // 외부 서비스들
@@ -121,7 +131,9 @@ const mockServices: Service[] = [
       { name: 'Issues & PRs', status: 'operational' },
       { name: 'Actions', status: 'operational' },
       { name: 'Pages', status: 'operational' },
-      { name: 'Packages', status: 'operational' }
+      { name: 'Packages', status: 'operational' },
+      { name: 'Codespaces', status: 'operational' },
+      { name: 'Copilot', status: 'operational' }
     ]
   },
   {
@@ -136,7 +148,9 @@ const mockServices: Service[] = [
       { name: 'Builds', status: 'operational' },
       { name: 'Edge Functions', status: 'operational' },
       { name: 'Forms', status: 'operational' },
-      { name: 'DNS', status: 'operational' }
+      { name: 'DNS', status: 'operational' },
+      { name: 'Identity', status: 'operational' },
+      { name: 'Analytics', status: 'operational' }
     ]
   },
   {
@@ -150,7 +164,9 @@ const mockServices: Service[] = [
       { name: 'Registry', status: 'operational' },
       { name: 'Build Service', status: 'operational' },
       { name: 'Webhooks', status: 'operational' },
-      { name: 'Organizations', status: 'operational' }
+      { name: 'Organizations', status: 'operational' },
+      { name: 'Authentication', status: 'operational' },
+      { name: 'Container Registry', status: 'operational' }
     ]
   },
   {
@@ -166,7 +182,11 @@ const mockServices: Service[] = [
       { name: 'RDS', status: 'operational' },
       { name: 'Lambda', status: 'operational' },
       { name: 'CloudFront', status: 'operational' },
-      { name: 'Route 53', status: 'operational' }
+      { name: 'Route 53', status: 'operational' },
+      { name: 'CloudWatch', status: 'operational' },
+      { name: 'IAM', status: 'operational' },
+      { name: 'ECS', status: 'operational' },
+      { name: 'EKS', status: 'operational' }
     ]
   },
   {
@@ -181,7 +201,10 @@ const mockServices: Service[] = [
       { name: 'Calls', status: 'operational' },
       { name: 'File Sharing', status: 'operational' },
       { name: 'Apps & Integrations', status: 'operational' },
-      { name: 'Notifications', status: 'operational' }
+      { name: 'Notifications', status: 'operational' },
+      { name: 'Search', status: 'operational' },
+      { name: 'Workspace Admin', status: 'operational' },
+      { name: 'Enterprise Grid', status: 'operational' }
     ]
   },
   {
@@ -197,7 +220,11 @@ const mockServices: Service[] = [
       { name: 'Authentication', status: 'operational' },
       { name: 'Hosting', status: 'operational' },
       { name: 'Functions', status: 'operational' },
-      { name: 'Storage', status: 'operational' }
+      { name: 'Storage', status: 'operational' },
+      { name: 'Cloud Messaging', status: 'operational' },
+      { name: 'Remote Config', status: 'operational' },
+      { name: 'Crashlytics', status: 'operational' },
+      { name: 'Performance', status: 'operational' }
     ]
   }
 ];
