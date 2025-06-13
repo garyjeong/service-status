@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white;
+  }
+}
+
+@layer components {
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  
+  .status-dot-operational {
+    @apply bg-green-500;
+  }
+  
+  .status-dot-degraded {
+    @apply bg-yellow-500;
+  }
+  
+  .status-dot-outage {
+    @apply bg-red-500;
+  }
+} 

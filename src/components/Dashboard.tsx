@@ -277,9 +277,11 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
-  const [componentFilters, setComponentFilters] = useState<ComponentFilter>(getDefaultFilters);
-  const [favorites, setFavorites] = useState<Favorites>(getDefaultFavorites);
-  const [expandedServices, setExpandedServices] = useState<ServiceExpansion>(getDefaultExpansion);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [filters, setFilters] = useState<ComponentFilter>(getDefaultFilters());
+  const [favorites, setFavorites] = useState<Favorites>(getDefaultFavorites());
+  const [expandedServices, setExpandedServices] = useState<ServiceExpansion>(getDefaultExpansion());
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -287,8 +289,8 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
   // localStorage 저장
   useEffect(() => {
-    localStorage.setItem('service-status-component-filters', JSON.stringify(componentFilters));
-  }, [componentFilters]);
+    localStorage.setItem('service-status-component-filters', JSON.stringify(filters));
+  }, [filters]);
 
   useEffect(() => {
     localStorage.setItem('service-status-favorites', JSON.stringify(favorites));
@@ -297,6 +299,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   // 윈도우 리사이즈 이벤트 리스너
   useEffect(() => {
     const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
       setWindowWidth(window.innerWidth);
     };
 
@@ -305,7 +308,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   }, []);
 
   const toggleComponentFilter = (serviceName: string, componentName: string) => {
-    setComponentFilters(prev => ({
+    setFilters(prev => ({
       ...prev,
       [serviceName]: {
         ...prev[serviceName],
@@ -504,217 +507,122 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
 
   return (
-    <div style={containerStyle} className={className}>
-      {/* 고정 헤더 */}
-      <header style={headerStyle}>
-        {windowWidth > 900 && (
-          <div style={{ flex: 1 }}>
-            <h1 style={{ 
-              margin: 0, 
-              fontSize: '28px', 
-              fontWeight: 'bold', 
-              color: '#f9fafb' 
-            }}>
-              🤖 AI 및 외부 서비스 상태 모니터링
-            </h1>
-            <p style={{ 
-              margin: '4px 0 0 0', 
-              fontSize: '16px', 
-              color: '#d1d5db' 
-            }}>
-              실시간으로 AI 서비스와 외부 서비스들의 상태를 확인하세요
-            </p>
+    <div className={`min-h-screen bg-gray-900 text-white p-4 ${className}`}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold">서비스 상태 대시보드</h1>
+            <button
+              onClick={refreshData}
+              className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+              aria-label="새로고침"
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
           </div>
-        )}
-        
-        <div style={{
-          ...controlsStyle,
-          justifyContent: windowWidth <= 900 ? 'center' : 'flex-end',
-          width: windowWidth <= 900 ? '100%' : 'auto'
-        }}>
-          <button
-            onClick={refreshData}
-            disabled={isLoading}
-            style={{
-              ...primaryButtonStyle,
-              opacity: isLoading ? 0.5 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <RefreshCw style={{ width: '16px', height: '16px', animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
-            새로 고침
-          </button>
           
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            style={secondaryButtonStyle}
-          >
-            <Settings style={{ width: '16px', height: '16px' }} />
-            설정
-          </button>
-          
-          {windowWidth > 900 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#9ca3af' }}>
-              <Clock style={{ width: '16px', height: '16px' }} />
-              마지막 업데이트: {lastUpdate.toLocaleTimeString()}
-            </div>
-          )}
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors w-full md:w-auto"
+            >
+              <Settings className="w-5 h-5" />
+              <span>필터</span>
+            </button>
+          </div>
         </div>
-      </header>
 
-      {/* 메인 콘텐츠 */}
-      <main style={mainContentStyle}>
-        {/* 설정 패널 */}
-        {showSettings && (
-          <div style={settingsPanelStyle}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#f9fafb', marginBottom: '1rem' }}>표시 설정</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-              {mockServices.map((service) => (
-                <div key={service.service_name} style={{ marginBottom: '1rem' }}>
-                  <h4 style={{ fontWeight: '500', color: '#f9fafb', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <ServiceIcon iconName={service.icon} size={24} />
-                    {service.display_name}
-                  </h4>
-                  {service.components.map((component) => (
-                    <label key={component.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                      <input
-                        type="checkbox"
-                        checked={componentFilters[service.service_name]?.[component.name] ?? true}
-                        onChange={() => toggleComponentFilter(service.service_name, component.name)}
-                        style={{ borderRadius: '4px' }}
-                      />
-                      <span style={{ color: '#d1d5db' }}>{component.name}</span>
-                    </label>
-                  ))}
+        {isFilterOpen && (
+          <div className="bg-gray-800 rounded-lg p-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockServices.map(service => (
+                <div key={service.service_name} className="space-y-2">
+                  <h3 className="font-semibold text-lg">{service.display_name}</h3>
+                  <div className="space-y-1">
+                    {service.components.map(component => (
+                      <label key={component.name} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={filters[service.service_name][component.name]}
+                          onChange={() => toggleComponentFilter(service.service_name, component.name)}
+                          className="w-4 h-4 rounded border-gray-600 bg-gray-700"
+                        />
+                        <span className="text-sm">{component.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* 서비스 그리드 */}
-        <div style={gridStyle}>
-          {mockServices.map((service) => (
-            <div 
-              key={service.service_name} 
-              style={cardStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px) translateZ(0)';
-                e.currentTarget.style.boxShadow = '0 8px 25px -1px rgba(0, 0, 0, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) translateZ(0)';
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)';
-              }}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {mockServices.map(service => (
+            <div
+              key={service.service_name}
+              className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
             >
-              {/* 서비스 헤더 */}
-              <div style={serviceHeaderStyle}>
-                <div style={serviceInfoStyle}>
-                  <ServiceIcon iconName={service.icon} size={32} />
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={getServiceIcon(service.icon)}
+                    alt={service.display_name}
+                    className="w-8 h-8 rounded"
+                  />
                   <div>
-                    <h3 style={serviceNameStyle}>{service.display_name}</h3>
-                    <p style={serviceDescStyle}>{service.description}</p>
+                    <h2 className="text-lg font-semibold">{service.display_name}</h2>
+                    <p className="text-sm text-gray-400">{service.description}</p>
                   </div>
                 </div>
-                <div style={statusDotStyle(service.status)} />
-              </div>
-
-              {/* 전체 상태 */}
-              <div style={{
-                marginBottom: '1rem',
-                padding: '0.75rem',
-                backgroundColor: '#374151',
-                borderRadius: '8px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#d1d5db' }}>전체 상태</span>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: getStatusColor(service.status) }}>
-                    {service.status === 'operational' ? '정상' : 
-                     service.status === 'degraded' ? '성능 저하' : '장애'}
-                  </span>
-                </div>
-              </div>
-
-              {/* 컴포넌트 상태 */}
-              <div>
-                <div 
+                <button
                   onClick={() => toggleServiceExpansion(service.service_name)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    marginBottom: '0.5rem',
-                    padding: '0.25rem 0',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  className="p-1 hover:bg-gray-700 rounded-full transition-colors"
                 >
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: '#d1d5db', margin: 0 }}>
-                    컴포넌트 상태 ({service.components.filter(component => componentFilters[service.service_name]?.[component.name] ?? true).length}개)
-                  </h4>
                   {expandedServices[service.service_name] ? (
-                    <ChevronUp style={{ width: '16px', height: '16px', color: '#9ca3af' }} />
+                    <ChevronUp className="w-5 h-5" />
                   ) : (
-                    <ChevronDown style={{ width: '16px', height: '16px', color: '#9ca3af' }} />
+                    <ChevronDown className="w-5 h-5" />
                   )}
-                </div>
-                
-                {expandedServices[service.service_name] && (
-                  <div>
-                    {service.components
-                      .filter(component => componentFilters[service.service_name]?.[component.name] ?? true)
-                      .map((component) => (
-                        <div key={component.name} style={componentStyle}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <button
-                              onClick={() => toggleFavorite(service.service_name, component.name)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: favorites[service.service_name]?.[component.name] ? '#f59e0b' : '#6b7280',
-                                padding: '0',
-                              }}
-                            >
-                              <Star style={{ width: '12px', height: '12px' }} />
-                            </button>
-                            <span style={componentNameStyle}>{component.name}</span>
-                          </div>
-                          <div style={statusDotStyle(component.status)} />
-                        </div>
-                      ))}
-                  </div>
-                )}
+                </button>
               </div>
 
-
+              {expandedServices[service.service_name] && (
+                <div className="mt-4 space-y-2">
+                  {service.components
+                    .filter(component => filters[service.service_name][component.name])
+                    .map(component => (
+                      <div
+                        key={component.name}
+                        className="flex items-center justify-between p-2 bg-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={statusDotStyle(component.status)}
+                          />
+                          <span className="text-sm">{component.name}</span>
+                        </div>
+                        <button
+                          onClick={() => toggleFavorite(service.service_name, component.name)}
+                          className="p-1 hover:bg-gray-600 rounded-full transition-colors"
+                        >
+                          <Star
+                            className={`w-4 h-4 ${
+                              favorites[service.service_name][component.name]
+                                ? 'text-yellow-400 fill-yellow-400'
+                                : 'text-gray-400'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
-      </main>
-
-      {/* 고정 푸터 */}
-      <footer style={footerStyle}>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ 
-            margin: '0 0 8px 0', 
-            fontSize: '14px', 
-            color: '#9ca3af' 
-          }}>
-            🔄 자동 업데이트: 30초마다 | 📊 모니터링 중인 서비스: {mockServices.length}개
-          </p>
-          <p style={{ 
-            margin: 0, 
-            fontSize: '13px', 
-            color: '#6b7280' 
-          }}>
-            AI 서비스(OpenAI, Anthropic, Cursor, Google AI)와 외부 서비스(GitHub, Netlify, Docker Hub, AWS, Slack, Firebase)의 실시간 상태를 모니터링합니다.
-          </p>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 };
