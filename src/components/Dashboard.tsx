@@ -649,6 +649,34 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             </div>
           ))}
         </div>
+
+        {/* 푸터 추가 */}
+        <footer className="mt-8 text-center text-sm text-gray-400">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+            <p className="flex items-center gap-2">
+              <span className="animate-spin">🔄</span>
+              <span>자동 업데이트: 30초마다</span>
+            </p>
+            <span className="hidden sm:inline">|</span>
+            <p className="flex items-center gap-2">
+              <span>📊</span>
+              <span>모니터링 중인 서비스: {mockServices.length}개</span>
+            </p>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            AI 서비스(OpenAI, Anthropic, Cursor, Google AI)와 외부 서비스(GitHub, Netlify, Docker Hub, AWS, Slack, Firebase)의 실시간 상태를 모니터링합니다.
+          </p>
+          <p className="mt-1 text-xs text-gray-600">
+            <a 
+              href="https://github.com/garyjeong/service-status-check" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-gray-400 transition-colors"
+            >
+              https://github.com/garyjeong/service-status-check
+            </a>
+          </p>
+        </footer>
       </div>
     </div>
   );
