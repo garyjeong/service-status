@@ -666,16 +666,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
           <p className="mt-2 text-xs text-gray-500">
             AI 서비스(OpenAI, Anthropic, Cursor, Google AI)와 외부 서비스(GitHub, Netlify, Docker Hub, AWS, Slack, Firebase)의 실시간 상태를 모니터링합니다.
           </p>
-          <p className="mt-1 text-xs text-gray-600">
-            <a 
-              href="https://github.com/garyjeong/service-status-check" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-gray-400 transition-colors"
-            >
-              https://github.com/garyjeong/service-status-check
-            </a>
-          </p>
         </footer>
       </div>
     </div>
