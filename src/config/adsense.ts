@@ -1,7 +1,7 @@
 // Google AdSense 설정
 export const ADSENSE_CONFIG = {
   // 실제 사용 시 환경변수나 설정에서 가져오도록 변경
-  publisherId: import.meta.env.VITE_ADSENSE_PUBLISHER_ID || 'ca-pub-YOUR_PUBLISHER_ID',
+  publisherId: import.meta.env.VITE_ADSENSE_PUBLISHER_ID || 'ca-pub-8862471412851871',
   adSlots: {
     banner: import.meta.env.VITE_ADSENSE_AD_SLOT_BANNER || 'YOUR_BANNER_AD_SLOT_ID',
     rectangle: import.meta.env.VITE_ADSENSE_AD_SLOT_RECTANGLE || 'YOUR_RECTANGLE_AD_SLOT_ID',
