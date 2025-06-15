@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Filter, BarChart3, Zap } from 'lucide-react';
+import AdSenseAd from './AdSenseAd';
+import { ADSENSE_CONFIG } from '../config/adsense';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -506,7 +508,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
-            {mockServices.map(service => (
+                        {mockServices.map(service => (
               <div
                 key={service.service_name}
                 className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 sm:p-6 hover:bg-gray-800/70 hover:border-gray-600/50 transition-all duration-300 shadow-xl hover:shadow-2xl group"
@@ -585,29 +587,44 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 )}
               </div>
             ))}
+            
+            {/* 서비스 항목 하단에 광고 배치 */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-4 sm:p-6">
+                <div className="text-center mb-3">
+                  <span className="text-xs text-gray-500 uppercase tracking-wider">광고</span>
+                </div>
+                <AdSenseAd 
+                  adSlot={ADSENSE_CONFIG.adSlots.rectangle}
+                  adFormat="rectangle"
+                  className="w-full flex justify-center"
+                  adStyle={{ 
+                    display: 'block',
+                    minHeight: '250px',
+                    backgroundColor: 'transparent'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </main>
 
       {/* 고도화된 푸터 - 고정 위치 */}
       <footer className="fixed bottom-0 left-0 right-0 z-40 bg-gray-800/95 backdrop-blur-md border-t border-gray-700/50 shadow-xl">
-        {/* 배너 광고 영역 - 모바일에서 간소화 */}
-        <div className="border-b border-gray-700/30 bg-gradient-to-r from-purple-600/10 via-blue-600/10 to-green-600/10">
+        {/* Google AdSense 배너 광고 */}
+        <div className="border-b border-gray-700/30 bg-gray-800/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="p-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full">
-                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                </div>
-                <div className="text-xs sm:text-sm">
-                  <span className="text-white font-medium">🚀 AI 서비스 모니터링 Pro</span>
-                  <span className="text-gray-300 ml-1 sm:ml-2 hidden xs:inline">고급 알림 & 분석 기능 지금 체험하세요!</span>
-                </div>
-              </div>
-              <button className="px-2 py-1 sm:px-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-medium rounded-full hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg">
-                체험하기
-              </button>
-            </div>
+            <AdSenseAd 
+              adSlot={ADSENSE_CONFIG.adSlots.banner}
+              adFormat="horizontal"
+              className="w-full"
+              adStyle={{ 
+                display: 'block',
+                minHeight: '50px',
+                backgroundColor: 'transparent'
+              }}
+            />
           </div>
         </div>
 
