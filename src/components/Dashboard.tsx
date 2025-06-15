@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Filter, BarChart3, Zap } from 'lucide-react';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -198,33 +198,30 @@ const mockServices: Service[] = [
     icon: 'slack',
     components: [
       { name: 'Messaging', status: 'operational' },
-      { name: 'Calls', status: 'operational' },
-      { name: 'File Sharing', status: 'operational' },
-      { name: 'Apps & Integrations', status: 'operational' },
       { name: 'Notifications', status: 'operational' },
+      { name: 'Apps & Integrations', status: 'operational' },
+      { name: 'Calls', status: 'operational' },
+      { name: 'Workflows', status: 'operational' },
       { name: 'Search', status: 'operational' },
-      { name: 'Workspace Admin', status: 'operational' },
-      { name: 'Enterprise Grid', status: 'operational' }
+      { name: 'File Sharing', status: 'operational' }
     ]
   },
   {
     service_name: 'firebase',
     display_name: 'Firebase',
-    description: 'Google 백엔드 서비스 플랫폼',
+    description: 'Google의 모바일 및 웹 앱 개발 플랫폼',
     status: 'operational',
     page_url: 'https://status.firebase.google.com',
     icon: 'firebase',
     components: [
+      { name: 'Hosting', status: 'operational' },
       { name: 'Realtime Database', status: 'operational' },
       { name: 'Firestore', status: 'operational' },
       { name: 'Authentication', status: 'operational' },
-      { name: 'Hosting', status: 'operational' },
       { name: 'Functions', status: 'operational' },
       { name: 'Storage', status: 'operational' },
-      { name: 'Cloud Messaging', status: 'operational' },
-      { name: 'Remote Config', status: 'operational' },
-      { name: 'Crashlytics', status: 'operational' },
-      { name: 'Performance', status: 'operational' }
+      { name: 'Analytics', status: 'operational' },
+      { name: 'Crashlytics', status: 'operational' }
     ]
   }
 ];
@@ -254,12 +251,11 @@ const getDefaultFilters = (): ComponentFilter => {
   const getDefaultExpansion = (): ServiceExpansion => {
     const expansion: ServiceExpansion = {};
     mockServices.forEach(service => {
-      expansion[service.service_name] = false; // 기본적으로 모두 접힌 상태
+      expansion[service.service_name] = false;
     });
     return expansion;
   };
 
-// 이미지 아이콘 매핑
 const getServiceIcon = (iconName: string): string => {
   const iconMap: { [key: string]: string } = {
     openai: openaiIcon,
@@ -273,6 +269,7 @@ const getServiceIcon = (iconName: string): string => {
     slack: slackIcon,
     firebase: firebaseIcon,
   };
+  
   return iconMap[iconName] || '';
 };
 
@@ -280,21 +277,12 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
   const iconSrc = getServiceIcon(iconName);
   
   if (iconSrc) {
-    // GitHub과 Cursor 아이콘에만 흰색 배경 적용
-    const needsWhiteBackground = iconName === 'github' || iconName === 'cursor';
-    
     return (
-      <img 
-        src={iconSrc} 
+      <img
+        src={iconSrc}
         alt={iconName}
-        style={{ 
-          width: `${size}px`, 
-          height: `${size}px`,
-          objectFit: 'contain',
-          borderRadius: '6px',
-          backgroundColor: needsWhiteBackground ? '#ffffff' : 'transparent',
-          padding: needsWhiteBackground ? '2px' : '0'
-        }} 
+        style={{ width: `${size}px`, height: `${size}px` }}
+        className="rounded-sm"
       />
     );
   }
@@ -316,6 +304,20 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
   // localStorage 저장
   useEffect(() => {
+    const savedFilters = localStorage.getItem('service-status-component-filters');
+    if (savedFilters) {
+      setFilters(JSON.parse(savedFilters));
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('service-status-favorites');
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem('service-status-component-filters', JSON.stringify(filters));
   }, [filters]);
 
@@ -332,6 +334,15 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 30초마다 자동 업데이트
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastUpdate(new Date());
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const toggleComponentFilter = (serviceName: string, componentName: string) => {
@@ -377,297 +388,261 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     }
   };
 
-  // 스타일 정의들
-  const containerStyle: React.CSSProperties = {
-    minHeight: '100vh',
-    backgroundColor: '#111827',
-    color: '#f9fafb',
-    fontFamily: "'Inter', sans-serif",
-    display: 'flex',
-    flexDirection: 'column',
+  const formatLastUpdate = (date: Date) => {
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   };
 
-  const headerStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    backgroundColor: '#1f2937',
-    borderBottom: '1px solid #374151',
-    padding: windowWidth <= 900 ? '1rem 2rem' : '1.5rem 2rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: windowWidth <= 900 ? '80px' : '120px',
-    transition: 'all 0.3s ease',
+  const getTotalComponents = () => {
+    return mockServices.reduce((total, service) => total + service.components.length, 0);
   };
 
-  const controlsStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
+  const getOperationalCount = () => {
+    return mockServices.reduce((count, service) => {
+      return count + service.components.filter(comp => comp.status === 'operational').length;
+    }, 0);
   };
-
-  const buttonStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.75rem 1rem',
-    borderRadius: '8px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    transition: 'all 0.2s ease',
-  };
-
-  const primaryButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
-    backgroundColor: '#3b82f6',
-    color: 'white',
-  };
-
-  const secondaryButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
-    backgroundColor: '#374151',
-    color: '#f9fafb',
-  };
-
-  const mainContentStyle: React.CSSProperties = {
-    flex: 1,
-    paddingTop: windowWidth <= 900 ? '140px' : '200px', // 헤더 높이에 따라 조정
-    paddingBottom: '120px', // 푸터 높이 고려
-    paddingLeft: windowWidth <= 900 ? '1rem' : '2rem',
-    paddingRight: windowWidth <= 900 ? '1rem' : '2rem',
-    transition: 'all 0.3s ease',
-  };
-
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-    gap: '1.5rem',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    transition: 'all 0.3s ease',
-  };
-
-  const cardStyle: React.CSSProperties = {
-    padding: '1.5rem',
-    borderRadius: '12px',
-    border: '1px solid #374151',
-    backgroundColor: '#1f2937',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.3s ease',
-    transform: 'translateZ(0)', // GPU 가속을 위한 속성
-  };
-
-  const serviceHeaderStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '1rem',
-  };
-
-  const serviceInfoStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-  };
-
-  const serviceNameStyle: React.CSSProperties = {
-    fontSize: '1.125rem',
-    fontWeight: '600',
-    color: '#f9fafb',
-    margin: 0,
-  };
-
-  const serviceDescStyle: React.CSSProperties = {
-    fontSize: '0.875rem',
-    color: '#d1d5db',
-    margin: 0,
-  };
-
-  const statusDotStyle = (status: string): React.CSSProperties => ({
-    width: '12px',
-    height: '12px',
-    borderRadius: '50%',
-    backgroundColor: getStatusColor(status),
-  });
-
-  const componentStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0.5rem',
-    backgroundColor: '#374151',
-    borderRadius: '6px',
-    marginBottom: '0.5rem',
-  };
-
-  const componentNameStyle: React.CSSProperties = {
-    fontSize: '0.875rem',
-    color: '#d1d5db',
-  };
-
-  const settingsPanelStyle: React.CSSProperties = {
-    marginBottom: '2rem',
-    padding: '1.5rem',
-    backgroundColor: '#1f2937',
-    borderRadius: '12px',
-    border: '1px solid #374151',
-  };
-
-  const footerStyle: React.CSSProperties = {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    backgroundColor: '#1f2937',
-    borderTop: '1px solid #374151',
-    padding: '1rem 2rem',
-    textAlign: 'center',
-    color: '#9ca3af',
-  };
-
-
 
   return (
-    <div className={`min-h-screen bg-gray-900 text-white p-4 ${className}`}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl md:text-3xl font-bold">서비스 상태 대시보드</h1>
-            <button
-              onClick={refreshData}
-              className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-              aria-label="새로고침"
-            >
-              <RefreshCw className="w-5 h-5" />
-            </button>
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors w-full md:w-auto"
-            >
-              <Settings className="w-5 h-5" />
-              <span>필터</span>
-            </button>
-          </div>
-        </div>
-
-        {isFilterOpen && (
-          <div className="bg-gray-800 rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockServices.map(service => (
-                <div key={service.service_name} className="space-y-2">
-                  <h3 className="font-semibold text-lg">{service.display_name}</h3>
-                  <div className="space-y-1">
-                    {service.components.map(component => (
-                      <label key={component.name} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={filters[service.service_name][component.name]}
-                          onChange={() => toggleComponentFilter(service.service_name, component.name)}
-                          className="w-4 h-4 rounded border-gray-600 bg-gray-700"
-                        />
-                        <span className="text-sm">{component.name}</span>
-                      </label>
-                    ))}
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* 고도화된 헤더 - 고정 위치 */}
+      <header className="fixed top-0 left-0 right-0 z-[60] bg-gray-800/95 backdrop-blur-md border-b border-gray-700/50 shadow-xl">
+        <div className="max-w-7xl mx-auto">
+          {/* 메인 헤더 */}
+          <div className="px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              {/* 좌측: 타이틀 및 서브타이틀 - 모바일 최적화 */}
+              <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+                    <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent truncate">
+                      서비스 상태 모니터링
+                    </h1>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">
+                      AI 및 외부 서비스 실시간 상태 대시보드
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockServices.map(service => (
-            <div
-              key={service.service_name}
-              className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={getServiceIcon(service.icon)}
-                    alt={service.display_name}
-                    className="w-8 h-8 rounded"
-                  />
-                  <div>
-                    <h2 className="text-lg font-semibold">{service.display_name}</h2>
-                    <p className="text-sm text-gray-400">{service.description}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleServiceExpansion(service.service_name)}
-                  className="p-1 hover:bg-gray-700 rounded-full transition-colors"
-                >
-                  {expandedServices[service.service_name] ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
               </div>
 
-              {expandedServices[service.service_name] && (
-                <div className="mt-4 space-y-2">
-                  {service.components
-                    .filter(component => filters[service.service_name][component.name])
-                    .map(component => (
-                      <div
-                        key={component.name}
-                        className="flex items-center justify-between p-2 bg-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={statusDotStyle(component.status)}
-                          />
-                          <span className="text-sm">{component.name}</span>
-                        </div>
-                        <button
-                          onClick={() => toggleFavorite(service.service_name, component.name)}
-                          className="p-1 hover:bg-gray-600 rounded-full transition-colors"
-                        >
-                          <Star
-                            className={`w-4 h-4 ${
-                              favorites[service.service_name][component.name]
-                                ? 'text-yellow-400 fill-yellow-400'
-                                : 'text-gray-400'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              )}
+              {/* 우측: 컨트롤 버튼들 - 모바일 최적화 */}
+              <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                {/* 필터 버튼 */}
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                    isFilterOpen
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                      : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white'
+                  }`}
+                >
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm">필터</span>
+                </button>
+
+                {/* 새로고침 버튼 */}
+                <button
+                  onClick={refreshData}
+                  disabled={isLoading}
+                  className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline text-sm">새로고침</span>
+                </button>
+              </div>
             </div>
-          ))}
+          </div>
+
+          {/* 필터 패널 - 모바일 최적화 */}
+          {isFilterOpen && (
+            <div className="border-t border-gray-700/50 bg-gray-800/50 backdrop-blur-sm">
+              <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 max-h-60 sm:max-h-none overflow-y-auto">
+                  {mockServices.map(service => (
+                    <div key={service.service_name} className="bg-gray-700/30 rounded-lg p-2 sm:p-3 border border-gray-600/30">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <ServiceIcon iconName={service.icon} size={14} />
+                        <h3 className="font-semibold text-xs sm:text-sm text-white truncate">{service.display_name}</h3>
+                      </div>
+                      <div className="space-y-1 max-h-24 sm:max-h-32 overflow-y-auto">
+                        {service.components.map(component => (
+                          <label key={component.name} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={filters[service.service_name]?.[component.name] ?? true}
+                              onChange={() => toggleComponentFilter(service.service_name, component.name)}
+                              className="w-3 h-3 rounded border-gray-500 bg-gray-600 text-blue-500 focus:ring-blue-500 focus:ring-1 flex-shrink-0"
+                            />
+                            <span className="text-xs text-gray-300 truncate">{component.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* 메인 컨텐츠 */}
+      <main 
+        className="pb-24 sm:pb-32 px-4 sm:px-6 lg:px-8 transition-all duration-300"
+        style={{ 
+          paddingTop: isFilterOpen 
+            ? (isMobile ? '18rem' : '20rem') // 모바일: 288px로 줄임, 데스크톱: 320px
+            : (isMobile ? '6rem' : '7rem')   // 모바일: 96px로 줄임, 데스크톱: 112px
+        }}
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
+            {mockServices.map(service => (
+              <div
+                key={service.service_name}
+                className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 sm:p-6 hover:bg-gray-800/70 hover:border-gray-600/50 transition-all duration-300 shadow-xl hover:shadow-2xl group"
+              >
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                    <div className="p-1.5 sm:p-2 bg-gray-700/50 rounded-xl group-hover:bg-gray-600/50 transition-colors flex-shrink-0">
+                      <ServiceIcon iconName={service.icon} size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-base sm:text-lg font-semibold text-white group-hover:text-blue-400 transition-colors truncate">
+                        {service.display_name}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-gray-400 mt-0.5 overflow-hidden" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                      }}>
+                        {service.description}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleServiceExpansion(service.service_name)}
+                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 flex-shrink-0"
+                  >
+                    {expandedServices[service.service_name] ? (
+                      <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </button>
+                </div>
+
+                {/* 서비스 상태 표시 */}
+                <div className="flex items-center space-x-2 mb-3">
+                  <div
+                    className="w-3 h-3 rounded-full animate-pulse"
+                    style={{ backgroundColor: getStatusColor(service.status) }}
+                  />
+                  <span className="text-sm font-medium text-green-400">정상 운영</span>
+                </div>
+
+                {/* 컴포넌트 상세 */}
+                {expandedServices[service.service_name] && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                    {service.components
+                      .filter(component => filters[service.service_name]?.[component.name] ?? true)
+                      .map(component => (
+                        <div
+                          key={component.name}
+                          className="flex items-center justify-between p-3 bg-gray-700/30 rounded-xl border border-gray-600/20 hover:bg-gray-700/50 transition-all duration-200"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className="w-2 h-2 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: getStatusColor(component.status) }}
+                            />
+                            <span className="text-sm text-gray-200">{component.name}</span>
+                          </div>
+                          <button
+                            onClick={() => toggleFavorite(service.service_name, component.name)}
+                            className="p-1 hover:bg-gray-600/50 rounded-lg transition-all duration-200"
+                          >
+                            <Star
+                              className={`w-4 h-4 transition-colors ${
+                                favorites[service.service_name]?.[component.name]
+                                  ? 'text-yellow-400 fill-yellow-400'
+                                  : 'text-gray-500 hover:text-yellow-400'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* 고도화된 푸터 - 고정 위치 */}
+      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-gray-800/95 backdrop-blur-md border-t border-gray-700/50 shadow-xl">
+        {/* 배너 광고 영역 - 모바일에서 간소화 */}
+        <div className="border-b border-gray-700/30 bg-gradient-to-r from-purple-600/10 via-blue-600/10 to-green-600/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="p-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full">
+                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                </div>
+                <div className="text-xs sm:text-sm">
+                  <span className="text-white font-medium">🚀 AI 서비스 모니터링 Pro</span>
+                  <span className="text-gray-300 ml-1 sm:ml-2 hidden xs:inline">고급 알림 & 분석 기능 지금 체험하세요!</span>
+                </div>
+              </div>
+              <button className="px-2 py-1 sm:px-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-medium rounded-full hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg">
+                체험하기
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* 푸터 추가 */}
-        <footer className="mt-8 text-center text-sm text-gray-400">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <p className="flex items-center gap-2">
-              <span className="animate-spin">🔄</span>
-              <span>자동 업데이트: 30초마다</span>
-            </p>
-            <span className="hidden sm:inline">|</span>
-            <p className="flex items-center gap-2">
-              <span>📊</span>
-              <span>모니터링 중인 서비스: {mockServices.length}개</span>
-            </p>
+        {/* 기존 푸터 정보 - 모바일에서 컴팩트하게 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-1 sm:space-y-0">
+            {/* 좌측: 업데이트 시간 */}
+            <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm text-gray-400">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
+                <span>업데이트: {formatLastUpdate(lastUpdate)}</span>
+              </div>
+              <div className="hidden sm:block w-px h-4 bg-gray-600" />
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="hidden sm:inline">30초마다 자동 갱신</span>
+                <span className="sm:hidden">자동갱신</span>
+              </div>
+            </div>
+
+            {/* 우측: 서비스 통계 */}
+            <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
+              <div className="flex items-center space-x-1 sm:space-x-2 text-gray-400">
+                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
+                <span>서비스: <span className="text-white font-medium">{mockServices.length}개</span></span>
+              </div>
+              <div className="hidden sm:block w-px h-4 bg-gray-600" />
+              <div className="flex items-center space-x-1 sm:space-x-2 text-gray-400">
+                <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+                <span>정상: <span className="text-green-400 font-medium">{getOperationalCount()}/{getTotalComponents()}</span></span>
+              </div>
+            </div>
           </div>
-          <p className="mt-2 text-xs text-gray-500">
-            AI 서비스(OpenAI, Anthropic, Cursor, Google AI)와 외부 서비스(GitHub, Netlify, Docker Hub, AWS, Slack, Firebase)의 실시간 상태를 모니터링합니다.
-          </p>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </div>
   );
 };
