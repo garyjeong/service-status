@@ -849,16 +849,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             <p className="mt-2 text-xs text-muted-foreground opacity-70">
               {t.subtitle}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground opacity-50">
-              <a 
-                href="https://github.com/garyjeong/service-status-check" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors focus-ring rounded px-1 hover:text-blue-400"
-              >
-                https://github.com/garyjeong/service-status-check
-              </a>
-            </p>
           </div>
         </div>
       </footer>
