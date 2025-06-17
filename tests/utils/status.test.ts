@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   mapStatusToType,
   getStatusText,
@@ -162,9 +162,9 @@ describe('Status Utils', () => {
         createMockService(StatusType.OPERATIONAL),
         createMockService(StatusType.OPERATIONAL),
       ];
-      
+
       const summary = generateStatusSummary(services);
-      
+
       expect(summary.total_services).toBe(2);
       expect(summary.operational_count).toBe(2);
       expect(summary.issue_count).toBe(0);
@@ -179,9 +179,9 @@ describe('Status Utils', () => {
         createMockService(StatusType.DEGRADED_PERFORMANCE),
         createMockService(StatusType.MAJOR_OUTAGE),
       ];
-      
+
       const summary = generateStatusSummary(services);
-      
+
       expect(summary.total_services).toBe(3);
       expect(summary.operational_count).toBe(1);
       expect(summary.issue_count).toBe(2);
@@ -192,7 +192,7 @@ describe('Status Utils', () => {
 
     it('should handle empty services array', () => {
       const summary = generateStatusSummary([]);
-      
+
       expect(summary.total_services).toBe(0);
       expect(summary.operational_count).toBe(0);
       expect(summary.issue_count).toBe(0);
@@ -205,7 +205,7 @@ describe('Status Utils', () => {
     it('should format valid date string correctly', () => {
       const dateString = '2024-01-15T10:30:00Z';
       const formatted = formatDateTime(dateString);
-      
+
       // 한국 시간대 형식으로 포맷되는지 확인
       expect(formatted).toMatch(/2024/);
       expect(formatted).toMatch(/1월|Jan/);
@@ -259,7 +259,7 @@ describe('Status Utils', () => {
     });
 
     it('should handle invalid date string', () => {
-      expect(formatRelativeTime('invalid-date')).toBe('시간 불명');
+      expect(formatRelativeTime('invalid-date')).toBe('날짜 불명');
     });
   });
-}); 
+});

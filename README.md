@@ -2,31 +2,43 @@
 
 실시간으로 개발자가 자주 사용하는 외부 서비스들의 상태를 모니터링하는 다크 테마 전용 React 대시보드입니다.
 
-## ⚡ 기술 스택
+## ⚡ 기술 스택 (2024년 최신)
 
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
+- **Frontend**: React 19 + TypeScript 5.8
+- **Build Tool**: Vite 6.3
 - **Package Manager**: pnpm
-- **Testing**: Vitest + Testing Library
-- **Styling**: CSS Variables + Inline Styles
-- **HTTP Client**: Axios
-- **Icons**: 실제 AI 서비스 로고 이미지 + Lucide React
-- **State Management**: React Hooks
+- **Styling**: Tailwind CSS 4.1 + CSS Variables
+- **Testing**: Vitest 3.2 + Testing Library 16.3
+- **HTTP Client**: Axios 1.10
+- **Icons**: 실제 AI 서비스 로고 이미지 + Lucide React 0.516
+- **State Management**: React Hooks + TanStack Query 5.8
+- **Development**: VS Code F5 디버그 모드 지원
 
 ## 🚀 지원되는 서비스
 
+### AI 서비스
+- **OpenAI ChatGPT** - ChatGPT 웹 인터페이스 및 OpenAI API
+  - 하위 컴포넌트: ChatGPT Web, OpenAI API, DALL-E, Whisper API, GPT-4 API, GPT-3.5 API
+- **Anthropic Claude** - Claude 채팅 인터페이스 및 Anthropic API
+  - 하위 컴포넌트: Claude Chat, Anthropic API, Claude Pro, API Console, Claude-3 모델들
+- **Cursor Editor** - AI 기반 코드 에디터 및 개발 도구
+  - 하위 컴포넌트: Desktop App, AI Copilot, Sync Service, Extensions, Editor Core, AI Assistant
+- **Google AI Studio** - Google Gemini API 및 AI Studio 플랫폼
+  - 하위 컴포넌트: Gemini API, AI Studio, Model Garden, Vertex AI, Gemini Vision
+
+### 외부 서비스
 - **GitHub** - 코드 저장소 및 협업 플랫폼
-  - 하위 컴포넌트: Git Operations, API Requests, Issues & PRs, Actions, Pages, Packages
+  - 하위 컴포넌트: Git Operations, API Requests, Issues & PRs, Actions, Pages, Packages, Codespaces, Copilot
 - **Netlify** - 정적 사이트 호스팅 및 배포
-  - 하위 컴포넌트: CDN, Builds, Edge Functions, Forms, DNS
+  - 하위 컴포넌트: CDN, Builds, Edge Functions, Forms, DNS, Identity, Analytics
 - **Docker Hub** - 컨테이너 이미지 레지스트리
-  - 하위 컴포넌트: Registry, Build Service, Webhooks, Organizations
+  - 하위 컴포넌트: Registry, Build Service, Webhooks, Organizations, Authentication, Container Registry
 - **AWS** - 클라우드 컴퓨팅 플랫폼
-  - 하위 컴포넌트: EC2, S3, RDS, Lambda, CloudFront, Route 53
+  - 하위 컴포넌트: EC2, S3, RDS, Lambda, CloudFront, Route 53, CloudWatch, IAM, ECS, EKS
 - **Slack** - 팀 커뮤니케이션 플랫폼
-  - 하위 컴포넌트: Messaging, Calls, File Sharing, Apps & Integrations, Notifications
+  - 하위 컴포넌트: Messaging, Calls, File Sharing, Apps & Integrations, Notifications, Search, Workspace Admin, Enterprise Grid
 - **Firebase** - 백엔드 서비스 플랫폼
-  - 하위 컴포넌트: Realtime Database, Firestore, Authentication, Hosting, Functions, Storage
+  - 하위 컴포넌트: Realtime Database, Firestore, Authentication, Hosting, Functions, Storage, Cloud Messaging, Remote Config, Crashlytics, Performance
 
 ## 📦 설치 및 실행
 
@@ -89,6 +101,21 @@ pnpm format
 
 # TypeScript 타입 검사
 pnpm type-check
+```
+
+### VS Code 디버깅
+
+```bash
+# F5 키로 디버그 모드 실행
+# .vscode/launch.json 설정 완료
+
+# 사용 가능한 디버그 구성:
+# - "Launch Vite Dev Server" - 개발 서버 시작
+# - "Launch Chrome Debug" - Chrome 브라우저 디버그
+# - "Debug Vite + Chrome" - 서버 + 브라우저 통합 디버그
+# - "Run Tests" - 테스트 실행
+# - "Run Tests (Watch)" - 테스트 감시 모드
+# - "Launch Dev Server + Chrome" - 복합 설정
 ```
 
 ## 🏗️ 프로젝트 구조
@@ -253,8 +280,9 @@ npx vercel --prod
 ```dockerfile
 FROM node:18-alpine as builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm
+RUN pnpm install --frozen-lockfile
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html

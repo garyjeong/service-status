@@ -5,6 +5,14 @@
 이 프로젝트는 주요 외부 서비스들의 실시간 상태를 모니터링하는 React + TypeScript 기반의 현대적인 웹 대시보드입니다.
 
 ### 모니터링 대상 서비스
+
+#### AI 서비스
+- **OpenAI ChatGPT** (ChatGPT 웹 인터페이스 및 OpenAI API)
+- **Anthropic Claude** (Claude 채팅 인터페이스 및 Anthropic API)
+- **Cursor Editor** (AI 기반 코드 에디터 및 개발 도구)
+- **Google AI Studio** (Google Gemini API 및 AI Studio 플랫폼)
+
+#### 외부 서비스
 - **GitHub** (코드 저장소 및 협업 플랫폼)
 - **Netlify** (정적 사이트 호스팅 및 배포)
 - **Docker Hub** (컨테이너 이미지 레지스트리)
@@ -15,20 +23,21 @@
 ## 기술 스택
 
 ### Frontend
-- **React 18** - 현대적인 UI 라이브러리
-- **TypeScript** - 타입 안전성
-- **Vite** - 빠른 개발 및 빌드 도구
+- **React 19** - 최신 UI 라이브러리 (19.1.0)
+- **TypeScript 5.8** - 최신 타입 안전성
+- **Vite 6.3** - 최신 개발 및 빌드 도구
 - **pnpm** - 효율적인 패키지 관리
+- **Tailwind CSS 4.1** - 최신 유틸리티 우선 CSS 프레임워크
 
 ### 개발 도구
-- **ESLint** - 코드 품질 관리
-- **Prettier** - 코드 포맷팅
-- **Vitest** - 단위 테스트
-- **Testing Library** - React 컴포넌트 테스트
+- **ESLint 9** - 최신 코드 품질 관리
+- **Prettier 3.5** - 최신 코드 포맷팅
+- **Vitest 3.2** - 최신 단위 테스트 프레임워크
+- **Testing Library** - React 16.3 컴포넌트 테스트
 
 ### 상태 관리 및 데이터
-- **React Query (TanStack Query)** - 서버 상태 관리
-- **Axios** - HTTP 클라이언트
+- **TanStack Query 5.8** - 최신 서버 상태 관리
+- **Axios 1.10** - 최신 HTTP 클라이언트
 - **Custom Hooks** - 상태 로직 추상화
 
 ## 아키텍처
@@ -129,6 +138,19 @@ pnpm lint:fix    # ESLint 자동 수정
 pnpm format      # Prettier 포맷팅
 ```
 
+### 6. VS Code 디버깅
+```bash
+# F5 키로 디버그 모드 실행 가능
+# .vscode/launch.json 설정 완료
+# 다음 디버그 옵션 사용 가능:
+# - Launch Vite Dev Server
+# - Launch Chrome Debug
+# - Debug Vite + Chrome
+# - Run Tests
+# - Run Tests (Watch)
+# - Launch Dev Server + Chrome (복합 설정)
+```
+
 ## 테스트 전략
 
 ### TDD (Test-Driven Development)
@@ -172,11 +194,13 @@ docker run -p 3000:3000 ai-dashboard
 - 포트 5173에서 개발 (Vite)
 - npm/pnpm 의존성 관리
 
-### 개선 사항
+### 개선 사항 (2024년 업데이트)
 - **성능**: 정적 호스팅, CDN 활용 가능
-- **개발 경험**: HMR, TypeScript, 현대적 도구
+- **개발 경험**: HMR, TypeScript 5.8, React 19, 최신 도구
 - **유지보수**: 단일 언어 생태계, 컴포넌트 기반
 - **배포**: Netlify/Vercel 원클릭 배포
+- **디버깅**: VS Code F5 디버그 모드 지원
+- **최신 기술**: Tailwind CSS 4.1, Vite 6.3, TanStack Query 5.8
 
 ## 환경 변수
 
