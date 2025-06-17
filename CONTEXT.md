@@ -47,20 +47,24 @@ React SPA ↔ External APIs (via Proxy)
 ```
 
 - **이전 (Python FastAPI)**: Client ↔ FastAPI Server ↔ External APIs (WebSocket)
-- **현재 (React)**: Client-side rendering, 30초 폴링, 정적 호스팅 가능
+- **현재 (React)**: Client-side rendering, 15초 폴링, 정적 호스팅 가능
 
 ## 주요 기능
 
 ### 실시간 모니터링
-- 30초 간격 자동 상태 업데이트
-- 수동 새로고침 지원
-- 서비스별 상세 상태 정보
+- **15초 간격 자동 상태 업데이트** - 이전 30초에서 개선
+- **수동 새로고침 지원** - 전체 및 개별 서비스 새로고침
+- **서비스별 상세 상태 정보** - 하위 컴포넌트 상태 표시
+- **즐겨찾기 보존** - 새로고침 후에도 즐겨찾기 설정 유지
 
 ### 사용자 인터페이스
 - **반응형 디자인** - 모바일/데스크톱 지원
 - **다크 테마 전용** - 개발자 친화적 어두운 인터페이스
 - **접근성** - ARIA 레이블, 키보드 네비게이션
-- **국제화** - 한국어 지원
+- **국제화** - 한국어/영어 지원
+- **즐겨찾기 시스템** - 중요한 서비스 컴포넌트 즐겨찾기
+- **개별 서비스 새로고침** - 각 서비스 카드에서 개별 새로고침 가능
+- **개선된 레이아웃** - 아이콘 상단 배치, 상태 표시 최적화
 
 ### 상태 표시
 - **정상 운영** (Operational) - 녹색
@@ -70,13 +74,21 @@ React SPA ↔ External APIs (via Proxy)
 - **유지보수** (Maintenance) - 파란색
 - **알 수 없음** (Unknown) - 회색
 
+### UI/UX 개선사항 (2024년 12월 업데이트)
+- **서비스 아이콘 상단 정렬** - 모든 서비스 아이콘이 카드 상단에 위치
+- **상태 표시 최적화** - 아이콘 바로 아래에 상태 점과 아이콘 배치
+- **상태페이지 링크 하단 배치** - 각 서비스 카드 하단에 상태페이지 링크 위치
+- **중복 이모지 제거** - 하위 서비스에서 불필요한 이모지 표시 제거
+- **즐겨찾기 보존 기능** - 새로고침 시에도 즐겨찾기 설정 유지
+- **개별 서비스 새로고침** - 각 서비스별 독립적인 새로고침 버튼
+
 ## 프로젝트 구조
 
 ```
 ai-status-check/
 ├── src/                          # 소스 코드
 │   ├── components/               # React 컴포넌트
-│   │   └── Dashboard.tsx        # 메인 대시보드
+│   │   └── Dashboard.tsx        # 메인 대시보드 (단일 컴포넌트)
 │   ├── hooks/                   # 커스텀 React Hooks
 │   │   └── useStatus.ts         # 상태 관리 훅
 │   ├── services/                # API 서비스
@@ -85,6 +97,17 @@ ai-status-check/
 │   │   └── status.ts           # 상태 관련 타입
 │   ├── utils/                   # 유틸리티 함수
 │   │   └── status.ts           # 상태 처리 유틸
+│   ├── assets/                  # 정적 자산
+│   │   ├── aws.png             # AWS 로고
+│   │   ├── claude.png          # Anthropic 로고
+│   │   ├── cursor.png          # Cursor 로고
+│   │   ├── docker.png          # Docker 로고
+│   │   ├── firebase.png        # Firebase 로고
+│   │   ├── github.png          # GitHub 로고
+│   │   ├── google-ai-studio.png # Google AI 로고
+│   │   ├── gpt.png             # OpenAI 로고
+│   │   ├── netlify.png         # Netlify 로고
+│   │   └── slack.png           # Slack 로고
 │   ├── test/                   # 테스트 설정
 │   │   └── setup.ts            # 테스트 환경 설정
 │   └── main.tsx                # 앱 진입점
@@ -103,7 +126,9 @@ ai-status-check/
 ├── .eslintrc.json             # ESLint 설정
 ├── .prettierrc                # Prettier 설정
 ├── index.html                 # HTML 템플릿
-└── README.md                  # 프로젝트 문서
+├── CONTEXT.md                 # 프로젝트 컨텍스트 (현재 파일)
+├── README.md                  # 프로젝트 문서
+└── DESIGN.md                  # 디자인 시스템 문서
 ```
 
 ## 개발 워크플로우
@@ -116,6 +141,7 @@ pnpm install
 ### 2. 개발 서버 실행
 ```bash
 pnpm dev
+# 자동으로 사용 가능한 포트 할당 (8888, 8889, 8890 등)
 ```
 
 ### 3. 테스트 실행
@@ -190,24 +216,26 @@ docker run -p 3000:3000 ai-dashboard
 
 ### 현재: React Frontend
 - 클라이언트 사이드 렌더링
-- 30초 폴링 업데이트
-- 포트 5173에서 개발 (Vite)
+- 15초 폴링 업데이트 (이전 30초에서 개선)
+- 포트 자동 할당 (8888, 8889, 8890 등)
 - npm/pnpm 의존성 관리
 
-### 개선 사항 (2024년 업데이트)
+### 개선 사항 (2024년 12월 업데이트)
 - **성능**: 정적 호스팅, CDN 활용 가능
 - **개발 경험**: HMR, TypeScript 5.8, React 19, 최신 도구
 - **유지보수**: 단일 언어 생태계, 컴포넌트 기반
 - **배포**: Netlify/Vercel 원클릭 배포
 - **디버깅**: VS Code F5 디버그 모드 지원
 - **최신 기술**: Tailwind CSS 4.1, Vite 6.3, TanStack Query 5.8
+- **UI/UX**: 개선된 레이아웃, 즐겨찾기 보존, 개별 새로고침
+- **접근성**: 향상된 키보드 네비게이션, ARIA 지원
 
 ## 환경 변수
 
 ### 개발 환경 (.env.local)
 ```env
 VITE_API_PROXY_URL=http://localhost:5173
-VITE_POLLING_INTERVAL=30000
+VITE_POLLING_INTERVAL=15000
 ```
 
 ### Vite 프록시 설정
@@ -227,11 +255,13 @@ VITE_POLLING_INTERVAL=30000
 - API 응답 캐싱 (React Query)
 - 실패한 요청 자동 재시도
 - 백그라운드 업데이트
+- 개별 서비스 로딩으로 부분 업데이트
 
 ### 사용자 경험
-- 로딩 상태 표시
-- 오프라인 지원 (미래 계획)
-- 푸시 알림 (미래 계획)
+- 로딩 상태 표시 (스켈레톤 UI)
+- 즐겨찾기 설정 보존
+- 부드러운 애니메이션
+- 반응형 디자인
 
 ## 라이선스
 

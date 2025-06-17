@@ -722,8 +722,8 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {getFavoriteComponents().map((item, index) => (
                 <div key={`${item.serviceName}-${item.componentName}-${index}`} className="favorite-card hover-lift">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       <ServiceIcon iconName={item.icon} size={24} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -740,7 +740,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     </div>
                     <button
                       onClick={() => toggleFavorite(item.serviceName, item.componentName)}
-                      className="btn-icon focus-ring flex-shrink-0"
+                      className="btn-icon focus-ring flex-shrink-0 mt-1"
                     >
                       <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                     </button>
@@ -778,8 +778,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 onClick={() => toggleServiceExpansion(service.service_name)}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <ServiceIcon iconName={service.icon} size={32} />
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="flex flex-col items-center gap-2">
+                      <ServiceIcon iconName={service.icon} size={32} />
+                      <div className="flex items-center gap-1">
+                        <div className={`status-dot ${getStatusColor(serviceWithStatus.status)}`} />
+                        {getStatusIcon(serviceWithStatus.status)}
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
@@ -794,30 +800,17 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                         >
                           <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
                         </button>
-                        <div className={`status-dot ${getStatusColor(serviceWithStatus.status)}`} />
-                        {getStatusIcon(serviceWithStatus.status)}
                       </div>
                       <p className="text-sm text-muted-foreground mb-3">{getServiceDescription(service.service_name)}</p>
-                      {/* 상태 확인 링크 추가 */}
-                      <a 
-                        href={service.page_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Globe className="w-3 h-3" />
-                        <span>{t.statusPage}</span>
-                      </a>
                       {!expandedServices[service.service_name] && (
-                        <p className="text-xs text-muted-foreground mt-2 opacity-70">
+                        <p className="text-xs text-muted-foreground mb-3 opacity-70">
                           {t.clickToExpand}
                         </p>
                       )}
                     </div>
                   </div>
                   <button
-                    className="btn-icon focus-ring"
+                    className="btn-icon focus-ring mt-1"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleServiceExpansion(service.service_name);
@@ -842,9 +835,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                               <div className={`status-dot ${getStatusColor(component.status)}`} />
                               {getStatusIcon(component.status)}
                               <span className="text-sm text-foreground">{component.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {getStatusEmoji(component.status)}
-                              </span>
                             </div>
                             <button
                               onClick={(e) => {
@@ -866,6 +856,20 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       ))}
                   </div>
                 )}
+
+                {/* 상태 확인 링크를 카드 하단에 배치 */}
+                <div className="mt-4 pt-3 border-t border-border/50">
+                  <a 
+                    href={service.page_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Globe className="w-3 h-3" />
+                    <span>{t.statusPage}</span>
+                  </a>
+                </div>
               </div>
             );
           })}
