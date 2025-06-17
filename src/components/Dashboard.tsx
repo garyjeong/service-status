@@ -810,7 +810,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     </div>
                   </div>
                   <button
-                    className="btn-icon focus-ring mt-1"
+                    className="btn-icon focus-ring -mt-1 -mr-1"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleServiceExpansion(service.service_name);
