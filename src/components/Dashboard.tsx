@@ -61,6 +61,7 @@ const translations = {
     degraded: '성능 저하',
     outage: '장애',
     clickToExpand: '클릭하여 세부 정보 보기',
+    refreshService: '서비스 새로고침',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT 웹 인터페이스 및 OpenAI API',
@@ -92,6 +93,7 @@ const translations = {
     degraded: 'Degraded',
     outage: 'Outage',
     clickToExpand: 'Click to view details',
+    refreshService: 'Refresh service',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT web interface and OpenAI API',
@@ -251,7 +253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   };
 
   // 개별 서비스 로딩 함수
-  const loadServiceData = async (serviceName: keyof typeof serviceFetchers) => {
+  const loadServiceData = async (serviceName: keyof typeof serviceFetchers, isInitialLoad = false) => {
     try {
       setServiceLoadingStates(prev => ({ ...prev, [serviceName]: true }));
       
@@ -273,26 +275,57 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         });
       });
       
-      // 필터와 즐겨찾기 초기화 (해당 서비스만)
-      const singleServiceArray = [serviceData];
-      
-      setFilters(prev => ({
-        ...prev,
-        ...getDefaultFilters(singleServiceArray)
-      }));
-      
-      if (!favorites[serviceName as string]) {
-        setFavorites(prev => ({
-          ...prev,
-          ...getDefaultFavorites(singleServiceArray)
-        }));
-      }
-      
-      if (expandedServices[serviceName as string] === undefined) {
-        setExpandedServices(prev => ({
-          ...prev,
-          ...getDefaultExpansion(singleServiceArray)
-        }));
+      // 초기 로드일 때만 필터와 즐겨찾기 초기화
+      if (isInitialLoad) {
+        const singleServiceArray = [serviceData];
+        
+        // 필터 초기화 (기존 필터가 없거나 새로운 컴포넌트가 추가된 경우에만)
+        setFilters(prev => {
+          const existingServiceFilter = prev[serviceName as string] || {};
+          const newServiceFilter: { [key: string]: boolean } = {};
+          
+          // 새로운 컴포넌트들에 대해서만 기본값 설정
+          serviceData.components.forEach(component => {
+            if (existingServiceFilter[component.name] === undefined) {
+              newServiceFilter[component.name] = true; // 새로운 컴포넌트는 기본적으로 표시
+            } else {
+              newServiceFilter[component.name] = existingServiceFilter[component.name]; // 기존 설정 유지
+            }
+          });
+          
+          return {
+            ...prev,
+            [serviceName as string]: newServiceFilter
+          };
+        });
+        
+        // 즐겨찾기 초기화 (기존 즐겨찾기가 없거나 새로운 컴포넌트가 추가된 경우에만)
+        setFavorites(prev => {
+          const existingServiceFavorites = prev[serviceName as string] || {};
+          const newServiceFavorites: { [key: string]: boolean } = {};
+          
+          // 새로운 컴포넌트들에 대해서만 기본값 설정
+          serviceData.components.forEach(component => {
+            if (existingServiceFavorites[component.name] === undefined) {
+              newServiceFavorites[component.name] = false; // 새로운 컴포넌트는 기본적으로 즐겨찾기 해제
+            } else {
+              newServiceFavorites[component.name] = existingServiceFavorites[component.name]; // 기존 설정 유지
+            }
+          });
+          
+          return {
+            ...prev,
+            [serviceName as string]: newServiceFavorites
+          };
+        });
+        
+        // 확장 상태 초기화 (기존 상태가 없는 경우에만)
+        if (expandedServices[serviceName as string] === undefined) {
+          setExpandedServices(prev => ({
+            ...prev,
+            ...getDefaultExpansion(singleServiceArray)
+          }));
+        }
       }
       
     } catch (err) {
@@ -304,11 +337,13 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   };
 
   // 모든 서비스 로딩 함수
-  const loadAllServicesData = async () => {
+  const loadAllServicesData = async (isInitialLoad = false) => {
     setLastUpdate(new Date());
     
     // 모든 서비스를 병렬로 로딩
-    const loadPromises = serviceNames.map((serviceName: keyof typeof serviceFetchers) => loadServiceData(serviceName));
+    const loadPromises = serviceNames.map((serviceName: keyof typeof serviceFetchers) => 
+      loadServiceData(serviceName, isInitialLoad)
+    );
     await Promise.allSettled(loadPromises);
   };
 
@@ -367,7 +402,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     setServiceLoadingStates(initialLoadingState);
 
     // 초기 상태 데이터 로드
-    loadAllServicesData();
+    loadAllServicesData(true);
   }, []);
 
   // 15초마다 자동 업데이트
@@ -748,6 +783,17 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            loadServiceData(service.service_name as keyof typeof serviceFetchers);
+                          }}
+                          className="btn-icon focus-ring opacity-60 hover:opacity-100 transition-opacity"
+                          aria-label={`${service.display_name} ${t.refreshService}`}
+                          disabled={isLoading}
+                        >
+                          <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+                        </button>
                         <div className={`status-dot ${getStatusColor(serviceWithStatus.status)}`} />
                         {getStatusIcon(serviceWithStatus.status)}
                       </div>
