@@ -39,6 +39,8 @@
   - 하위 컴포넌트: Messaging, Calls, File Sharing, Apps & Integrations, Notifications, Search, Workspace Admin, Enterprise Grid
 - **Firebase** - 백엔드 서비스 플랫폼
   - 하위 컴포넌트: Realtime Database, Firestore, Authentication, Hosting, Functions, Storage, Cloud Messaging, Remote Config, Crashlytics, Performance
+- **Supabase** - 오픈소스 Firebase 대안 백엔드 플랫폼
+  - 하위 컴포넌트: Analytics, API Gateway, Auth, Connection Pooler, Dashboard, Database, Edge Functions, Management API, Realtime, Storage
 
 ## 📦 설치 및 실행
 
@@ -132,7 +134,8 @@ src/
 │   ├── google-ai-studio.png # Google AI 로고
 │   ├── gpt.png         # OpenAI 로고
 │   ├── netlify.png     # Netlify 로고
-│   └── slack.png       # Slack 로고
+│   ├── slack.png       # Slack 로고
+│   └── supabase.jpg    # Supabase 로고
 ├── components/         # React 컴포넌트
 │   └── Dashboard.tsx   # 메인 대시보드 (올인원 컴포넌트)
 ├── hooks/             # Custom React Hooks

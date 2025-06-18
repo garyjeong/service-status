@@ -19,6 +19,7 @@
 - **AWS** (클라우드 컴퓨팅 플랫폼)
 - **Slack** (팀 커뮤니케이션 플랫폼)
 - **Firebase** (백엔드 서비스 플랫폼)
+- **Supabase** (오픈소스 Firebase 대안 백엔드 플랫폼)
 
 ## 기술 스택
 
@@ -107,7 +108,8 @@ ai-status-check/
 │   │   ├── google-ai-studio.png # Google AI 로고
 │   │   ├── gpt.png             # OpenAI 로고
 │   │   ├── netlify.png         # Netlify 로고
-│   │   └── slack.png           # Slack 로고
+│   │   ├── slack.png           # Slack 로고
+│   │   └── supabase.jpg        # Supabase 로고
 │   ├── test/                   # 테스트 설정
 │   │   └── setup.ts            # 테스트 환경 설정
 │   └── main.tsx                # 앱 진입점

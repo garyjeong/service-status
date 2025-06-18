@@ -631,6 +631,122 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
 }
 
 /**
+ * Supabase 상태 조회
+ */
+export async function fetchSupabaseStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.supabase.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    // Supabase 컴포넌트들의 실제 상태를 가져오기 위해 components API도 호출
+    let componentsData;
+    try {
+      const componentsResponse = await apiClient.get(
+        `${CORS_PROXY}https://status.supabase.com/api/v2/components.json`
+      );
+      componentsData = componentsResponse.data.components;
+    } catch (error) {
+      console.warn('Supabase components API 호출 실패, 기본 상태 사용:', error);
+      componentsData = [];
+    }
+
+    // 실제 컴포넌트 데이터가 있으면 사용하고, 없으면 기본 컴포넌트 목록 사용
+    const components: ServiceComponent[] = [];
+
+    if (componentsData && componentsData.length > 0) {
+      // API에서 가져온 실제 컴포넌트 상태 사용
+      const componentNames = [
+        'Analytics',
+        'API Gateway',
+        'Auth',
+        'Connection Pooler',
+        'Dashboard',
+        'Database',
+        'Edge Functions',
+        'Management API',
+        'Realtime',
+        'Storage',
+      ];
+
+      componentNames.forEach(name => {
+        const component = componentsData.find(
+          (c: any) => c.name && c.name.toLowerCase().includes(name.toLowerCase())
+        );
+        if (component) {
+          components.push({
+            name,
+            status: normalizeStatus(component.status || 'operational'),
+          });
+        } else {
+          // 컴포넌트를 찾지 못한 경우 전체 상태 사용
+          components.push({
+            name,
+            status: normalizeStatus(data.status?.indicator || 'operational'),
+          });
+        }
+      });
+    } else {
+      // 기본 컴포넌트 목록 (API 호출 실패 시)
+      const defaultComponents = [
+        'Analytics',
+        'API Gateway',
+        'Auth',
+        'Connection Pooler',
+        'Dashboard',
+        'Database',
+        'Edge Functions',
+        'Management API',
+        'Realtime',
+        'Storage',
+      ];
+
+      defaultComponents.forEach(name => {
+        components.push({
+          name,
+          status: normalizeStatus(data.status?.indicator || 'operational'),
+        });
+      });
+    }
+
+    return {
+      service_name: 'supabase',
+      display_name: 'Supabase',
+      description: '오픈소스 Firebase 대안 백엔드 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.supabase.com',
+      icon: 'supabase',
+      components,
+    };
+  } catch (error) {
+    console.error('Supabase API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Analytics', status: 'operational' },
+      { name: 'API Gateway', status: 'operational' },
+      { name: 'Auth', status: 'operational' },
+      { name: 'Connection Pooler', status: 'operational' },
+      { name: 'Dashboard', status: 'operational' },
+      { name: 'Database', status: 'operational' },
+      { name: 'Edge Functions', status: 'operational' },
+      { name: 'Management API', status: 'operational' },
+      { name: 'Realtime', status: 'operational' },
+      { name: 'Storage', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'supabase',
+      display_name: 'Supabase',
+      description: '오픈소스 Firebase 대안 백엔드 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.supabase.com',
+      icon: 'supabase',
+      components,
+    };
+  }
+}
+
+/**
  * 모든 서비스 상태를 병렬로 조회
  */
 export async function fetchAllServicesStatus(): Promise<Service[]> {
@@ -645,6 +761,7 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchAWSStatus,
     fetchSlackStatus,
     fetchFirebaseStatus,
+    fetchSupabaseStatus,
   ];
 
   try {
@@ -685,6 +802,7 @@ export const serviceFetchers = {
   aws: fetchAWSStatus,
   slack: fetchSlackStatus,
   firebase: fetchFirebaseStatus,
+  supabase: fetchSupabaseStatus,
 };
 
 // 서비스 이름 목록

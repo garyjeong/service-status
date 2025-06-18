@@ -14,6 +14,7 @@ import dockerIcon from '@/assets/docker.png';
 import awsIcon from '@/assets/aws.png';
 import slackIcon from '@/assets/slack.png';
 import firebaseIcon from '@/assets/firebase.png';
+import supabaseIcon from '@/assets/supabase.jpg';
 
 interface DashboardProps {
   className?: string;
@@ -73,7 +74,8 @@ const translations = {
       dockerhub: '컨테이너 이미지 레지스트리 및 저장소',
       aws: '아마존 웹 서비스 클라우드 플랫폼',
       slack: '팀 커뮤니케이션 및 협업 플랫폼',
-      firebase: 'Google 백엔드 서비스 플랫폼'
+      firebase: 'Google 백엔드 서비스 플랫폼',
+      supabase: '오픈소스 Firebase 대안 백엔드 플랫폼'
     }
   },
   en: {
@@ -105,7 +107,8 @@ const translations = {
       dockerhub: 'Container image registry and repository',
       aws: 'Amazon Web Services cloud platform',
       slack: 'Team communication and collaboration platform',
-      firebase: 'Google backend service platform'
+      firebase: 'Google backend service platform',
+      supabase: 'Open source Firebase alternative backend platform'
     }
   }
 };
@@ -123,6 +126,7 @@ const getServiceIcon = (iconName: string): string => {
     aws: awsIcon,
     slack: slackIcon,
     firebase: firebaseIcon,
+    supabase: supabaseIcon,
   };
   return iconMap[iconName] || '';
 };
@@ -270,7 +274,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         }
         
         return newServices.sort((a, b) => {
-          const order = ['openai', 'anthropic', 'cursor', 'googleai', 'github', 'netlify', 'dockerhub', 'aws', 'slack', 'firebase'];
+          const order = ['openai', 'anthropic', 'cursor', 'googleai', 'github', 'netlify', 'dockerhub', 'aws', 'slack', 'firebase', 'supabase'];
           return order.indexOf(a.service_name) - order.indexOf(b.service_name);
         });
       });
