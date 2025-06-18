@@ -111,7 +111,7 @@ const translations = {
       supabase: 'Open source Firebase alternative backend platform'
     }
   }
-};
+  };
 
 // 이미지 아이콘 매핑
 const getServiceIcon = (iconName: string): string => {
@@ -140,19 +140,19 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
     
     return (
       <div className="relative group">
-        <img 
-          src={iconSrc} 
-          alt={iconName}
-          style={{ 
-            width: `${size}px`, 
-            height: `${size}px`,
-            objectFit: 'contain',
+      <img 
+        src={iconSrc} 
+        alt={iconName}
+        style={{ 
+          width: `${size}px`, 
+          height: `${size}px`,
+          objectFit: 'contain',
             borderRadius: '8px',
-            backgroundColor: needsWhiteBackground ? '#ffffff' : 'transparent',
-            padding: needsWhiteBackground ? '2px' : '0'
-          }}
+          backgroundColor: needsWhiteBackground ? '#ffffff' : 'transparent',
+          padding: needsWhiteBackground ? '2px' : '0'
+        }} 
           className="transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
-        />
+      />
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10"></div>
       </div>
     );
@@ -359,13 +359,13 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   // localStorage 저장 및 로드
   useEffect(() => {
     if (Object.keys(filters).length > 0) {
-      localStorage.setItem('service-status-component-filters', JSON.stringify(filters));
+    localStorage.setItem('service-status-component-filters', JSON.stringify(filters));
     }
   }, [filters]);
 
   useEffect(() => {
     if (Object.keys(favorites).length > 0) {
-      localStorage.setItem('service-status-favorites', JSON.stringify(favorites));
+    localStorage.setItem('service-status-favorites', JSON.stringify(favorites));
     }
   }, [favorites]);
 
@@ -628,14 +628,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-4">
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-gradient">{t.title}</h1>
-              <button
-                onClick={refreshData}
+            <button
+              onClick={refreshData}
                 className="btn-icon focus-ring hover-lift"
-                aria-label={t.refresh}
+              aria-label={t.refresh}
                 disabled={isAnyLoading}
-              >
+            >
                 <RefreshCw className={`w-5 h-5 ${isAnyLoading ? 'animate-spin' : ''}`} />
-              </button>
+            </button>
             </div>
             
             <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-start md:items-center">
@@ -663,68 +663,68 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     <span className="text-red-400 font-medium">{stats.outage}</span>
                   </div>
                 )}
-              </div>
-              
-              <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+          </div>
+          
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
                   className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-                >
+            >
                   <Settings className="w-4 h-4" />
-                  <span>{t.filter}</span>
-                </button>
-                
-                {/* 언어 선택 드롭다운 */}
-                <div className="relative language-dropdown">
-                  <button
-                    onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+              <span>{t.filter}</span>
+            </button>
+            
+            {/* 언어 선택 드롭다운 */}
+            <div className="relative language-dropdown">
+              <button
+                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
                     className="btn-secondary focus-ring flex items-center justify-center gap-2 w-full md:w-auto hover-lift"
-                  >
-                    {language === 'ko' ? (
-                      <>
-                        <span className="text-lg">🇰🇷</span>
-                        <span>한국어</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-lg">🇺🇸</span>
-                        <span>English</span>
-                      </>
-                    )}
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-                  
-                  {isLanguageDropdownOpen && (
+              >
+                {language === 'ko' ? (
+                  <>
+                    <span className="text-lg">🇰🇷</span>
+                    <span>한국어</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
+                  </>
+                )}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {isLanguageDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
-                      <button
-                        onClick={() => {
-                          setLanguage('ko');
-                          setIsLanguageDropdownOpen(false);
-                        }}
+                  <button
+                    onClick={() => {
+                      setLanguage('ko');
+                      setIsLanguageDropdownOpen(false);
+                    }}
                         className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
                           language === 'ko' ? 'bg-accent' : ''
-                        }`}
-                      >
-                        <span className="text-lg">🇰🇷</span>
-                        <span>한국어</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setLanguage('en');
-                          setIsLanguageDropdownOpen(false);
-                        }}
+                    }`}
+                  >
+                    <span className="text-lg">🇰🇷</span>
+                    <span>한국어</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage('en');
+                      setIsLanguageDropdownOpen(false);
+                    }}
                         className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
                           language === 'en' ? 'bg-accent' : ''
-                        }`}
-                      >
-                        <span className="text-lg">🇺🇸</span>
-                        <span>English</span>
-                      </button>
-                    </div>
-                  )}
+                    }`}
+                  >
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
+          </div>
+        </div>
           </div>
         </div>
       </header>
@@ -834,24 +834,24 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             };
 
             return (
-              <div 
-                key={service.service_name} 
+            <div
+              key={service.service_name}
                 className="service-card hover-lift cursor-pointer"
                 onClick={() => toggleServiceExpansion(service.service_name)}
-              >
-                <div className="flex items-start justify-between">
+            >
+              <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
                     <div className="flex flex-col items-center gap-2">
                       <ServiceIcon iconName={service.icon} size={32} />
                       <div className="flex items-center gap-1">
                         <div className={`status-dot ${getStatusColor(serviceWithStatus.status)}`} />
                         {getStatusIcon(serviceWithStatus.status)}
-                      </div>
-                    </div>
+                  </div>
+                </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
-                        <button
+                <button
                           onClick={(e) => {
                             e.stopPropagation();
                             loadServiceData(service.service_name as keyof typeof serviceFetchers);
@@ -877,47 +877,47 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       e.stopPropagation();
                       toggleServiceExpansion(service.service_name);
                     }}
-                  >
-                    {expandedServices[service.service_name] ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                >
+                  {expandedServices[service.service_name] ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
 
-                {expandedServices[service.service_name] && (
-                  <div className="mt-4 space-y-2">
-                    {service.components
+              {expandedServices[service.service_name] && (
+                <div className="mt-4 space-y-2">
+                  {service.components
                       .filter(component => filters[service.service_name]?.[component.name])
-                      .map(component => (
+                    .map(component => (
                         <div key={component.name} className="component-card">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className={`status-dot ${getStatusColor(component.status)}`} />
                               {getStatusIcon(component.status)}
                               <span className="text-sm text-foreground">{component.name}</span>
-                            </div>
-                            <button
+                        </div>
+                        <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleFavorite(service.service_name, component.name);
                               }}
                               className="btn-icon focus-ring"
-                            >
-                              <Star
+                        >
+                          <Star
                                 className={`w-4 h-4 transition-all duration-300 ${
                                   favorites[service.service_name]?.[component.name]
                                     ? 'text-yellow-500 fill-yellow-500 scale-110'
                                     : 'text-muted-foreground hover:text-yellow-400'
-                                }`}
-                              />
-                            </button>
+                            }`}
+                          />
+                        </button>
                           </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
+                      </div>
+                    ))}
+                </div>
+              )}
 
                 {/* 상태 확인 링크를 카드 하단에 배치 */}
                 <div className="mt-4 pt-3 border-t border-border/50">
@@ -931,7 +931,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     <Globe className="w-3 h-3" />
                     <span>{t.statusPage}</span>
                   </a>
-                </div>
+            </div>
               </div>
             );
           })}
@@ -944,26 +944,22 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       <footer className="footer-section">
         <div className="container mx-auto px-4">
           <div className="text-center text-sm text-muted-foreground py-4">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-              <p className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+            <p className="flex items-center gap-2">
                 <div className="relative">
                   <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
                   {isAnyLoading && <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></div>}
                 </div>
-                <span>{t.autoUpdate}</span>
-              </p>
-              <span className="hidden sm:inline">|</span>
-              <p className="flex items-center gap-2">
+              <span>{t.autoUpdate}</span>
+            </p>
+            <span className="hidden sm:inline">|</span>
+            <p className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
                 <span>{t.monitoring}: {getServicesWithCalculatedStatus().length}{t.services}</span>
-              </p>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground opacity-70">
-              {t.subtitle}
             </p>
-            
-            {/* 정책 페이지 링크 */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs">
+          </div>
+                        {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs invisible">
               <a 
                 href="/privacy-policy" 
                 className="hover:text-foreground transition-colors underline"
@@ -980,13 +976,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 rel="noopener noreferrer"
               >
                 {language === 'ko' ? '이용약관' : 'Terms of Service'}
-              </a>
-              <span className="hidden sm:inline">|</span>
-              <a 
-                href="mailto:contact@yourdomain.com" 
-                className="hover:text-foreground transition-colors underline"
-              >
-                {language === 'ko' ? '문의하기' : 'Contact'}
               </a>
             </div>
           </div>

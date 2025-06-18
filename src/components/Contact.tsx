@@ -25,10 +25,10 @@ const Contact: React.FC = () => {
                 서비스 이용, 기능 제안, 협업 문의 등
               </p>
               <a 
-                href="mailto:contact@yourdomain.com" 
+                href="mailto:contact@service-status-monitor.com" 
                 className="text-blue-400 hover:underline font-medium"
               >
-                contact@yourdomain.com
+                contact@service-status-monitor.com
               </a>
               <p className="text-sm text-muted-foreground mt-2">
                 응답 시간: 영업일 기준 1-2일 이내
@@ -45,10 +45,10 @@ const Contact: React.FC = () => {
                 버그 신고, 기술적 문제, API 관련 문의
               </p>
               <a 
-                href="mailto:support@yourdomain.com" 
+                href="mailto:support@service-status-monitor.com" 
                 className="text-green-400 hover:underline font-medium"
               >
-                support@yourdomain.com
+                support@service-status-monitor.com
               </a>
               <p className="text-sm text-muted-foreground mt-2">
                 응답 시간: 영업일 기준 24시간 이내
@@ -65,10 +65,10 @@ const Contact: React.FC = () => {
                 개인정보 처리, 쿠키 정책, 데이터 삭제 요청
               </p>
               <a 
-                href="mailto:privacy@yourdomain.com" 
+                href="mailto:privacy@service-status-monitor.com" 
                 className="text-yellow-400 hover:underline font-medium"
               >
-                privacy@yourdomain.com
+                privacy@service-status-monitor.com
               </a>
               <p className="text-sm text-muted-foreground mt-2">
                 응답 시간: 영업일 기준 48시간 이내
@@ -85,10 +85,10 @@ const Contact: React.FC = () => {
                 보도자료, 인터뷰, 언론 관련 문의
               </p>
               <a 
-                href="mailto:media@yourdomain.com" 
+                href="mailto:media@service-status-monitor.com" 
                 className="text-purple-400 hover:underline font-medium"
               >
-                media@yourdomain.com
+                media@service-status-monitor.com
               </a>
               <p className="text-sm text-muted-foreground mt-2">
                 응답 시간: 영업일 기준 1-3일 이내
@@ -137,7 +137,7 @@ const Contact: React.FC = () => {
               <div>
                 <h3 className="font-semibold text-sm mb-2">Q. 새로운 서비스 추가를 요청할 수 있나요?</h3>
                 <p className="text-sm text-muted-foreground">
-                  네, 언제든지 contact@yourdomain.com으로 요청해 주세요. 공개 상태 API가 있는 서비스라면 검토 후 추가하겠습니다.
+                  네, 언제든지 contact@service-status-monitor.com으로 요청해 주세요. 공개 상태 API가 있는 서비스라면 검토 후 추가하겠습니다.
                 </p>
               </div>
               <div>

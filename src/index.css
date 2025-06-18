@@ -51,7 +51,7 @@
   border-color: rgb(var(--border));
 }
 
-body {
+  body {
   margin: 0;
   padding: 0;
   background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 50%, rgb(17 24 39) 100%);
@@ -146,7 +146,7 @@ body::before {
   background: var(--gradient-primary);
   transform: scaleX(0);
   transition: transform 0.3s ease;
-}
+  }
 
 .service-card:hover::after {
   transform: scaleX(1);
@@ -349,8 +349,8 @@ body::before {
 
 .status-partial-outage::after {
   background: radial-gradient(circle, rgba(249, 115, 22, 0.4) 0%, transparent 70%);
-}
-
+  }
+  
 .status-partial-outage:hover::after {
   opacity: 1;
 }
@@ -433,8 +433,8 @@ body::before {
   background: rgba(17, 24, 39, 0.8);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+  }
+  
 .layout-sticky-footer {
   display: flex;
   flex-direction: column;
