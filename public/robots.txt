@@ -1,6 +1,13 @@
 User-agent: *
-Disallow: /
+Allow: /
 
 User-agent: Googlebot
-Disallow: /
-Allow: /ads.txt
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+Sitemap: https://yourdomain.com/sitemap.xml

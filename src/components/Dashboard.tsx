@@ -216,6 +216,11 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [language, setLanguage] = useState<Language>('ko');
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  
+  // 모바일 스크롤 숨김 상태
+  const [isScrollingDown, setIsScrollingDown] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [scrollThreshold] = useState(10); // 스크롤 감지 임계값
 
   // 현재 언어의 번역 가져오기
   const t = translations[language];
@@ -429,6 +434,53 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 모바일 스크롤 방향 감지
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // 스크롤 임계값보다 적게 움직인 경우 무시
+      if (Math.abs(currentScrollY - lastScrollY) < scrollThreshold) {
+        return;
+      }
+
+      // 아래로 스크롤 중이고 스크롤 위치가 50px 이상인 경우
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsScrollingDown(true);
+      } 
+      // 위로 스크롤 중인 경우
+      else if (currentScrollY < lastScrollY) {
+        setIsScrollingDown(false);
+      }
+      // 최상단에 있는 경우 항상 표시
+      else if (currentScrollY <= 50) {
+        setIsScrollingDown(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    // 스크롤 이벤트 리스너 등록 (throttle 효과)
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+    };
+  }, [isMobile, lastScrollY, scrollThreshold]);
+
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -562,8 +614,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   const loadingCount = getLoadingServicesCount();
   const isAnyLoading = loadingCount > 0;
 
+  // 모바일 스크롤 숨김 클래스 계산
+  const getMobileScrollClass = () => {
+    if (!isMobile) return '';
+    return isScrollingDown ? 'mobile-scroll-hide' : 'mobile-scroll-show';
+  };
+
   return (
-    <div className={`bg-background text-foreground layout-sticky-both ${className}`}>
+    <div className={`bg-background text-foreground layout-sticky-both ${getMobileScrollClass()} ${className}`}>
       {/* 헤더 섹션 */}
       <header className="header-section">
         <div className="container mx-auto px-4">
@@ -903,6 +961,34 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             <p className="mt-2 text-xs text-muted-foreground opacity-70">
               {t.subtitle}
             </p>
+            
+            {/* 정책 페이지 링크 */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs">
+              <a 
+                href="/privacy-policy" 
+                className="hover:text-foreground transition-colors underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {language === 'ko' ? '개인정보처리방침' : 'Privacy Policy'}
+              </a>
+              <span className="hidden sm:inline">|</span>
+              <a 
+                href="/terms-of-service" 
+                className="hover:text-foreground transition-colors underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {language === 'ko' ? '이용약관' : 'Terms of Service'}
+              </a>
+              <span className="hidden sm:inline">|</span>
+              <a 
+                href="mailto:contact@yourdomain.com" 
+                className="hover:text-foreground transition-colors underline"
+              >
+                {language === 'ko' ? '문의하기' : 'Contact'}
+              </a>
+            </div>
           </div>
         </div>
       </footer>

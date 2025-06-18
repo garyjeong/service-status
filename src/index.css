@@ -469,6 +469,7 @@ body::before {
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .layout-sticky-both .main-content {
@@ -485,6 +486,26 @@ body::before {
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 모바일 스크롤 숨김 클래스 */
+@media (max-width: 768px) {
+  .mobile-scroll-hide .header-section {
+    transform: translateY(-100%);
+  }
+  
+  .mobile-scroll-hide .footer-section {
+    transform: translateY(100%);
+  }
+  
+  .mobile-scroll-show .header-section {
+    transform: translateY(0);
+  }
+  
+  .mobile-scroll-show .footer-section {
+    transform: translateY(0);
+  }
 }
 
 /* 스크롤바 스타일링 */
