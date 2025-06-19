@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity } from 'lucide-react';
+import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { serviceFetchers, serviceNames } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 
@@ -15,6 +15,10 @@ import awsIcon from '@/assets/aws.png';
 import slackIcon from '@/assets/slack.png';
 import firebaseIcon from '@/assets/firebase.png';
 import supabaseIcon from '@/assets/supabase.jpg';
+import perplexityIcon from '@/assets/perplexity.png';
+import v0Icon from '@/assets/v0.png';
+import replitIcon from '@/assets/replit.png';
+import grokIcon from '@/assets/grok.png';
 
 interface DashboardProps {
   className?: string;
@@ -43,6 +47,9 @@ interface ServiceLoadingState {
 // 언어 타입 정의
 type Language = 'ko' | 'en';
 
+// 정렬 타입 정의
+type SortType = 'default' | 'name-asc' | 'name-desc';
+
 // 번역 데이터
 const translations = {
   ko: {
@@ -63,6 +70,10 @@ const translations = {
     outage: '장애',
     clickToExpand: '클릭하여 세부 정보 보기',
     refreshService: '서비스 새로고침',
+    sort: '정렬',
+    sortDefault: '기본',
+    sortNameAsc: '이름 오름차순',
+    sortNameDesc: '이름 내림차순',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT 웹 인터페이스 및 OpenAI API',
@@ -75,7 +86,11 @@ const translations = {
       aws: '아마존 웹 서비스 클라우드 플랫폼',
       slack: '팀 커뮤니케이션 및 협업 플랫폼',
       firebase: 'Google 백엔드 서비스 플랫폼',
-      supabase: '오픈소스 Firebase 대안 백엔드 플랫폼'
+      supabase: '오픈소스 Firebase 대안 백엔드 플랫폼',
+      perplexity: 'AI 검색 엔진 및 대화형 AI 플랫폼',
+      v0: 'AI 기반 UI 생성 및 프로토타이핑 플랫폼',
+      replit: '온라인 코딩 환경 및 협업 개발 플랫폼',
+      xai: 'Grok AI 모델 및 플랫폼 서비스'
     }
   },
   en: {
@@ -96,6 +111,10 @@ const translations = {
     outage: 'Outage',
     clickToExpand: 'Click to view details',
     refreshService: 'Refresh service',
+    sort: 'Sort',
+    sortDefault: 'Default',
+    sortNameAsc: 'Name A-Z',
+    sortNameDesc: 'Name Z-A',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT web interface and OpenAI API',
@@ -108,7 +127,11 @@ const translations = {
       aws: 'Amazon Web Services cloud platform',
       slack: 'Team communication and collaboration platform',
       firebase: 'Google backend service platform',
-      supabase: 'Open source Firebase alternative backend platform'
+      supabase: 'Open source Firebase alternative backend platform',
+      perplexity: 'AI search engine and conversational AI platform',
+      v0: 'AI-powered UI generation and prototyping platform',
+      replit: 'Online coding environment and collaborative development platform',
+      xai: 'Grok AI model and platform services'
     }
   }
   };
@@ -127,6 +150,10 @@ const getServiceIcon = (iconName: string): string => {
     slack: slackIcon,
     firebase: firebaseIcon,
     supabase: supabaseIcon,
+    perplexity: perplexityIcon,
+    v0: v0Icon,
+    replit: replitIcon,
+    grok: grokIcon,
   };
   return iconMap[iconName] || '';
 };
@@ -135,8 +162,8 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
   const iconSrc = getServiceIcon(iconName);
   
   if (iconSrc) {
-    // GitHub과 Cursor 아이콘에만 흰색 배경 적용
-    const needsWhiteBackground = iconName === 'github' || iconName === 'cursor';
+    // GitHub, Cursor, grok 아이콘에 흰색 배경 적용
+    const needsWhiteBackground = iconName === 'github' || iconName === 'cursor' || iconName === 'grok';
     
     return (
       <div className="relative group">
@@ -216,6 +243,9 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [language, setLanguage] = useState<Language>('ko');
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  const [sortType, setSortType] = useState<SortType>('default');
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   
   // 모바일 스크롤 숨김 상태
   const [isScrollingDown, setIsScrollingDown] = useState(false);
@@ -488,16 +518,19 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       if (!target.closest('.language-dropdown')) {
         setIsLanguageDropdownOpen(false);
       }
+      if (!target.closest('.sort-dropdown-container')) {
+        setIsSortDropdownOpen(false);
+      }
     };
 
-    if (isLanguageDropdownOpen) {
+    if (isLanguageDropdownOpen || isSortDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isLanguageDropdownOpen]);
+  }, [isLanguageDropdownOpen, isSortDropdownOpen]);
 
   const toggleComponentFilter = (serviceName: string, componentName: string) => {
     setFilters(prev => ({
@@ -528,6 +561,64 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
   const refreshData = async () => {
     await loadAllServicesData();
+  };
+
+  // 정렬 함수
+  const getSortedServices = () => {
+    const servicesWithStatus = getServicesWithCalculatedStatus();
+    
+    switch (sortType) {
+      case 'name-asc':
+        return [...servicesWithStatus].sort((a, b) => a.display_name.localeCompare(b.display_name));
+      case 'name-desc':
+        return [...servicesWithStatus].sort((a, b) => b.display_name.localeCompare(a.display_name));
+      case 'default':
+      default:
+        // 기본 순서 (serviceNames 배열 순서대로)
+        return servicesWithStatus.sort((a, b) => {
+          const aIndex = serviceNames.indexOf(a.service_name as keyof typeof serviceFetchers);
+          const bIndex = serviceNames.indexOf(b.service_name as keyof typeof serviceFetchers);
+          return aIndex - bIndex;
+        });
+    }
+  };
+
+  // 정렬 변경 핸들러
+  const handleSortChange = async (newSortType: SortType) => {
+    if (newSortType === sortType) return;
+    
+    setIsAnimating(true);
+    setSortType(newSortType);
+    setIsSortDropdownOpen(false);
+    
+    // 애니메이션 완료 후 상태 리셋
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
+  };
+
+  // 정렬 아이콘 가져오기
+  const getSortIcon = () => {
+    switch (sortType) {
+      case 'name-asc':
+        return <ArrowUp className="w-4 h-4" />;
+      case 'name-desc':
+        return <ArrowDown className="w-4 h-4" />;
+      default:
+        return <ArrowUpDown className="w-4 h-4" />;
+    }
+  };
+
+  // 정렬 라벨 가져오기
+  const getSortLabel = () => {
+    switch (sortType) {
+      case 'name-asc':
+        return t.sortNameAsc;
+      case 'name-desc':
+        return t.sortNameDesc;
+      default:
+        return t.sortDefault;
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -625,20 +716,13 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       {/* 헤더 섹션 */}
       <header className="header-section">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-4">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gradient">{t.title}</h1>
-            <button
-              onClick={refreshData}
-                className="btn-icon focus-ring hover-lift"
-              aria-label={t.refresh}
-                disabled={isAnyLoading}
-            >
-                <RefreshCw className={`w-5 h-5 ${isAnyLoading ? 'animate-spin' : ''}`} />
-            </button>
-            </div>
+          {/* 데스크톱 헤더 레이아웃 */}
+          <div className="hidden md:flex justify-between items-center py-4">
+            {/* 좌측: 서비스 제목 */}
+            <h1 className="desktop-title font-bold text-gradient">{t.title}</h1>
             
-            <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-start md:items-center">
+            {/* 우측: 상태 표시 + 버튼들 */}
+            <div className="flex items-center gap-4">
               {/* 상태 요약 카드 */}
               <div className="flex items-center gap-4 text-sm">
                 {loadingCount > 0 && (
@@ -663,68 +747,273 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     <span className="text-red-400 font-medium">{stats.outage}</span>
                   </div>
                 )}
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-            >
-                  <Settings className="w-4 h-4" />
-              <span>{t.filter}</span>
-            </button>
-            
-            {/* 언어 선택 드롭다운 */}
-            <div className="relative language-dropdown">
+              </div>
+              
+              {/* 새로고침 버튼 */}
               <button
-                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                    className="btn-secondary focus-ring flex items-center justify-center gap-2 w-full md:w-auto hover-lift"
+                onClick={refreshData}
+                className="btn-icon focus-ring hover-lift"
+                aria-label={t.refresh}
+                disabled={isAnyLoading}
               >
-                {language === 'ko' ? (
-                  <>
-                    <span className="text-lg">🇰🇷</span>
-                    <span>한국어</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-lg">🇺🇸</span>
-                    <span>English</span>
-                  </>
-                )}
-                <ChevronDown className="w-4 h-4" />
+                <RefreshCw className={`w-5 h-5 ${isAnyLoading ? 'animate-spin' : ''}`} />
               </button>
               
-              {isLanguageDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
-                  <button
-                    onClick={() => {
-                      setLanguage('ko');
-                      setIsLanguageDropdownOpen(false);
-                    }}
-                        className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
-                          language === 'ko' ? 'bg-accent' : ''
-                    }`}
-                  >
-                    <span className="text-lg">🇰🇷</span>
-                    <span>한국어</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLanguage('en');
-                      setIsLanguageDropdownOpen(false);
-                    }}
-                        className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
-                          language === 'en' ? 'bg-accent' : ''
-                    }`}
-                  >
-                    <span className="text-lg">🇺🇸</span>
-                    <span>English</span>
-                  </button>
-                </div>
-              )}
+              {/* 필터 버튼 */}
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
+              >
+                <Settings className="w-4 h-4" />
+                <span>{t.filter}</span>
+              </button>
+              
+              {/* 정렬 버튼 */}
+              <div className="relative sort-dropdown-container">
+                <button
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
+                >
+                  {getSortIcon()}
+                  <span>{getSortLabel()}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                
+                {isSortDropdownOpen && (
+                  <div className="sort-dropdown">
+                    <button
+                      onClick={() => handleSortChange('default')}
+                      className={`sort-option ${sortType === 'default' ? 'active' : ''}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="w-4 h-4" />
+                        <span>{t.sortDefault}</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleSortChange('name-asc')}
+                      className={`sort-option ${sortType === 'name-asc' ? 'active' : ''}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ArrowUp className="w-4 h-4" />
+                        <span>{t.sortNameAsc}</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleSortChange('name-desc')}
+                      className={`sort-option ${sortType === 'name-desc' ? 'active' : ''}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ArrowDown className="w-4 h-4" />
+                        <span>{t.sortNameDesc}</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* 언어 선택 드롭다운 */}
+              <div className="relative language-dropdown">
+                <button
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                  className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
+                >
+                  {language === 'ko' ? (
+                    <>
+                      <span className="text-lg">🇰🇷</span>
+                      <span>한국어</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-lg">🇺🇸</span>
+                      <span>English</span>
+                    </>
+                  )}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                
+                {isLanguageDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
+                    <button
+                      onClick={() => {
+                        setLanguage('ko');
+                        setIsLanguageDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
+                        language === 'ko' ? 'bg-accent' : ''
+                      }`}
+                    >
+                      <span className="text-lg">🇰🇷</span>
+                      <span>한국어</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('en');
+                        setIsLanguageDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
+                        language === 'en' ? 'bg-accent' : ''
+                      }`}
+                    >
+                      <span className="text-lg">🇺🇸</span>
+                      <span>English</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+          
+          {/* 모바일 헤더 레이아웃 */}
+          <div className="md:hidden py-4">
+            {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
+            <div className="flex justify-between items-center mb-3">
+              <h1 className="text-2xl font-bold text-gradient">{t.title}</h1>
+              
+              {/* 상태 요약 카드 - 모바일 컴팩트 버전 */}
+              <div className="flex items-center gap-1 text-sm">
+                {loadingCount > 0 && (
+                  <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
+                    <RefreshCw className="w-3 h-3 animate-spin text-blue-400" />
+                    <span className="text-blue-400 font-medium text-xs">{loadingCount}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-400 font-medium text-xs">{stats.operational}</span>
+                </div>
+                {stats.degraded > 0 && (
+                  <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                    <span className="text-yellow-400 font-medium text-xs">{stats.degraded}</span>
+                  </div>
+                )}
+                {stats.outage > 0 && (
+                  <div className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    <span className="text-red-400 font-medium text-xs">{stats.outage}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* 두 번째 줄: 필터 버튼 | 정렬 버튼 | 언어변경 버튼 | 새로고침 버튼 */}
+            <div className="flex justify-between items-center">
+              {/* 좌측: 필터 버튼, 정렬 버튼, 언어변경 버튼 */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="btn-secondary focus-ring flex items-center justify-center gap-1 hover-lift text-xs px-2 py-1"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>{t.filter}</span>
+                </button>
+                
+                {/* 정렬 버튼 - 모바일 */}
+                <div className="relative sort-dropdown-container">
+                  <button
+                    onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                    className="btn-secondary focus-ring flex items-center justify-center gap-1 hover-lift text-xs px-2 py-1"
+                  >
+                    {getSortIcon()}
+                    <span>{getSortLabel()}</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                  
+                  {isSortDropdownOpen && (
+                    <div className="sort-dropdown">
+                      <button
+                        onClick={() => handleSortChange('default')}
+                        className={`sort-option ${sortType === 'default' ? 'active' : ''}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <ArrowUpDown className="w-4 h-4" />
+                          <span>{t.sortDefault}</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleSortChange('name-asc')}
+                        className={`sort-option ${sortType === 'name-asc' ? 'active' : ''}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <ArrowUp className="w-4 h-4" />
+                          <span>{t.sortNameAsc}</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleSortChange('name-desc')}
+                        className={`sort-option ${sortType === 'name-desc' ? 'active' : ''}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <ArrowDown className="w-4 h-4" />
+                          <span>{t.sortNameDesc}</span>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                {/* 언어변경 버튼 */}
+                <div className="relative language-dropdown">
+                  <button
+                    onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                    className="btn-secondary focus-ring flex items-center justify-center gap-1 hover-lift text-xs px-2 py-1"
+                  >
+                    {language === 'ko' ? (
+                      <>
+                        <span className="text-sm">🇰🇷</span>
+                        <span>한국어</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-sm">🇺🇸</span>
+                        <span>English</span>
+                      </>
+                    )}
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                  
+                  {isLanguageDropdownOpen && (
+                    <div className="absolute left-0 mt-2 w-32 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
+                      <button
+                        onClick={() => {
+                          setLanguage('ko');
+                          setIsLanguageDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent transition-colors text-xs ${
+                          language === 'ko' ? 'bg-accent' : ''
+                        }`}
+                      >
+                        <span className="text-sm">🇰🇷</span>
+                        <span>한국어</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setLanguage('en');
+                          setIsLanguageDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent transition-colors text-xs ${
+                          language === 'en' ? 'bg-accent' : ''
+                        }`}
+                      >
+                        <span className="text-sm">🇺🇸</span>
+                        <span>English</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* 우측: 새로고침 버튼 */}
+              <button
+                onClick={refreshData}
+                className="btn-icon focus-ring hover-lift"
+                aria-label={t.refresh}
+                disabled={isAnyLoading}
+              >
+                <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -819,119 +1108,117 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         )}
 
         {/* 전체 서비스 섹션 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {serviceNames.map((serviceName: string) => {
-            const service = services.find(s => s.service_name === serviceName);
-            const isLoading = serviceLoadingStates[serviceName];
+        <div className={`service-grid ${isAnimating ? 'moving' : ''}`}>
+          {getSortedServices().map((service) => {
+            const isLoading = serviceLoadingStates[service.service_name];
             
-            if (isLoading || !service) {
-              return <ServiceCardSkeleton key={serviceName} />;
+            if (isLoading) {
+              return <ServiceCardSkeleton key={service.service_name} />;
             }
 
-            const serviceWithStatus = {
-              ...service,
-              status: calculateServiceStatus(service.components)
-            };
-
             return (
-            <div
-              key={service.service_name}
-                className="service-card hover-lift cursor-pointer"
-                onClick={() => toggleServiceExpansion(service.service_name)}
-            >
-              <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className="flex flex-col items-center gap-2">
-                      <ServiceIcon iconName={service.icon} size={32} />
-                      <div className="flex items-center gap-1">
-                        <div className={`status-dot ${getStatusColor(serviceWithStatus.status)}`} />
-                        {getStatusIcon(serviceWithStatus.status)}
-                  </div>
-                </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
-                <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            loadServiceData(service.service_name as keyof typeof serviceFetchers);
-                          }}
-                          className="btn-icon focus-ring opacity-60 hover:opacity-100 transition-opacity"
-                          aria-label={`${service.display_name} ${t.refreshService}`}
-                          disabled={isLoading}
-                        >
-                          <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-                        </button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3">{getServiceDescription(service.service_name)}</p>
-                      {!expandedServices[service.service_name] && (
-                        <p className="text-xs text-muted-foreground mb-3 opacity-70">
-                          {t.clickToExpand}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    className="btn-icon focus-ring -mt-1 -mr-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleServiceExpansion(service.service_name);
-                    }}
+              <div
+                key={service.service_name}
+                className={`service-card-wrapper ${isAnimating ? 'moving' : ''}`}
+              >
+                <div
+                  className="service-card hover-lift cursor-pointer"
+                  onClick={() => toggleServiceExpansion(service.service_name)}
                 >
-                  {expandedServices[service.service_name] ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-
-              {expandedServices[service.service_name] && (
-                <div className="mt-4 space-y-2">
-                  {service.components
-                      .filter(component => filters[service.service_name]?.[component.name])
-                    .map(component => (
-                        <div key={component.name} className="component-card">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`status-dot ${getStatusColor(component.status)}`} />
-                              {getStatusIcon(component.status)}
-                              <span className="text-sm text-foreground">{component.name}</span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="flex flex-col items-center gap-2">
+                        <ServiceIcon iconName={service.icon} size={32} />
+                        <div className="flex items-center gap-1">
+                          <div className={`status-dot ${getStatusColor(service.status)}`} />
+                          {getStatusIcon(service.status)}
                         </div>
-                        <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(service.service_name, component.name);
-                              }}
-                              className="btn-icon focus-ring"
-                        >
-                          <Star
-                                className={`w-4 h-4 transition-all duration-300 ${
-                                  favorites[service.service_name]?.[component.name]
-                                    ? 'text-yellow-500 fill-yellow-500 scale-110'
-                                    : 'text-muted-foreground hover:text-yellow-400'
-                            }`}
-                          />
-                        </button>
-                          </div>
                       </div>
-                    ))}
-                </div>
-              )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              loadServiceData(service.service_name as keyof typeof serviceFetchers);
+                            }}
+                            className="btn-icon focus-ring opacity-60 hover:opacity-100 transition-opacity"
+                            aria-label={`${service.display_name} ${t.refreshService}`}
+                            disabled={isLoading}
+                          >
+                            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">{getServiceDescription(service.service_name)}</p>
+                        {!expandedServices[service.service_name] && (
+                          <p className="text-xs text-muted-foreground mb-3 opacity-70">
+                            {t.clickToExpand}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      className="btn-icon focus-ring -mt-1 -mr-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleServiceExpansion(service.service_name);
+                      }}
+                    >
+                      {expandedServices[service.service_name] ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
 
-                {/* 상태 확인 링크를 카드 하단에 배치 */}
-                <div className="mt-4 pt-3 border-t border-border/50">
-                  <a 
-                    href={service.page_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Globe className="w-3 h-3" />
-                    <span>{t.statusPage}</span>
-                  </a>
-            </div>
+                  {expandedServices[service.service_name] && (
+                    <div className="mt-4 space-y-2">
+                      {service.components
+                        .filter(component => filters[service.service_name]?.[component.name])
+                        .map(component => (
+                          <div key={component.name} className="component-card">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={`status-dot ${getStatusColor(component.status)}`} />
+                                {getStatusIcon(component.status)}
+                                <span className="text-sm text-foreground">{component.name}</span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleFavorite(service.service_name, component.name);
+                                }}
+                                className="btn-icon focus-ring"
+                              >
+                                <Star
+                                  className={`w-4 h-4 transition-all duration-300 ${
+                                    favorites[service.service_name]?.[component.name]
+                                      ? 'text-yellow-500 fill-yellow-500 scale-110'
+                                      : 'text-muted-foreground hover:text-yellow-400'
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* 상태 확인 링크를 카드 하단에 배치 */}
+                  <div className="mt-4 pt-3 border-t border-border/50">
+                    <a 
+                      href={service.page_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Globe className="w-3 h-3" />
+                      <span>{t.statusPage}</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -959,7 +1246,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             </p>
           </div>
                         {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs invisible">
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs hidden">
               <a 
                 href="/privacy-policy" 
                 className="hover:text-foreground transition-colors underline"

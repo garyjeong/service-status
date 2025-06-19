@@ -603,10 +603,89 @@ body::before {
 }
 
 .text-gradient {
+  color: rgb(156 163 175); /* gray-400 smoke color */
+}
+
+/* 데스크톱용 그라디언트 텍스트 */
+.text-gradient-desktop {
   background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* 데스크톱 제목 크기 증가 */
+@media (min-width: 768px) {
+  .desktop-title {
+    font-size: 2.25rem; /* text-4xl, 36px */
+    line-height: 2.5rem;
+  }
+}
+
+/* 서비스 카드 애니메이션 */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-card-wrapper {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.service-card-wrapper.moving {
+  z-index: 10;
+  transform: scale(1.02);
+}
+
+
+
+.sort-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 10rem;
+  background: rgba(31, 41, 55, 0.95); /* bg-gray-800 with high opacity */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+}
+
+/* 모바일에서 정렬 드롭다운 위치 조정 */
+@media (max-width: 768px) {
+  .sort-dropdown {
+    left: 0;
+    right: auto;
+  }
+}
+
+.sort-option {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: rgb(var(--foreground));
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sort-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sort-option.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: rgb(59 130 246);
 }
 
 .border-gradient {

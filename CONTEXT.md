@@ -11,6 +11,10 @@
 - **Anthropic Claude** (Claude 채팅 인터페이스 및 Anthropic API)
 - **Cursor Editor** (AI 기반 코드 에디터 및 개발 도구)
 - **Google AI Studio** (Google Gemini API 및 AI Studio 플랫폼)
+- **Perplexity AI** (AI 검색 엔진 및 대화형 AI 플랫폼)
+- **v0 by Vercel** (AI 기반 UI 생성 및 프로토타이핑 플랫폼)
+- **Replit** (온라인 코딩 환경 및 협업 개발 플랫폼)
+- **xAI** (Grok AI 모델 및 플랫폼 서비스)
 
 #### 외부 서비스
 - **GitHub** (코드 저장소 및 협업 플랫폼)
@@ -107,9 +111,13 @@ ai-status-check/
 │   │   ├── github.png          # GitHub 로고
 │   │   ├── google-ai-studio.png # Google AI 로고
 │   │   ├── gpt.png             # OpenAI 로고
+│   │   ├── grok.png            # xAI 로고
 │   │   ├── netlify.png         # Netlify 로고
+│   │   ├── perplexity.png      # Perplexity 로고
+│   │   ├── replit.png          # Replit 로고
 │   │   ├── slack.png           # Slack 로고
-│   │   └── supabase.jpg        # Supabase 로고
+│   │   ├── supabase.jpg        # Supabase 로고
+│   │   └── v0.png              # v0 로고
 │   ├── test/                   # 테스트 설정
 │   │   └── setup.ts            # 테스트 환경 설정
 │   └── main.tsx                # 앱 진입점

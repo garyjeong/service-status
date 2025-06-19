@@ -631,6 +631,214 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
 }
 
 /**
+ * Perplexity 상태 조회
+ */
+export async function fetchPerplexityStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.perplexity.ai/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'Website', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'API', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'perplexity',
+      display_name: 'Perplexity AI',
+      description: 'AI 검색 엔진 및 대화형 AI 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.perplexity.ai',
+      icon: 'perplexity',
+      components,
+    };
+  } catch (error) {
+    console.error('Perplexity API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Website', status: 'operational' },
+      { name: 'API', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'perplexity',
+      display_name: 'Perplexity AI',
+      description: 'AI 검색 엔진 및 대화형 AI 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.perplexity.ai',
+      icon: 'perplexity',
+      components,
+    };
+  }
+}
+
+/**
+ * v0 상태 조회 (Vercel 상태 페이지 통합)
+ */
+export async function fetchV0Status(): Promise<Service> {
+  try {
+    // Vercel 상태 페이지에서 v0 관련 정보 조회
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://www.vercel-status.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'v0 Platform', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'AI Generation', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Code Export', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'v0',
+      display_name: 'v0 by Vercel',
+      description: 'AI 기반 UI 생성 및 프로토타이핑 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://www.vercel-status.com',
+      icon: 'v0',
+      components,
+    };
+  } catch (error) {
+    console.error('v0 API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'v0 Platform', status: 'operational' },
+      { name: 'AI Generation', status: 'operational' },
+      { name: 'Code Export', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'v0',
+      display_name: 'v0 by Vercel',
+      description: 'AI 기반 UI 생성 및 프로토타이핑 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://www.vercel-status.com',
+      icon: 'v0',
+      components,
+    };
+  }
+}
+
+/**
+ * Replit 상태 조회
+ */
+export async function fetchReplitStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.replit.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    // Replit의 복잡한 8개 컴포넌트 구조
+    const components: ServiceComponent[] = [
+      { name: 'Website', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Repls', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'AI', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Hosting', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Auth', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Deployments', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Database', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Package Manager', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'replit',
+      display_name: 'Replit',
+      description: '온라인 코딩 환경 및 협업 개발 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.replit.com',
+      icon: 'replit',
+      components,
+    };
+  } catch (error) {
+    console.error('Replit API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Website', status: 'operational' },
+      { name: 'Repls', status: 'operational' },
+      { name: 'AI', status: 'operational' },
+      { name: 'Hosting', status: 'operational' },
+      { name: 'Auth', status: 'operational' },
+      { name: 'Deployments', status: 'operational' },
+      { name: 'Database', status: 'operational' },
+      { name: 'Package Manager', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'replit',
+      display_name: 'Replit',
+      description: '온라인 코딩 환경 및 협업 개발 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.replit.com',
+      icon: 'replit',
+      components,
+    };
+  }
+}
+
+/**
+ * xAI 상태 조회 (RSS 피드 기반)
+ */
+export async function fetchXAIStatus(): Promise<Service> {
+  try {
+    // RSS 피드를 통한 상태 정보 조회 시도
+    const response = await apiClient.get(`${CORS_PROXY}https://status.x.ai/feed.xml`);
+
+    // RSS에서 최신 상태 정보 파싱 (간단한 구현)
+    const isOperational = !response.data.includes('outage') && !response.data.includes('degraded');
+    const baseStatus = isOperational ? 'operational' : 'degraded';
+
+    // xAI의 복잡한 10개 컴포넌트 구조 (HTML에서 확인된 구조)
+    const components: ServiceComponent[] = [
+      { name: 'Grok (iOS)', status: baseStatus },
+      { name: 'Grok (Android)', status: baseStatus },
+      { name: 'Grok (Web)', status: baseStatus },
+      { name: 'Single Sign-On', status: baseStatus },
+      { name: 'API (US East)', status: baseStatus },
+      { name: 'API (US West)', status: baseStatus },
+      { name: 'API Console', status: baseStatus },
+      { name: 'Docs', status: baseStatus },
+      { name: 'xAI Website', status: baseStatus },
+      { name: 'Grok in X', status: baseStatus },
+    ];
+
+    return {
+      service_name: 'xai',
+      display_name: 'xAI',
+      description: 'Grok AI 모델 및 플랫폼 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.x.ai',
+      icon: 'grok',
+      components,
+    };
+  } catch (error) {
+    console.error('xAI API 오류:', error);
+    // 기본 상태로 폴백
+    const components: ServiceComponent[] = [
+      { name: 'Grok (iOS)', status: 'operational' },
+      { name: 'Grok (Android)', status: 'operational' },
+      { name: 'Grok (Web)', status: 'operational' },
+      { name: 'Single Sign-On', status: 'operational' },
+      { name: 'API (US East)', status: 'operational' },
+      { name: 'API (US West)', status: 'operational' },
+      { name: 'API Console', status: 'operational' },
+      { name: 'Docs', status: 'operational' },
+      { name: 'xAI Website', status: 'operational' },
+      { name: 'Grok in X', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'xai',
+      display_name: 'xAI',
+      description: 'Grok AI 모델 및 플랫폼 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.x.ai',
+      icon: 'grok',
+      components,
+    };
+  }
+}
+
+/**
  * Supabase 상태 조회
  */
 export async function fetchSupabaseStatus(): Promise<Service> {
@@ -762,6 +970,10 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchSlackStatus,
     fetchFirebaseStatus,
     fetchSupabaseStatus,
+    fetchPerplexityStatus,
+    fetchV0Status,
+    fetchReplitStatus,
+    fetchXAIStatus,
   ];
 
   try {
@@ -803,6 +1015,10 @@ export const serviceFetchers = {
   slack: fetchSlackStatus,
   firebase: fetchFirebaseStatus,
   supabase: fetchSupabaseStatus,
+  perplexity: fetchPerplexityStatus,
+  v0: fetchV0Status,
+  replit: fetchReplitStatus,
+  xai: fetchXAIStatus,
 };
 
 // 서비스 이름 목록
