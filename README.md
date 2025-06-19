@@ -137,7 +137,8 @@ src/
 │   ├── slack.png       # Slack 로고
 │   └── supabase.jpg    # Supabase 로고
 ├── components/         # React 컴포넌트
-│   └── Dashboard.tsx   # 메인 대시보드 (올인원 컴포넌트)
+│   ├── Dashboard.tsx   # 메인 대시보드 (올인원 컴포넌트)
+│   └── AdFitBanner.tsx # Kakao AdFit 광고 컴포넌트
 ├── hooks/             # Custom React Hooks
 │   └── useStatus.ts   # 상태 관리 훅
 ├── services/          # API 서비스
@@ -169,6 +170,7 @@ public/               # 정적 파일
 - **상태페이지 링크 하단 배치** - 각 서비스 카드 하단에 상태페이지 링크 위치
 - **중복 이모지 제거** - 하위 서비스에서 불필요한 이모지 표시 제거
 - **개별 서비스 새로고침** - 각 서비스 카드에서 독립적인 새로고침 버튼
+- **Kakao AdFit 광고 통합** - 수익화를 위한 728x90 배너 광고 배치
 
 ### 아이콘 시스템
 - **실제 서비스 로고**: 각 서비스에 최적화된 PNG 이미지 내장

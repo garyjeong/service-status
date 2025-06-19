@@ -86,6 +86,7 @@ React SPA ↔ External APIs (via Proxy)
 - **중복 이모지 제거** - 하위 서비스에서 불필요한 이모지 표시 제거
 - **즐겨찾기 보존 기능** - 새로고침 시에도 즐겨찾기 설정 유지
 - **개별 서비스 새로고침** - 각 서비스별 독립적인 새로고침 버튼
+- **Kakao AdFit 광고 통합** - 728x90 배너 광고를 상단과 하단에 배치하여 수익화
 
 ## 프로젝트 구조
 
@@ -93,7 +94,8 @@ React SPA ↔ External APIs (via Proxy)
 ai-status-check/
 ├── src/                          # 소스 코드
 │   ├── components/               # React 컴포넌트
-│   │   └── Dashboard.tsx        # 메인 대시보드 (단일 컴포넌트)
+│   │   ├── Dashboard.tsx        # 메인 대시보드 (단일 컴포넌트)
+│   │   └── AdFitBanner.tsx      # Kakao AdFit 광고 컴포넌트
 │   ├── hooks/                   # 커스텀 React Hooks
 │   │   └── useStatus.ts         # 상태 관리 훅
 │   ├── services/                # API 서비스
@@ -138,7 +140,8 @@ ai-status-check/
 ├── index.html                 # HTML 템플릿
 ├── CONTEXT.md                 # 프로젝트 컨텍스트 (현재 파일)
 ├── README.md                  # 프로젝트 문서
-└── DESIGN.md                  # 디자인 시스템 문서
+├── DESIGN.md                  # 디자인 시스템 문서
+└── ADFIT_INTEGRATION.md       # Kakao AdFit 광고 통합 가이드
 ```
 
 ## 개발 워크플로우

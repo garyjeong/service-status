@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { serviceFetchers, serviceNames } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
+import AdFitBanner from './AdFitBanner';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -322,7 +323,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         setFilters(prev => {
           const existingServiceFilter = prev[serviceName as string] || {};
           const newServiceFilter: { [key: string]: boolean } = {};
-          
+
           // 새로운 컴포넌트들에 대해서만 기본값 설정
           serviceData.components.forEach(component => {
             if (existingServiceFilter[component.name] === undefined) {
@@ -750,23 +751,23 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
               </div>
               
               {/* 새로고침 버튼 */}
-              <button
-                onClick={refreshData}
+            <button
+              onClick={refreshData}
                 className="btn-icon focus-ring hover-lift"
-                aria-label={t.refresh}
+              aria-label={t.refresh}
                 disabled={isAnyLoading}
-              >
+            >
                 <RefreshCw className={`w-5 h-5 ${isAnyLoading ? 'animate-spin' : ''}`} />
-              </button>
-              
+            </button>
+          
               {/* 필터 버튼 */}
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-              >
+            >
                 <Settings className="w-4 h-4" />
-                <span>{t.filter}</span>
-              </button>
+              <span>{t.filter}</span>
+            </button>
               
               {/* 정렬 버튼 */}
               <div className="relative sort-dropdown-container">
@@ -811,58 +812,58 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                   </div>
                 )}
               </div>
-              
-              {/* 언어 선택 드롭다운 */}
-              <div className="relative language-dropdown">
-                <button
-                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+            
+            {/* 언어 선택 드롭다운 */}
+            <div className="relative language-dropdown">
+              <button
+                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
                   className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-                >
-                  {language === 'ko' ? (
-                    <>
-                      <span className="text-lg">🇰🇷</span>
-                      <span>한국어</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-lg">🇺🇸</span>
-                      <span>English</span>
-                    </>
-                  )}
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                
-                {isLanguageDropdownOpen && (
+              >
+                {language === 'ko' ? (
+                  <>
+                    <span className="text-lg">🇰🇷</span>
+                    <span>한국어</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
+                  </>
+                )}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {isLanguageDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
-                    <button
-                      onClick={() => {
-                        setLanguage('ko');
-                        setIsLanguageDropdownOpen(false);
-                      }}
+                  <button
+                    onClick={() => {
+                      setLanguage('ko');
+                      setIsLanguageDropdownOpen(false);
+                    }}
                       className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
                         language === 'ko' ? 'bg-accent' : ''
-                      }`}
-                    >
-                      <span className="text-lg">🇰🇷</span>
-                      <span>한국어</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLanguage('en');
-                        setIsLanguageDropdownOpen(false);
-                      }}
+                    }`}
+                  >
+                    <span className="text-lg">🇰🇷</span>
+                    <span>한국어</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage('en');
+                      setIsLanguageDropdownOpen(false);
+                    }}
                       className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
                         language === 'en' ? 'bg-accent' : ''
-                      }`}
-                    >
-                      <span className="text-lg">🇺🇸</span>
-                      <span>English</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+                    }`}
+                  >
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+        </div>
           
           {/* 모바일 헤더 레이아웃 */}
           <div className="md:hidden py-4">
@@ -1022,6 +1023,16 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       <main className="main-content">
         <div className="container mx-auto px-4 py-6">
 
+        {/* 상단 광고 배너 */}
+        <div className="mb-6 flex justify-center">
+          <AdFitBanner 
+            adUnit="DAN-wiu4St0eJQqPsPgL"
+            width={728}
+            height={90}
+            className="rounded-lg overflow-hidden border border-border/50 bg-card/30 backdrop-blur-sm"
+          />
+        </div>
+
         {isFilterOpen && (
           <div className="card-base mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1117,27 +1128,27 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             }
 
             return (
-              <div
-                key={service.service_name}
+            <div
+              key={service.service_name}
                 className={`service-card-wrapper ${isAnimating ? 'moving' : ''}`}
               >
                 <div
                   className="service-card hover-lift cursor-pointer"
                   onClick={() => toggleServiceExpansion(service.service_name)}
-                >
-                  <div className="flex items-start justify-between">
+            >
+              <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
                       <div className="flex flex-col items-center gap-2">
                         <ServiceIcon iconName={service.icon} size={32} />
                         <div className="flex items-center gap-1">
                           <div className={`status-dot ${getStatusColor(service.status)}`} />
                           {getStatusIcon(service.status)}
-                        </div>
-                      </div>
+                  </div>
+                </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
-                          <button
+                <button
                             onClick={(e) => {
                               e.stopPropagation();
                               loadServiceData(service.service_name as keyof typeof serviceFetchers);
@@ -1163,47 +1174,47 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                         e.stopPropagation();
                         toggleServiceExpansion(service.service_name);
                       }}
-                    >
-                      {expandedServices[service.service_name] ? (
-                        <ChevronUp className="w-5 h-5" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
+                >
+                  {expandedServices[service.service_name] ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
 
-                  {expandedServices[service.service_name] && (
-                    <div className="mt-4 space-y-2">
-                      {service.components
+              {expandedServices[service.service_name] && (
+                <div className="mt-4 space-y-2">
+                  {service.components
                         .filter(component => filters[service.service_name]?.[component.name])
-                        .map(component => (
+                    .map(component => (
                           <div key={component.name} className="component-card">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <div className={`status-dot ${getStatusColor(component.status)}`} />
                                 {getStatusIcon(component.status)}
                                 <span className="text-sm text-foreground">{component.name}</span>
-                              </div>
-                              <button
+                        </div>
+                        <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toggleFavorite(service.service_name, component.name);
                                 }}
                                 className="btn-icon focus-ring"
-                              >
-                                <Star
+                        >
+                          <Star
                                   className={`w-4 h-4 transition-all duration-300 ${
                                     favorites[service.service_name]?.[component.name]
                                       ? 'text-yellow-500 fill-yellow-500 scale-110'
                                       : 'text-muted-foreground hover:text-yellow-400'
-                                  }`}
-                                />
-                              </button>
+                            }`}
+                          />
+                        </button>
                             </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                </div>
+              )}
 
                   {/* 상태 확인 링크를 카드 하단에 배치 */}
                   <div className="mt-4 pt-3 border-t border-border/50">
@@ -1217,11 +1228,22 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       <Globe className="w-3 h-3" />
                       <span>{t.statusPage}</span>
                     </a>
-                  </div>
+            </div>
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* 하단 광고 배너 */}
+        <div className="mt-8 mb-6 flex justify-center">
+          <AdFitBanner 
+            adUnit="DAN-wiu4St0eJQqPsPgL"
+            width={728}
+            height={90}
+            className="rounded-lg overflow-hidden border border-border/50 bg-card/30 backdrop-blur-sm"
+            onNoAd={() => console.log('하단 광고 로드 실패')}
+          />
         </div>
 
         </div>
@@ -1247,11 +1269,11 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
           </div>
                         {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs hidden">
-              <a 
+            <a 
                 href="/privacy-policy" 
                 className="hover:text-foreground transition-colors underline"
-                target="_blank"
-                rel="noopener noreferrer"
+              target="_blank" 
+              rel="noopener noreferrer"
               >
                 {language === 'ko' ? '개인정보처리방침' : 'Privacy Policy'}
               </a>
@@ -1261,10 +1283,10 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 className="hover:text-foreground transition-colors underline"
                 target="_blank"
                 rel="noopener noreferrer"
-              >
+            >
                 {language === 'ko' ? '이용약관' : 'Terms of Service'}
-              </a>
-            </div>
+            </a>
+      </div>
           </div>
         </div>
       </footer>
