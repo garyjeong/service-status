@@ -795,4 +795,121 @@ interface ComponentStatus {
 - **직관적 네비게이션** - 클릭 없이 정보 파악
 - **상태 명확성** - 한눈에 서비스 상태 파악
 - **반응형 지원** - 모든 디바이스에서 최적 경험
-- **다국어 지원** - 한국어/영어 실시간 전환 
+- **다국어 지원** - 한국어/영어 실시간 전환
+
+## 광고 통합 (Kakao AdFit)
+
+### 광고 디자인 원칙
+- **가이드라인 준수** - AdFit 스크립트 변형 금지
+- **고정 크기** - 728x90 배너 고정 사이즈
+- **최소 간섭** - 사용자 경험에 최소한의 영향
+- **자연스러운 배치** - 콘텐츠 흐름에 맞는 위치
+
+### AdFitBanner 컴포넌트
+
+#### 컴포넌트 구조
+```typescript
+interface AdFitBannerProps {
+  adUnit: string;      // 광고 단위 ID
+  className?: string;  // 제한적 스타일링 (컨테이너만)
+  onNoAd?: () => void; // NO-AD 콜백
+}
+
+// 사용 예시 (올바른 방법)
+<AdFitBanner 
+  adUnit="DAN-wiu4St0eJQqPsPgL"
+  onNoAd={() => console.log('광고 로드 실패')}
+/>
+```
+
+#### 스타일링 제한사항
+
+##### ❌ 금지된 스타일 (AdFit 가이드라인 위반)
+```css
+/* 이런 스타일들은 심사 보류 원인 */
+.adfit-banner {
+  border-radius: 8px;        /* 둥근 모서리 */
+  overflow: hidden;          /* 내용 자르기 */
+  border: 1px solid #ccc;    /* 테두리 */
+  background: rgba(0,0,0,0.1); /* 배경색 */
+  backdrop-filter: blur(4px); /* 블러 효과 */
+  transform: scale(1.1);      /* 변형 효과 */
+  opacity: 0.9;              /* 투명도 */
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* 그림자 */
+}
+```
+
+##### ✅ 허용된 스타일 (컨테이너 레이아웃만)
+```css
+/* 광고를 감싸는 컨테이너의 레이아웃 스타일만 허용 */
+.ad-container {
+  display: flex;
+  justify-content: center;   /* 중앙 정렬 */
+  margin: 1.5rem 0;         /* 여백 */
+  padding: 0;               /* 패딩 (필요시) */
+}
+
+/* 광고 자체에는 아무 스타일도 적용하지 않음 */
+.adfit-banner {
+  /* 스타일 없음 - AdFit 스크립트 원본 그대로 */
+}
+```
+
+#### 광고 배치 위치
+```css
+/* 상단 광고 - 헤더 바로 아래 */
+.top-ad {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* 하단 광고 - 모든 콘텐츠 아래, 푸터 위 */
+.bottom-ad {
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+```
+
+#### 로딩 상태 처리
+```css
+/* 로딩 플레이스홀더 (AdFit 가이드라인 준수) */
+.ad-loading-placeholder {
+  width: 728px;
+  height: 90px;
+  background-color: rgba(255, 255, 255, 0.05);
+  /* border-radius 제거 - 둥근 모서리 금지 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+```
+
+### 광고 통합 체크리스트
+
+#### ✅ 심사 통과 요구사항
+- [ ] 광고 스크립트 원본 유지 (변형 금지)
+- [ ] 고정 크기 728x90 적용
+- [ ] 둥근 모서리(border-radius) 제거
+- [ ] 테두리(border) 제거  
+- [ ] 배경색/효과 제거
+- [ ] overflow: hidden 제거
+- [ ] transform 효과 제거
+- [ ] 투명도/필터 제거
+
+#### ✅ 구현 완료 사항
+- [x] AdFitBanner 컴포넌트 props에서 width/height 제거
+- [x] className의 모든 스타일 제거
+- [x] 로딩 플레이스홀더 border-radius 제거
+- [x] Dashboard.tsx에서 광고 스타일링 완전 제거
+- [x] 가이드라인 문서화 완료
+
+### 성능 최적화
+- **스크립트 중복 방지** - 이미 로드된 스크립트 재사용
+- **비동기 로딩** - 페이지 로딩 속도에 영향 없음
+- **메모리 관리** - 컴포넌트 언마운트 시 콜백 정리
+- **에러 처리** - NO-AD 상황 적절히 처리 

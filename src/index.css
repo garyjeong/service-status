@@ -706,45 +706,36 @@ body::before {
   mask-composite: exclude;
 }
 
-/* AdFit 광고 스타일 */
-.adfit-banner {
-  max-width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
+/* AdFit 광고 스타일 - 가이드라인 준수를 위해 모든 스타일 제거 */
+
+/* AdFit 광고 완전 격리 - 모든 CSS 상속 차단 */
+.kakao_ad_area,
+.kakao_ad_area *,
+.kakao_ad_area *::before,
+.kakao_ad_area *::after {
+  all: initial !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  clip-path: none !important;
+  mask: none !important;
+  -webkit-mask: none !important;
 }
 
-.adfit-banner .kakao_ad_area {
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-
-.adfit-banner:hover .kakao_ad_area {
-  transform: scale(1.02);
-}
-
-/* 모바일에서 광고 크기 조정 */
-@media (max-width: 768px) {
-  .adfit-banner {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-  
-  .adfit-banner .kakao_ad_area {
-    max-width: 100%;
-    height: auto;
-    min-height: 90px;
-  }
-}
-
-/* 광고 컨테이너 스타일링 */
-.ad-container {
-  position: relative;
-  overflow: hidden;
-  background: rgba(var(--card), 0.3);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+/* AdFit ins 태그 특별 처리 */
+ins.kakao_ad_area {
+  display: none !important;
+  width: 728px !important;
+  height: 90px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: static !important;
+  background: transparent !important;
 } 
