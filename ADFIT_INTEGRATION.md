@@ -23,10 +23,8 @@
 ```typescript
 // src/components/AdFitBanner.tsx
 interface AdFitBannerProps {
-  adUnit: string;      // 광고 단위 ID
-  width: number;       // 광고 가로 크기
-  height: number;      // 광고 세로 크기
-  className?: string;  // 추가 CSS 클래스
+  adUnit: string;      // 광고 단위 ID (고정 728x90 크기)
+  className?: string;  // 추가 CSS 클래스 (⚠️ 광고 변형 금지)
   onNoAd?: () => void; // NO-AD 콜백 함수
 }
 ```
@@ -76,14 +74,19 @@ interface AdFitBannerProps {
 ```tsx
 import AdFitBanner from './components/AdFitBanner';
 
-// 컴포넌트에서 사용
+// 컴포넌트에서 사용 (올바른 방법)
 <AdFitBanner 
   adUnit="DAN-wiu4St0eJQqPsPgL"
-  width={728}
-  height={90}
-  className="rounded-lg overflow-hidden border border-border/50 bg-card/30 backdrop-blur-sm"
   onNoAd={() => console.log('광고 로드 실패')}
 />
+
+// 컨테이너 스타일링이 필요한 경우
+<div className="mb-6 flex justify-center">
+  <AdFitBanner 
+    adUnit="DAN-wiu4St0eJQqPsPgL"
+    onNoAd={() => console.log('광고 로드 실패')}
+  />
+</div>
 ```
 
 ### 다른 광고 단위 추가
@@ -95,11 +98,9 @@ import AdFitBanner from './components/AdFitBanner';
 3. 적절한 위치에 배치
 
 ```tsx
+// 다른 광고 단위 사용 (각 광고 단위별로 고정 크기 적용)
 <AdFitBanner 
   adUnit="새로운-광고-단위-ID"
-  width={320}
-  height={100}
-  className="mobile-ad"
 />
 ```
 
@@ -163,6 +164,42 @@ AdFit 대시보드에서 다음 지표를 모니터링할 수 있습니다:
 1. **코드 수정 금지**: 제공된 광고 코드를 임의로 수정하지 않습니다
 2. **적절한 배치**: 사용자 경험을 해치지 않는 위치에 광고 배치
 3. **클릭 유도 금지**: 인위적인 클릭 유도 행위 금지
+4. **⚠️ 중요: 광고 스타일링 제한**: AdFit에서는 광고 영역의 임의 변형 및 강조가 금지됩니다
+
+### 심사 통과를 위한 가이드라인
+
+#### ✅ 허용되는 스타일
+- 광고를 감싸는 컨테이너의 margin, padding
+- 광고 컨테이너의 배경색(광고 영역에 영향 없는 경우)
+- 텍스트 정렬 및 레이아웃 조정
+
+#### ❌ 금지되는 스타일
+- **border-radius**: 둥근 모서리 ⚠️ **심사 보류 원인**
+- **border**: 광고 영역에 직접적인 테두리
+- **overflow: hidden**: 광고 내용이 잘릴 수 있음
+- **transform**: 광고 영역의 변형
+- **opacity**: 투명도 조절
+- **filter**: 블러, 그림자 등의 효과
+
+#### 올바른 구현 예시
+
+```tsx
+// ❌ 잘못된 예시 (심사 보류 원인)
+<AdFitBanner 
+  adUnit="DAN-wiu4St0eJQqPsPgL"
+  className="rounded-lg overflow-hidden border border-gray-300"
+/>
+
+// ✅ 올바른 예시
+<AdFitBanner 
+  adUnit="DAN-wiu4St0eJQqPsPgL"
+/>
+
+// ✅ 허용 가능한 컨테이너 스타일링
+<div className="flex justify-center mb-6">
+  <AdFitBanner adUnit="DAN-wiu4St0eJQqPsPgL" />
+</div>
+```
 
 ### 개인정보보호
 

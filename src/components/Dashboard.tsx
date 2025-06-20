@@ -1027,7 +1027,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         <div className="mb-6 flex justify-center">
           <AdFitBanner 
             adUnit="DAN-wiu4St0eJQqPsPgL"
-            className="rounded-lg overflow-hidden border border-border/50 bg-card/30 backdrop-blur-sm"
           />
         </div>
 
@@ -1237,7 +1236,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         <div className="mt-8 mb-6 flex justify-center">
           <AdFitBanner 
             adUnit="DAN-wiu4St0eJQqPsPgL"
-            className="rounded-lg overflow-hidden border border-border/50 bg-card/30 backdrop-blur-sm"
             onNoAd={() => console.log('하단 광고 로드 실패')}
           />
         </div>

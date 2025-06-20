@@ -109,7 +109,6 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
             width: '728px',
             height: '90px',
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
