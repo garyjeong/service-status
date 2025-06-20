@@ -445,11 +445,11 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     loadAllServicesData(true);
   }, []);
 
-  // 15초마다 자동 업데이트
+  // 30초마다 자동 업데이트
   useEffect(() => {
     const interval = setInterval(() => {
       loadAllServicesData();
-    }, 15000); // 15초 간격
+    }, 30000); // 30초 간격
 
     return () => clearInterval(interval);
   }, []);
