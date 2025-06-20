@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { serviceFetchers, serviceNames } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
-import AdFitBanner from './AdFitBanner';
+// import AdFitBanner from './AdFitBanner';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -1024,9 +1024,9 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         <div className="container mx-auto px-4 py-6">
 
         {/* 상단 광고 배너 */}
-        <div className="mb-6 flex justify-center">
+        {/* <div className="mb-6 flex justify-center">
           <AdFitBanner />
-        </div>
+        </div> */}
 
         {isFilterOpen && (
           <div className="card-base mb-6">
@@ -1061,52 +1061,52 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
         {/* 즐겨찾기 섹션 */}
         {getFavoriteComponents().length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="mb-6 md:mb-8">
+            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
               <div className="relative">
-                <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-400 fill-yellow-400" />
                 <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-lg animate-pulse"></div>
               </div>
-              <h2 className="text-2xl font-bold text-gradient">
+              <h2 className="text-lg md:text-2xl font-bold text-gradient">
                 {t.favorites}
               </h2>
-              <div className="flex items-center gap-2 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
-                <span className="text-yellow-400 font-medium text-sm">
+              <div className="flex items-center gap-1 md:gap-2 bg-yellow-500/10 px-2 md:px-3 py-1 rounded-full border border-yellow-500/20">
+                <span className="text-yellow-400 font-medium text-xs md:text-sm">
                   {getFavoriteComponents().length}
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {getFavoriteComponents().map((item, index) => (
                 <div key={`${item.serviceName}-${item.componentName}-${index}`} className="favorite-card hover-lift">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <ServiceIcon iconName={item.icon} size={24} />
+                    <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
+                      <ServiceIcon iconName={item.icon} size={20} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-1 md:gap-2 mb-1">
                           <div className={`status-dot ${getStatusColor(item.status)}`} />
                           {getStatusIcon(item.status)}
                           <span className="text-xs text-muted-foreground truncate">
                             {item.serviceDisplayName}
                           </span>
                         </div>
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="text-xs md:text-sm font-medium text-foreground truncate">
                           {item.componentName}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => toggleFavorite(item.serviceName, item.componentName)}
-                      className="btn-icon focus-ring flex-shrink-0 mt-1"
+                      className="btn-icon focus-ring flex-shrink-0"
                     >
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                      <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="border-t border-border mt-8 pt-8">
-              <h2 className="text-2xl font-bold text-gradient mb-6">
+            <div className="border-t border-border mt-6 md:mt-8 pt-6 md:pt-8">
+              <h2 className="text-lg md:text-2xl font-bold text-gradient mb-4 md:mb-6">
                 {t.allServices}
               </h2>
             </div>
@@ -1132,73 +1132,73 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                   onClick={() => toggleServiceExpansion(service.service_name)}
             >
               <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="flex flex-col items-center gap-2">
-                        <ServiceIcon iconName={service.icon} size={32} />
+                    <div className="flex items-start gap-2 md:gap-3 flex-1">
+                      <div className="flex flex-col items-center gap-1 md:gap-2">
+                        <ServiceIcon iconName={service.icon} size={24} />
                         <div className="flex items-center gap-1">
                           <div className={`status-dot ${getStatusColor(service.status)}`} />
                           {getStatusIcon(service.status)}
                   </div>
                 </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h2 className="text-lg font-semibold text-foreground">{service.display_name}</h2>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
+                          <h2 className="text-base md:text-lg font-semibold text-foreground truncate">{service.display_name}</h2>
                 <button
                             onClick={(e) => {
                               e.stopPropagation();
                               loadServiceData(service.service_name as keyof typeof serviceFetchers);
                             }}
-                            className="btn-icon focus-ring opacity-60 hover:opacity-100 transition-opacity"
+                            className="btn-icon focus-ring opacity-60 hover:opacity-100 transition-opacity flex-shrink-0"
                             aria-label={`${service.display_name} ${t.refreshService}`}
                             disabled={isLoading}
                           >
                             <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
                           </button>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">{getServiceDescription(service.service_name)}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">{getServiceDescription(service.service_name)}</p>
                         {!expandedServices[service.service_name] && (
-                          <p className="text-xs text-muted-foreground mb-3 opacity-70">
+                          <p className="text-xs text-muted-foreground mb-2 md:mb-3 opacity-70 hidden md:block">
                             {t.clickToExpand}
                           </p>
                         )}
                       </div>
                     </div>
                     <button
-                      className="btn-icon focus-ring -mt-1 -mr-1"
+                      className="btn-icon focus-ring -mt-1 -mr-1 flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleServiceExpansion(service.service_name);
                       }}
                 >
                   {expandedServices[service.service_name] ? (
-                    <ChevronUp className="w-5 h-5" />
+                    <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />
                   ) : (
-                    <ChevronDown className="w-5 h-5" />
+                    <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
                   )}
                 </button>
               </div>
 
               {expandedServices[service.service_name] && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-3 md:mt-4 space-y-1 md:space-y-2">
                   {service.components
                         .filter(component => filters[service.service_name]?.[component.name])
                     .map(component => (
                           <div key={component.name} className="component-card">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={`status-dot ${getStatusColor(component.status)}`} />
+                              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                                <div className={`status-dot ${getStatusColor(component.status)} flex-shrink-0`} />
                                 {getStatusIcon(component.status)}
-                                <span className="text-sm text-foreground">{component.name}</span>
+                                <span className="text-xs md:text-sm text-foreground truncate">{component.name}</span>
                         </div>
                         <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toggleFavorite(service.service_name, component.name);
                                 }}
-                                className="btn-icon focus-ring"
+                                className="btn-icon focus-ring flex-shrink-0"
                         >
                           <Star
-                                  className={`w-4 h-4 transition-all duration-300 ${
+                                  className={`w-3 h-3 md:w-4 md:h-4 transition-all duration-300 ${
                                     favorites[service.service_name]?.[component.name]
                                       ? 'text-yellow-500 fill-yellow-500 scale-110'
                                       : 'text-muted-foreground hover:text-yellow-400'
@@ -1212,16 +1212,16 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
               )}
 
                   {/* 상태 확인 링크를 카드 하단에 배치 */}
-                  <div className="mt-4 pt-3 border-t border-border/50">
+                  <div className="mt-3 md:mt-4 pt-2 md:pt-3 border-t border-border/50">
                     <a 
                       href={service.page_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
+                      className="inline-flex items-center gap-1 md:gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-1 md:px-2 py-1 hover:bg-blue-500/10"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Globe className="w-3 h-3" />
-                      <span>{t.statusPage}</span>
+                      <Globe className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{t.statusPage}</span>
                     </a>
             </div>
                 </div>
@@ -1231,11 +1231,11 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         </div>
 
         {/* 하단 광고 배너 */}
-        <div className="mt-8 mb-6 flex justify-center">
+        {/* <div className="mt-8 mb-6 flex justify-center">
           <AdFitBanner 
             onNoAd={() => console.log('하단 광고 로드 실패')}
           />
-        </div>
+        </div> */}
 
         </div>
       </main>

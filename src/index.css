@@ -130,10 +130,27 @@ body::before {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 0.75rem;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+}
+
+/* 모바일에서 서비스 카드 최적화 */
+@media (max-width: 768px) {
+  .service-card {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+/* 데스크탑에서 서비스 카드 */
+@media (min-width: 769px) {
+  .service-card {
+    padding: 1.5rem;
+  }
 }
 
 .service-card::after {
@@ -166,9 +183,24 @@ body::before {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
-  padding: 0.875rem;
+  padding: 0.625rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+}
+
+/* 모바일에서 컴포넌트 카드 최적화 */
+@media (max-width: 768px) {
+  .component-card {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+}
+
+/* 데스크탑에서 컴포넌트 카드 */
+@media (min-width: 769px) {
+  .component-card {
+    padding: 0.875rem;
+  }
 }
 
 .component-card:hover {
@@ -184,10 +216,25 @@ body::before {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(245, 158, 11, 0.3);
   border-radius: 0.75rem;
-  padding: 1rem;
+  padding: 0.75rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+}
+
+/* 모바일에서 즐겨찾기 카드 최적화 */
+@media (max-width: 768px) {
+  .favorite-card {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+}
+
+/* 데스크탑에서 즐겨찾기 카드 */
+@media (min-width: 769px) {
+  .favorite-card {
+    padding: 1rem;
+  }
 }
 
 .favorite-card::before {
@@ -295,12 +342,28 @@ body::before {
 
 /* 상태 표시기 - 네온 효과 추가 */
 .status-dot {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.625rem;
+  height: 0.625rem;
   border-radius: 50%;
   flex-shrink: 0;
   position: relative;
   transition: all 0.3s ease;
+}
+
+/* 모바일에서 상태 표시기 최적화 */
+@media (max-width: 768px) {
+  .status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+}
+
+/* 데스크탑에서 상태 표시기 */
+@media (min-width: 769px) {
+  .status-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
 }
 
 .status-dot::after {
@@ -625,9 +688,33 @@ body::before {
 /* 서비스 카드 애니메이션 */
 .service-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 모바일에서 그리드 최적화 */
+@media (max-width: 768px) {
+  .service-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* 태블릿에서 그리드 최적화 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .service-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+/* 데스크탑에서 그리드 최적화 */
+@media (min-width: 1025px) {
+  .service-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
 }
 
 .service-card-wrapper {
@@ -704,6 +791,35 @@ body::before {
   border-radius: inherit;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
+}
+
+/* 텍스트 줄 제한 유틸리티 */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 텍스트 truncate */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* AdFit 광고 스타일 제거 - 카카오 가이드라인 준수 */
