@@ -713,7 +713,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   };
 
   return (
-    <div className={`bg-background text-foreground layout-sticky-both ${getMobileScrollClass()} ${className}`}>
+    <div className={`bg-background text-foreground layout-sticky-both ${getMobileScrollClass()} ${className} min-h-screen min-h-dvh`}>
       {/* 헤더 섹션 */}
       <header className="header-section">
         <div className="container mx-auto px-4">

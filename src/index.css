@@ -61,6 +61,18 @@
   font-feature-settings: 'cv11', 'ss01';
   font-variation-settings: 'opsz' 32;
   overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh; /* 동적 뷰포트 높이 지원 */
+}
+
+/* HTML 요소도 동일한 배경 적용 */
+html {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 50%, rgb(17 24 39) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  min-height: 100dvh; /* 동적 뷰포트 높이 지원 */
 }
 
 /* 배경 애니메이션 효과 */
@@ -823,5 +835,50 @@ body::before {
 }
 
 /* AdFit 광고 스타일 제거 - 카카오 가이드라인 준수 */
+.kakao_ad_area {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  transition: none !important;
+}
 
- 
+.kakao_ad_area * {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* 모바일 뷰포트 최적화 - 하얀색 배경 제거 */
+@media (max-width: 768px) {
+  /* 모바일에서 100vh 대신 100dvh 사용 */
+  .min-h-screen {
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+  }
+  
+  /* iOS Safari에서 주소창 고려 */
+  @supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+      min-height: -webkit-fill-available !important;
+    }
+  }
+}
+
+/* 전체 앱 컨테이너 높이 보장 */
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 50%, rgb(17 24 39) 100%);
+  background-attachment: fixed;
+}
+
+/* 모바일에서 배경색 강제 적용 */
+@media (max-width: 768px) {
+  body, html, #root {
+    background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 50%, rgb(17 24 39) 100%) !important;
+    background-attachment: fixed !important;
+  }
+}
