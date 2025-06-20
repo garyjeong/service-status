@@ -86,7 +86,7 @@ React SPA ↔ External APIs (via Proxy)
 - **중복 이모지 제거** - 하위 서비스에서 불필요한 이모지 표시 제거
 - **즐겨찾기 보존 기능** - 새로고침 시에도 즐겨찾기 설정 유지
 - **개별 서비스 새로고침** - 각 서비스별 독립적인 새로고침 버튼
-- **Kakao AdFit 광고 통합** - 728x90 배너 광고를 상단과 하단에 배치하여 수익화
+- **Kakao AdFit 광고 통합** - AdFit 가이드라인 준수를 위한 고정 728x90 배너 광고 (스타일 변형 금지)
 
 ## 프로젝트 구조
 
@@ -95,7 +95,7 @@ ai-status-check/
 ├── src/                          # 소스 코드
 │   ├── components/               # React 컴포넌트
 │   │   ├── Dashboard.tsx        # 메인 대시보드 (단일 컴포넌트)
-│   │   └── AdFitBanner.tsx      # Kakao AdFit 광고 컴포넌트
+│   │   └── AdFitBanner.tsx      # Kakao AdFit 광고 컴포넌트 (고정 728x90, 스타일 변형 금지)
 │   ├── hooks/                   # 커스텀 React Hooks
 │   │   └── useStatus.ts         # 상태 관리 훅
 │   ├── services/                # API 서비스
@@ -242,6 +242,7 @@ docker run -p 3000:3000 ai-dashboard
 - **최신 기술**: Tailwind CSS 4.1, Vite 6.3, TanStack Query 5.8
 - **UI/UX**: 개선된 레이아웃, 즐겨찾기 보존, 개별 새로고침
 - **접근성**: 향상된 키보드 네비게이션, ARIA 지원
+- **AdFit 준수**: 광고 스크립트 변형 금지, 심사 통과를 위한 가이드라인 준수
 
 ## 환경 변수
 
