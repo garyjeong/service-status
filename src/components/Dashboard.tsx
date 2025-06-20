@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { serviceFetchers, serviceNames } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
-// import AdFitBanner from './AdFitBanner';
+import AdFitBanner from './AdFitBanner';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -1024,9 +1024,9 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         <div className="container mx-auto px-4 py-6">
 
         {/* 상단 광고 배너 */}
-        {/* <div className="mb-6 flex justify-center">
+        <div className="mb-6 flex justify-center">
           <AdFitBanner />
-        </div> */}
+        </div>
 
         {isFilterOpen && (
           <div className="card-base mb-6">
@@ -1231,11 +1231,11 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         </div>
 
         {/* 하단 광고 배너 */}
-        {/* <div className="mt-8 mb-6 flex justify-center">
+        <div className="mt-8 mb-6 flex justify-center">
           <AdFitBanner 
             onNoAd={() => console.log('하단 광고 로드 실패')}
           />
-        </div> */}
+        </div>
 
         </div>
       </main>
