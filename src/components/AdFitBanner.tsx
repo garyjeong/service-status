@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface AdFitBannerProps {
   adUnit: string;
-  width: number;
-  height: number;
   className?: string;
   onNoAd?: () => void;
 }
@@ -17,8 +15,6 @@ declare global {
 
 const AdFitBanner: React.FC<AdFitBannerProps> = ({
   adUnit,
-  width,
-  height,
   className = '',
   onNoAd
 }) => {
@@ -26,6 +22,10 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
   const [adLoaded, setAdLoaded] = useState(false);
   const [adFailed, setAdFailed] = useState(false);
   const callbackName = `adFitCallback_${adUnit.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+  // 고정 배너 사이즈
+  const BANNER_WIDTH = 728;
+  const BANNER_HEIGHT = 90;
 
   // NO-AD 콜백 함수 등록
   useEffect(() => {
@@ -91,13 +91,12 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
           className="kakao_ad_area"
           style={{
             display: 'none',
-            width: '100%',
-            maxWidth: `${width}px`,
-            height: `${height}px`
+            width: '728px',
+            height: '90px'
           }}
           data-ad-unit={adUnit}
-          data-ad-width={width.toString()}
-          data-ad-height={height.toString()}
+          data-ad-width="728"
+          data-ad-height="90"
           data-ad-onfail={`window.kakaoAdFitCallbacks.${callbackName}`}
         />
       )}
@@ -107,9 +106,8 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
         <div 
           className="ad-loading-placeholder"
           style={{
-            width: '100%',
-            maxWidth: `${width}px`,
-            height: `${height}px`,
+            width: '728px',
+            height: '90px',
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
             borderRadius: '8px',
             display: 'flex',
