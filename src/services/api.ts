@@ -556,7 +556,7 @@ export async function fetchCursorStatus(): Promise<Service> {
       display_name: 'Cursor Editor',
       description: 'AI 기반 코드 에디터 및 개발 도구',
       status: calculateServiceStatus(components),
-      page_url: 'https://status.cursor.sh',
+      page_url: 'https://status.cursor.com',
       icon: 'cursor',
       components,
     };
@@ -578,7 +578,7 @@ export async function fetchCursorStatus(): Promise<Service> {
       display_name: 'Cursor Editor',
       description: 'AI 기반 코드 에디터 및 개발 도구',
       status: calculateServiceStatus(components),
-      page_url: 'https://status.cursor.sh',
+      page_url: 'https://status.cursor.com',
       icon: 'cursor',
       components,
     };
@@ -604,7 +604,7 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
       display_name: 'Google AI Studio',
       description: 'Google Gemini API 및 AI Studio 플랫폼',
       status: calculateServiceStatus(components),
-      page_url: 'https://aistudio.google.com',
+      page_url: 'https://aistudio.google.com/status',
       icon: 'googleai',
       components,
     };
@@ -623,7 +623,7 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
       display_name: 'Google AI Studio',
       description: 'Google Gemini API 및 AI Studio 플랫폼',
       status: calculateServiceStatus(components),
-      page_url: 'https://aistudio.google.com',
+      page_url: 'https://aistudio.google.com/status',
       icon: 'googleai',
       components,
     };

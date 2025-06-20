@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -18,17 +18,17 @@ export default defineConfig({
       '/api/openai': {
         target: 'https://status.openai.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/openai/, ''),
+        rewrite: path => path.replace(/^\/api\/openai/, ''),
       },
       '/api/anthropic': {
         target: 'https://status.anthropic.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
+        rewrite: path => path.replace(/^\/api\/anthropic/, ''),
       },
       '/api/cursor': {
-        target: 'https://status.cursor.sh',
+        target: 'https://status.cursor.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/cursor/, ''),
+        rewrite: path => path.replace(/^\/api\/cursor/, ''),
       },
     },
   },
@@ -50,4 +50,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
   },
-}) 
+});
