@@ -1025,9 +1025,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
         {/* 상단 광고 배너 */}
         <div className="mb-6 flex justify-center">
-          <AdFitBanner 
-            adUnit="DAN-wiu4St0eJQqPsPgL"
-          />
+          <AdFitBanner />
         </div>
 
         {isFilterOpen && (
@@ -1235,7 +1233,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         {/* 하단 광고 배너 */}
         <div className="mt-8 mb-6 flex justify-center">
           <AdFitBanner 
-            adUnit="DAN-wiu4St0eJQqPsPgL"
             onNoAd={() => console.log('하단 광고 로드 실패')}
           />
         </div>

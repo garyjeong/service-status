@@ -706,19 +706,6 @@ body::before {
   mask-composite: exclude;
 }
 
-/* AdFit 광고 스타일 - 가이드라인 준수를 위해 모든 스타일 제거 */
-
-/* AdFit 광고 기본 스타일 - 공식 가이드 준수 */
-.kakao_ad_area {
-  border-radius: 0 !important;
-  border: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-  transition: none !important;
-  animation: none !important;
-  filter: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
+/* AdFit 광고 스타일 제거 - 카카오 가이드라인 준수 */
 
  
