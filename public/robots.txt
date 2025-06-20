@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 
+# Google 검색 로봇
 User-agent: Googlebot
 Allow: /
 
@@ -10,4 +11,29 @@ Allow: /
 User-agent: Mediapartners-Google
 Allow: /
 
+# 네이버 검색 로봇 (Yeti)
+User-agent: Yeti
+Allow: /
+Crawl-delay: 1
+
+# 다음(Daum) 검색 로봇
+User-agent: Daumoa
+Allow: /
+Crawl-delay: 1
+
+# 빙(Bing) 검색 로봇
+User-agent: Bingbot
+Allow: /
+
+# 기타 주요 검색 엔진
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# 사이트맵 위치 (네이버, 구글 모두 참조)
 Sitemap: https://service-status-monitor.netlify.app/sitemap.xml
+
+# 네이버 RSS 피드 (선택사항)
+# Sitemap: https://service-status-monitor.netlify.app/rss.xml
