@@ -708,12 +708,8 @@ body::before {
 
 /* AdFit 광고 스타일 - 가이드라인 준수를 위해 모든 스타일 제거 */
 
-/* AdFit 광고 완전 격리 - 모든 CSS 상속 차단 */
-.kakao_ad_area,
-.kakao_ad_area *,
-.kakao_ad_area *::before,
-.kakao_ad_area *::after {
-  all: initial !important;
+/* AdFit 광고 기본 스타일 - 공식 가이드 준수 */
+.kakao_ad_area {
   border-radius: 0 !important;
   border: none !important;
   box-shadow: none !important;
@@ -723,19 +719,6 @@ body::before {
   filter: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  overflow: visible !important;
-  clip-path: none !important;
-  mask: none !important;
-  -webkit-mask: none !important;
 }
 
-/* AdFit ins 태그 특별 처리 */
-ins.kakao_ad_area {
-  display: none !important;
-  width: 728px !important;
-  height: 90px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: static !important;
-  background: transparent !important;
-} 
+ 

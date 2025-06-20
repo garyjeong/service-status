@@ -21,10 +21,6 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
   const [adFailed, setAdFailed] = useState(false);
   const callbackName = `adFitCallback_${adUnit.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
-  // 고정 배너 사이즈
-  const BANNER_WIDTH = 728;
-  const BANNER_HEIGHT = 90;
-
   // NO-AD 콜백 함수 등록
   useEffect(() => {
     if (!window.kakaoAdFitCallbacks) {
@@ -82,63 +78,15 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
     }
   }, []);
 
-  // 완전한 CSS 격리를 위한 스타일 - 모든 상속 차단
-  const isolatedContainerStyle: React.CSSProperties = {
-    all: 'initial',
-    display: 'block',
-    width: '728px',
-    height: '90px',
-    margin: '0',
-    padding: '0',
-    border: 'none',
-    borderRadius: '0',
-    boxShadow: 'none',
-    background: 'transparent',
-    overflow: 'visible',
-    transform: 'none',
-    transition: 'none',
-    animation: 'none',
-    position: 'static',
-    zIndex: 'auto',
-    opacity: '1',
-    visibility: 'visible',
-    clipPath: 'none',
-    filter: 'none',
-    backdropFilter: 'none',
-    WebkitBackdropFilter: 'none'
-  };
-
-  const isolatedAdStyle: React.CSSProperties = {
-    all: 'initial',
-    display: 'none',
-    width: '728px',
-    height: '90px',
-    margin: '0',
-    padding: '0',
-    border: 'none',
-    borderRadius: '0',
-    boxShadow: 'none',
-    background: 'transparent',
-    overflow: 'visible',
-    transform: 'none',
-    transition: 'none',
-    animation: 'none',
-    position: 'static',
-    zIndex: 'auto',
-    opacity: '1',
-    visibility: 'visible',
-    clipPath: 'none',
-    filter: 'none',
-    backdropFilter: 'none',
-    WebkitBackdropFilter: 'none'
-  };
-
   return (
-    <div ref={adRef} style={isolatedContainerStyle}>
+    <div ref={adRef}>
       {!adFailed && (
         <ins
           className="kakao_ad_area"
-          style={isolatedAdStyle}
+          style={{
+            display: 'none',
+            width: '100%'
+          }}
           data-ad-unit={adUnit}
           data-ad-width="728"
           data-ad-height="90"
@@ -150,7 +98,6 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
       {!adLoaded && !adFailed && (
         <div 
           style={{
-            all: 'initial',
             width: '728px',
             height: '90px',
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -159,24 +106,7 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
             justifyContent: 'center',
             color: 'rgba(255, 255, 255, 0.5)',
             fontSize: '12px',
-            fontFamily: 'sans-serif',
-            margin: '0',
-            padding: '0',
-            border: 'none',
-            borderRadius: '0',
-            boxShadow: 'none',
-            overflow: 'visible',
-            transform: 'none',
-            transition: 'none',
-            animation: 'none',
-            position: 'static',
-            zIndex: 'auto',
-            opacity: '1',
-            visibility: 'visible',
-            clipPath: 'none',
-            filter: 'none',
-            backdropFilter: 'none',
-            WebkitBackdropFilter: 'none'
+            fontFamily: 'sans-serif'
           }}
         >
           광고 로딩 중...
