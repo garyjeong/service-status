@@ -712,6 +712,18 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     return isScrollingDown ? 'mobile-scroll-hide' : 'mobile-scroll-show';
   };
 
+  // 타이틀 클릭 이벤트 핸들러 추가
+  const handleTitleClick = () => {
+    // 타이틀 클릭 시 파티클 효과나 특별한 애니메이션 트리거
+    const titleElement = document.querySelector('.desktop-title, .text-gradient');
+    if (titleElement) {
+      titleElement.classList.add('clicked');
+      setTimeout(() => {
+        titleElement.classList.remove('clicked');
+      }, 600);
+    }
+  };
+
   return (
     <div className={`bg-background text-foreground layout-sticky-both ${getMobileScrollClass()} ${className} min-h-screen min-h-dvh`}>
       {/* 헤더 섹션 */}
@@ -720,7 +732,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
           {/* 데스크톱 헤더 레이아웃 */}
           <div className="hidden md:flex justify-between items-center py-4">
             {/* 좌측: 서비스 제목 */}
-            <h1 className="desktop-title font-bold text-gradient">{t.title}</h1>
+            <h1 
+              className="desktop-title font-bold text-gradient cursor-pointer"
+              onClick={handleTitleClick}
+              data-text={t.title}
+              title="클릭하여 특별한 효과 보기!"
+            >
+              {t.title}
+            </h1>
             
             {/* 우측: 상태 표시 + 버튼들 */}
             <div className="flex items-center gap-4">
@@ -869,7 +888,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
           <div className="md:hidden py-4">
             {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
             <div className="flex justify-between items-center mb-3">
-              <h1 className="text-2xl font-bold text-gradient">{t.title}</h1>
+              <h1 
+                className="text-2xl font-bold text-gradient cursor-pointer"
+                onClick={handleTitleClick}
+                data-text={t.title}
+                title="클릭하여 특별한 효과 보기!"
+              >
+                {t.title}
+              </h1>
               
               {/* 상태 요약 카드 - 모바일 컴팩트 버전 */}
               <div className="flex items-center gap-1 text-sm">

@@ -677,25 +677,145 @@ body::before {
   transform: translateY(-4px);
 }
 
+/* 기존 text-gradient 클래스 개선 - 더 점잖게 */
 .text-gradient {
-  color: rgb(156 163 175); /* gray-400 smoke color */
-}
-
-/* 데스크톱용 그라디언트 텍스트 */
-.text-gradient-desktop {
-  background: var(--gradient-primary);
+  background: linear-gradient(
+    135deg,
+    #60a5fa 0%,
+    #a78bfa 50%,
+    #60a5fa 100%
+  );
+  background-size: 200% 200%;
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: transparent;
+  animation: subtleGradientShift 12s ease-in-out infinite;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
 }
 
-/* 데스크톱 제목 크기 증가 */
-@media (min-width: 768px) {
-  .desktop-title {
-    font-size: 2.25rem; /* text-4xl, 36px */
-    line-height: 2.5rem;
+/* 더 부드러운 그라데이션 애니메이션 */
+@keyframes subtleGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* 미묘한 글로우 효과 */
+@keyframes subtleGlow {
+  0% { 
+    filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.3));
+  }
+  100% { 
+    filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.5));
   }
 }
+
+/* 호버 시 미묘한 효과 */
+.text-gradient:hover {
+  animation: subtleGradientShift 8s ease-in-out infinite, subtleGlow 2s ease-in-out infinite alternate;
+  transform: translateY(-1px);
+}
+
+/* 데스크탑 타이틀 개선 - 더 점잖게 */
+.text-gradient-desktop {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 800;
+  background: linear-gradient(
+    135deg,
+    #60a5fa 0%,
+    #a78bfa 50%,
+    #60a5fa 100%
+  );
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: subtleGradientShift 15s ease-in-out infinite;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+/* 데스크탑 타이틀 호버 효과 - 더 절제된 */
+.text-gradient-desktop:hover {
+  animation: subtleGradientShift 10s ease-in-out infinite, subtleGlow 3s ease-in-out infinite alternate;
+  transform: translateY(-2px);
+}
+
+/* 반응형 조정 */
+@media (min-width: 768px) {
+  .desktop-title {
+    font-size: 2.5rem; /* 40px */
+    font-weight: 800;
+    background: linear-gradient(
+      135deg,
+      #60a5fa 0%,
+      #a78bfa 50%,
+      #60a5fa 100%
+    );
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: subtleGradientShift 15s ease-in-out infinite;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .desktop-title:hover {
+    animation: subtleGradientShift 10s ease-in-out infinite, subtleGlow 3s ease-in-out infinite alternate;
+    transform: translateY(-2px);
+  }
+}
+
+/* 모바일에서 미묘한 효과 유지 */
+@media (max-width: 767px) {
+  .text-gradient {
+    font-size: 1.875rem; /* 30px */
+    font-weight: 700;
+    animation: subtleGradientShift 10s ease-in-out infinite;
+  }
+}
+
+/* 클릭 효과 - 훨씬 더 절제된 */
+.text-gradient.clicked,
+.desktop-title.clicked {
+  animation: 
+    subtleGradientShift 3s ease-in-out,
+    gentleClickEffect 0.4s ease-out;
+}
+
+/* 부드러운 클릭 효과 */
+@keyframes gentleClickEffect {
+  0% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.3));
+  }
+  50% { 
+    transform: scale(1.02);
+    filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
+  }
+  100% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.4));
+  }
+}
+
+/* 기존의 과도한 애니메이션들 제거/단순화 */
+/* 글리치, 레인보우, 파티클 효과 제거 */
 
 /* 서비스 카드 애니메이션 */
 .service-grid {
