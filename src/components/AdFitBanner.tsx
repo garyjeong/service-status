@@ -7,7 +7,9 @@ interface AdFitBannerProps {
 // 데스크탑 광고 단위 ID 배열 (랜덤 선택용)
 const DESKTOP_AD_UNITS = [
   "DAN-wiu4St0eJQqPsPgL",  // 기존 광고
-  "DAN-mRar8sTIb3L1gdaF"   // 새 광고
+  "DAN-mRar8sTIb3L1gdaF",  // 새 광고
+  "DAN-LgLCtIohiUCMNr6C",  // 추가 광고
+  "DAN-i6g8kDkBxhkToY6h"   // 추가 광고 2
 ];
 
 // 모바일 광고 단위 ID 배열 (랜덤 선택용)
