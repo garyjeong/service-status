@@ -1334,15 +1334,31 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       {/* 푸터 섹션 */}
       <footer className="footer-section">
         <div className="container mx-auto px-4">
-          <div className="text-center text-sm text-muted-foreground py-6">
+          <div className="text-center text-sm text-muted-foreground py-4">
+            {/* 서비스 카테고리 정보 */}
+            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 text-xs mb-3">
+              <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded">
+                {language === 'ko' ? 'AI 서비스 7개' : '7 AI Services'}
+              </span>
+              <span className="px-2 py-1 bg-green-500/10 text-green-400 rounded">
+                {language === 'ko' ? '클라우드 5개' : '5 Cloud Services'}
+              </span>
+              <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded">
+                {language === 'ko' ? '개발도구 6개' : '6 Dev Tools'}
+              </span>
+              <span className="px-2 py-1 bg-orange-500/10 text-orange-400 rounded">
+                {language === 'ko' ? '기타 4개' : '4 Others'}
+              </span>
+            </div>
+
             {/* 메인 통계 정보 */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
               <p className="flex items-center gap-2">
                 <div className="relative">
                   <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
                   {isAnyLoading && <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></div>}
                 </div>
-                <span>{t.autoUpdate} (30초)</span>
+                <span>{language === 'ko' ? '자동 업데이트: 30초마다' : 'Auto Update: Every 30s'}</span>
               </p>
               <span className="hidden sm:inline text-gray-600">•</span>
               <p className="flex items-center gap-2">
@@ -1358,40 +1374,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
               </p>
             </div>
 
-            {/* 서비스 카테고리 정보 */}
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 text-xs">
-              <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded">
-                {language === 'ko' ? 'AI 서비스 7개' : '7 AI Services'}
-              </span>
-              <span className="px-2 py-1 bg-green-500/10 text-green-400 rounded">
-                {language === 'ko' ? '클라우드 5개' : '5 Cloud Services'}
-              </span>
-              <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded">
-                {language === 'ko' ? '개발도구 6개' : '6 Dev Tools'}
-              </span>
-              <span className="px-2 py-1 bg-orange-500/10 text-orange-400 rounded">
-                {language === 'ko' ? '기타 4개' : '4 Others'}
-              </span>
-            </div>
 
-            {/* 프로젝트 정보 */}
-            <div className="border-t border-border/30 pt-4">
-              <p className="text-xs text-muted-foreground/70 mb-2">
-                {language === 'ko' 
-                  ? '개발자를 위한 실시간 서비스 상태 모니터링 대시보드' 
-                  : 'Real-time Service Status Monitoring Dashboard for Developers'
-                }
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs">
-                <span>
-                  {language === 'ko' ? '마지막 업데이트' : 'Last Updated'}: {new Date().toLocaleString(language === 'ko' ? 'ko-KR' : 'en-US')}
-                </span>
-                <span className="hidden sm:inline text-gray-600">•</span>
-                <span>
-                  {language === 'ko' ? '데이터 소스: 공식 상태 API' : 'Data Source: Official Status APIs'}
-                </span>
-              </div>
-            </div>
 
             {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs hidden">
