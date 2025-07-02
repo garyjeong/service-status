@@ -142,28 +142,40 @@ body::before {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
-  padding: 0.75rem;
+  padding: 1.25rem; /* 패딩 일관성 있게 조정 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
-/* 모바일에서 서비스 카드 최적화 */
-@media (max-width: 768px) {
-  .service-card {
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
+/* 접힌 상태: 고정 높이 적용 및 컨텐츠 정렬 */
+.service-card:not(.expanded) {
+  height: 160px; /* 모든 카드 높이 통일 */
 }
 
-/* 데스크탑에서 서비스 카드 */
-@media (min-width: 769px) {
-  .service-card {
-    padding: 1.5rem;
-  }
+/* 확장 상태: 자동 높이 */
+.service-card.expanded {
+  height: auto;
+  min-height: 160px; /* 확장 시 최소 높이도 통일 */
 }
+
+/* 서비스 설명 영역 - 한 줄 ellipsis로 변경 */
+.service-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* 한 줄로 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5; /* 줄 간격 조정 */
+  height: 1.5em; /* 한 줄 높이로 고정 */
+  opacity: 1; /* 명시적으로 표시 */
+  visibility: visible; /* 명시적으로 표시 */
+}
+
+/* '클릭하여 세부 정보 보기' 텍스트 스타일 제거 */
 
 .service-card::after {
   content: '';
@@ -820,31 +832,39 @@ body::before {
 /* 서비스 카드 애니메이션 */
 .service-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 화면 크기별로 명시적인 컬럼 수를 지정하여 너비 불일치 문제 해결 */
+  grid-template-columns: repeat(1, 1fr);
 }
 
-/* 모바일에서 그리드 최적화 */
-@media (max-width: 768px) {
+/* 태블릿 (sm) */
+@media (min-width: 640px) {
   .service-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }
 
-/* 태블릿에서 그리드 최적화 */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* 노트북 (md) */
+@media (min-width: 768px) {
   .service-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
   }
 }
 
-/* 데스크탑에서 그리드 최적화 */
-@media (min-width: 1025px) {
+/* 데스크탑 (lg) */
+@media (min-width: 1024px) {
   .service-grid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* 대형 데스크탑 (xl) */
+@media (min-width: 1280px) {
+  .service-grid {
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
   }
 }
@@ -852,6 +872,9 @@ body::before {
 .service-card-wrapper {
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
+  width: 100%; /* 그리드 셀 전체 너비 사용 */
+  display: flex; /* 내부 카드가 전체 높이를 사용하도록 */
+  flex-direction: column;
 }
 
 .service-card-wrapper.moving {
@@ -931,20 +954,17 @@ body::before {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+/* .line-clamp-2는 더 이상 사용하지 않음 - .service-description으로 대체됨 */
 
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 텍스트 truncate */

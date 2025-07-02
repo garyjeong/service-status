@@ -91,6 +91,7 @@ const translations = {
       googleai: 'Google AI Studio 및 Gemini API',
       github: 'Git 저장소 호스팅 및 협업 플랫폼',
       netlify: '정적 사이트 배포 및 호스팅',
+      docker: '컨테이너 이미지 레지스트리',
       dockerhub: '컨테이너 이미지 레지스트리',
       aws: 'Amazon 웹 서비스 클라우드 플랫폼',
       slack: '팀 커뮤니케이션 및 협업 도구',
@@ -99,6 +100,7 @@ const translations = {
       perplexity: 'AI 검색 및 질의응답 플랫폼',
       v0: 'Vercel의 AI 기반 UI 생성 도구',
       replit: '온라인 코딩 및 협업 IDE',
+      grok: 'Grok AI 모델 및 플랫폼',
       xai: 'Grok AI 모델 및 플랫폼',
       heroku: '클라우드 애플리케이션 플랫폼 (PaaS)',
       atlassian: 'Jira, Confluence, Bitbucket 등 개발 협업 도구',
@@ -140,6 +142,7 @@ const translations = {
       googleai: 'Google AI Studio and Gemini API',
       github: 'Git repository hosting and collaboration platform',
       netlify: 'Static site deployment and hosting',
+      docker: 'Container image registry',
       dockerhub: 'Container image registry',
       aws: 'Amazon Web Services cloud platform',
       slack: 'Team communication and collaboration tool',
@@ -148,6 +151,7 @@ const translations = {
       perplexity: 'AI search and Q&A platform',
       v0: 'Vercel AI-powered UI generation tool',
       replit: 'Online coding and collaboration IDE',
+      grok: 'Grok AI model and platform',
       xai: 'Grok AI model and platform',
       heroku: 'Cloud application platform (PaaS)',
       atlassian: 'Jira, Confluence, Bitbucket and other dev collaboration tools',
@@ -296,6 +300,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   const [sortType, setSortType] = useState<SortType>('default');
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   
   // 모바일 스크롤 숨김 상태
   const [isScrollingDown, setIsScrollingDown] = useState(false);
@@ -307,7 +312,46 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
   // 서비스 설명 번역 함수
   const getServiceDescription = (serviceName: string) => {
-    return t.services_desc[serviceName as keyof typeof t.services_desc] || services.find(s => s.service_name === serviceName)?.description || '';
+    // 직접 번역 객체에서 찾기 - 간단하고 확실한 방법
+    const description = t.services_desc[serviceName as keyof typeof t.services_desc];
+    
+    if (description) {
+      return description;
+    }
+    
+    // 번역 객체에 없으면 기본 설명 반환
+    const defaultDescriptions: { [key: string]: { ko: string; en: string } } = {
+      'openai': { ko: 'ChatGPT 웹 인터페이스 및 OpenAI API', en: 'ChatGPT web interface and OpenAI API' },
+      'anthropic': { ko: 'Claude 채팅 인터페이스 및 Anthropic API', en: 'Claude chat interface and Anthropic API' },
+      'cursor': { ko: 'AI 기반 코드 에디터', en: 'AI-powered code editor' },
+      'googleai': { ko: 'Google AI Studio 및 Gemini API', en: 'Google AI Studio and Gemini API' },
+      'github': { ko: 'Git 저장소 호스팅 및 협업 플랫폼', en: 'Git repository hosting and collaboration platform' },
+      'netlify': { ko: '정적 사이트 배포 및 호스팅', en: 'Static site deployment and hosting' },
+      'dockerhub': { ko: '컨테이너 이미지 레지스트리', en: 'Container image registry' },
+      'aws': { ko: 'Amazon 웹 서비스 클라우드 플랫폼', en: 'Amazon Web Services cloud platform' },
+      'slack': { ko: '팀 커뮤니케이션 및 협업 도구', en: 'Team communication and collaboration tool' },
+      'firebase': { ko: 'Google의 앱 개발 플랫폼', en: 'Google app development platform' },
+      'supabase': { ko: '오픈소스 Firebase 대안', en: 'Open source Firebase alternative' },
+      'perplexity': { ko: 'AI 검색 및 질의응답 플랫폼', en: 'AI search and Q&A platform' },
+      'v0': { ko: 'Vercel의 AI 기반 UI 생성 도구', en: 'Vercel AI-powered UI generation tool' },
+      'replit': { ko: '온라인 코딩 및 협업 IDE', en: 'Online coding and collaboration IDE' },
+      'xai': { ko: 'Grok AI 모델 및 플랫폼', en: 'Grok AI model and platform' },
+      'heroku': { ko: '클라우드 애플리케이션 플랫폼 (PaaS)', en: 'Cloud application platform (PaaS)' },
+      'atlassian': { ko: 'Jira, Confluence, Bitbucket 등 개발 협업 도구', en: 'Jira, Confluence, Bitbucket and other dev collaboration tools' },
+      'circleci': { ko: '지속적 통합 및 배포 (CI/CD) 플랫폼', en: 'Continuous integration and deployment (CI/CD) platform' },
+      'auth0': { ko: '인증 및 권한 관리 플랫폼', en: 'Authentication and authorization platform' },
+      'sendgrid': { ko: '이메일 전송 및 마케팅 플랫폼', en: 'Email delivery and marketing platform' },
+      'cloudflare': { ko: 'CDN, DNS, 보안 및 성능 최적화 서비스', en: 'CDN, DNS, security and performance optimization services' },
+      'datadog': { ko: '모니터링, 로깅, APM 및 보안 플랫폼', en: 'Monitoring, logging, APM and security platform' },
+    };
+    
+    const defaultDesc = defaultDescriptions[serviceName];
+    if (defaultDesc) {
+      return language === 'ko' ? defaultDesc.ko : defaultDesc.en;
+    }
+    
+    // 최종 fallback
+    return language === 'ko' ? '서비스 상태를 모니터링합니다.' : 'Monitoring service status.';
   };
 
   // 기본 필터 및 즐겨찾기 설정 생성
@@ -506,9 +550,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   // 윈도우 리사이즈 이벤트 리스너
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setWindowWidth(window.innerWidth);
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsDesktop(width > 768);
+      setWindowWidth(width);
     };
+
+    // 초기 설정
+    handleResize();
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -1185,12 +1234,9 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
                       <ServiceIcon iconName={item.icon} size={20} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 md:gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 mb-2">
                           <div className={`status-dot ${getStatusColor(item.status)}`} />
                           {getStatusIcon(item.status)}
-                          <span className="text-xs text-muted-foreground truncate">
-                            {item.serviceDisplayName}
-                          </span>
                         </div>
                         <p className="text-xs md:text-sm font-medium text-foreground truncate">
                           {item.componentName}
@@ -1225,96 +1271,90 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
             }
 
             return (
-            <div
-              key={service.service_name}
-                className={`service-card-wrapper ${isAnimating ? 'moving' : ''}`}
+              <div
+                className={`service-card hover-lift ${expandedServices[service.service_name] ? 'expanded' : ''}`}
+                onClick={() => toggleServiceExpansion(service.service_name)}
               >
-                <div
-                  className="service-card hover-lift cursor-pointer"
-                  onClick={() => toggleServiceExpansion(service.service_name)}
-            >
-              <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-2 md:gap-3 flex-1">
-                      <div className="flex flex-col items-center gap-1 md:gap-2">
-                        <ServiceIcon iconName={service.icon} size={24} />
-                        <div className="flex items-center gap-1">
-                          <div className={`status-dot ${getStatusColor(service.status)}`} />
-                          {getStatusIcon(service.status)}
-                  </div>
-                </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
-                          <h2 className="text-base md:text-lg font-semibold text-foreground truncate">{service.display_name}</h2>
-                <div className="relative group">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      loadServiceData(service.service_name as keyof typeof serviceFetchers, false);
-                    }}
-                    disabled={serviceLoadingStates[service.service_name]}
-                    className={`p-2 rounded-full bg-gray-700/50 hover:bg-gray-600/80 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-lg group-hover:shadow-blue-500/20`}
-                    aria-label={t.refreshService}
-                  >
-                    <RefreshCw className={`w-4 h-4 text-gray-300 group-hover:text-white ${serviceLoadingStates[service.service_name] ? 'animate-spin-slow' : ''}`} />
-                  </button>
-                </div>
-                        </div>
-                        <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">{getServiceDescription(service.service_name)}</p>
-                        {!expandedServices[service.service_name] && (
-                          <p className="text-xs text-muted-foreground mb-2 md:mb-3 opacity-70 hidden md:block">
-                            {t.clickToExpand}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => toggleServiceExpansion(service.service_name)}
-                        className="p-2 rounded-full bg-gray-700/50 hover:bg-gray-600/80 transition-all duration-300"
-                        aria-expanded={expandedServices[service.service_name]}
-                      >
-                        {expandedServices[service.service_name] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </button>
+                {/* 상단: 아이콘, 제목, 새로고침/확장 버튼 */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <ServiceIcon iconName={service.icon} size={28} />
+                    <div className="flex-1 min-w-0 self-center">
+                      <h2 className="text-lg font-semibold text-foreground truncate">{service.display_name}</h2>
                     </div>
                   </div>
-
-                  {expandedServices[service.service_name] && service.components && service.components.length > 0 && (
-                    <div className="mt-6 pl-4 pr-2 border-l-2 border-gray-700/50 ml-6">
-                      <h4 className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">{t.allServices}</h4>
-                      <ul className="space-y-2">
-                        {service.components.map((component, index) => (
-                          <li key={index} className="flex items-center justify-between text-sm animate-fade-in-up" style={{ animationDelay: `${index * 30}ms` }}>
-                            <span className="text-gray-300">{component.name}</span>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs font-medium ${
-                                component.status === 'operational' ? 'text-green-400' :
-                                component.status === 'degraded' ? 'text-yellow-400' :
-                                component.status === 'outage' ? 'text-red-400' : 
-                                component.status === 'maintenance' ? 'text-blue-400' : 'text-gray-400'
-                              }`}>
-                                {getStatusText(component.status)}
-                              </span>
-                              {getStatusIcon(component.status)}
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* 상태 확인 링크를 카드 하단에 배치 */}
-                  <div className="mt-3 md:mt-4 pt-2 md:pt-3 border-t border-border/50">
-                    <a 
-                      href={service.page_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 md:gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-1 md:px-2 py-1 hover:bg-blue-500/10"
-                      onClick={(e) => e.stopPropagation()}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        loadServiceData(service.service_name as keyof typeof serviceFetchers, false);
+                      }}
+                      disabled={serviceLoadingStates[service.service_name]}
+                      className="btn-icon"
+                      aria-label={t.refreshService}
                     >
-                      <Globe className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{t.statusPage}</span>
-                    </a>
-            </div>
+                      <RefreshCw className={`w-4 h-4 ${serviceLoadingStates[service.service_name] ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleServiceExpansion(service.service_name);
+                      }}
+                      className="btn-icon md:hidden"
+                      aria-label={expandedServices[service.service_name] ? "접기" : "펼치기"}
+                    >
+                      {expandedServices[service.service_name] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 중앙: 상태, 설명 */}
+                <div className="flex-1 flex flex-col justify-center min-h-0 mb-3">
+                  {expandedServices[service.service_name] ? (
+                    <div className="mt-2 -mx-1 pr-1 custom-scrollbar overflow-y-auto">
+                      {service.components && service.components.length > 0 ? (
+                        <ul className="space-y-2 py-1">
+                          {service.components.map((component, index) => (
+                            <li key={index} className="flex items-center justify-between text-sm animate-fade-in-up" style={{ animationDelay: `${index * 30}ms` }}>
+                              <span className="text-gray-300 truncate flex-1 mr-2">{component.name}</span>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className={`text-xs font-medium ${getStatusColorClass(component.status)}`}>
+                                  {getStatusText(component.status)}
+                                </span>
+                                {getStatusIcon(component.status)}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">{language === 'ko' ? '세부 컴포넌트 정보가 없습니다.' : 'No detailed component information available.'}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <div className={`status-dot ${getStatusColor(service.status)}`} />
+                        {getStatusIcon(service.status)}
+                      </div>
+                      <p className="service-description text-sm text-muted-foreground">
+                        {getServiceDescription(service.service_name) || `${service.display_name} 서비스 상태를 모니터링합니다.`}
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                {/* 하단: 상태 페이지 링크 */}
+                <div className="pt-3 border-t border-border/50 mt-auto">
+                  <a
+                    href={service.page_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Globe className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{t.statusPage}</span>
+                  </a>
                 </div>
               </div>
             );
@@ -1322,7 +1362,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         </div>
 
         {/* 하단 광고 배너 */}
-        <div className="mt-8 mb-6 flex justify-center">
+        <div className="mt-4 mb-3 md:mt-8 md:mb-6 flex justify-center">
           <AdFitBanner 
             onNoAd={() => console.log('하단 광고 로드 실패')}
           />
@@ -1373,8 +1413,6 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 </span>
               </p>
             </div>
-
-
 
             {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs hidden">
