@@ -306,22 +306,18 @@ export async function fetchNetlifyStatus(): Promise<Service> {
  */
 export async function fetchDockerHubStatus(): Promise<Service> {
   try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
     const response = await apiClient.get(
-      `${CORS_PROXY}https://status.docker.com/api/v2/status.json`
+      `${CORS_PROXY}https://status.docker.com/api/v2/components.json`
     );
     const data = response.data;
 
-    const components: ServiceComponent[] = [
-      { name: 'Registry', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Build Service', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Webhooks', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Organizations', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Authentication', status: normalizeStatus(data.status?.indicator || 'operational') },
-      {
-        name: 'Container Registry',
-        status: normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
 
     return {
       service_name: 'dockerhub',
@@ -329,18 +325,16 @@ export async function fetchDockerHubStatus(): Promise<Service> {
       description: '컨테이너 이미지 레지스트리 및 저장소',
       status: calculateServiceStatus(components),
       page_url: 'https://status.docker.com',
-      icon: 'dockerhub',
+      icon: 'docker',
       components,
     };
   } catch (error) {
     console.error('Docker Hub API 오류:', error);
     const components: ServiceComponent[] = [
-      { name: 'Registry', status: 'operational' },
-      { name: 'Build Service', status: 'operational' },
-      { name: 'Webhooks', status: 'operational' },
-      { name: 'Organizations', status: 'operational' },
-      { name: 'Authentication', status: 'operational' },
-      { name: 'Container Registry', status: 'operational' },
+      { name: 'Docker Hub Registry', status: 'operational' },
+      { name: 'Docker Hub Web', status: 'operational' },
+      { name: 'Docker Desktop', status: 'operational' },
+      { name: 'Docker Build', status: 'operational' },
     ];
 
     return {
@@ -349,7 +343,7 @@ export async function fetchDockerHubStatus(): Promise<Service> {
       description: '컨테이너 이미지 레지스트리 및 저장소',
       status: calculateServiceStatus(components),
       page_url: 'https://status.docker.com',
-      icon: 'dockerhub',
+      icon: 'docker',
       components,
     };
   }
@@ -955,6 +949,346 @@ export async function fetchSupabaseStatus(): Promise<Service> {
 }
 
 /**
+ * Heroku 상태 조회
+ */
+export async function fetchHerokuStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.heroku.com/api/v4/current-status`
+    );
+    const data = response.data;
+
+    // Heroku는 특별한 API 구조를 사용 (status 배열)
+    const components: ServiceComponent[] = (data.status || []).map((system: any) => ({
+      name: system.system,
+      status: normalizeStatus(
+        system.status === 'green'
+          ? 'operational'
+          : system.status === 'yellow'
+            ? 'degraded'
+            : system.status === 'red'
+              ? 'outage'
+              : 'operational'
+      ),
+    }));
+
+    return {
+      service_name: 'heroku',
+      display_name: 'Heroku',
+      description: '클라우드 애플리케이션 플랫폼 (PaaS)',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.heroku.com',
+      icon: 'heroku',
+      components,
+    };
+  } catch (error) {
+    console.error('Heroku API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Apps', status: 'operational' },
+      { name: 'Data', status: 'operational' },
+      { name: 'Tools', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'heroku',
+      display_name: 'Heroku',
+      description: '클라우드 애플리케이션 플랫폼 (PaaS)',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.heroku.com',
+      icon: 'heroku',
+      components,
+    };
+  }
+}
+
+/**
+ * Atlassian 상태 조회
+ */
+export async function fetchAtlassianStatus(): Promise<Service> {
+  try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://developer.status.atlassian.com/api/v2/components.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
+
+    return {
+      service_name: 'atlassian',
+      display_name: 'Atlassian',
+      description: 'Jira, Confluence, Bitbucket 등 개발 협업 도구',
+      status: calculateServiceStatus(components),
+      page_url: 'https://developer.status.atlassian.com',
+      icon: 'atlassian',
+      components,
+    };
+  } catch (error) {
+    console.error('Atlassian API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'APIs', status: 'operational' },
+      { name: 'Webhooks', status: 'operational' },
+      { name: 'App Marketplace', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'atlassian',
+      display_name: 'Atlassian',
+      description: 'Jira, Confluence, Bitbucket 등 개발 협업 도구',
+      status: calculateServiceStatus(components),
+      page_url: 'https://developer.status.atlassian.com',
+      icon: 'atlassian',
+      components,
+    };
+  }
+}
+
+/**
+ * CircleCI 상태 조회
+ */
+export async function fetchCircleCIStatus(): Promise<Service> {
+  try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.circleci.com/api/v2/components.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
+
+    return {
+      service_name: 'circleci',
+      display_name: 'CircleCI',
+      description: '지속적 통합 및 배포 (CI/CD) 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.circleci.com',
+      icon: 'circleci',
+      components,
+    };
+  } catch (error) {
+    console.error('CircleCI API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'AWS', status: 'operational' },
+      { name: 'Docker Jobs', status: 'operational' },
+      { name: 'Frontend', status: 'operational' },
+      { name: 'API', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'circleci',
+      display_name: 'CircleCI',
+      description: '지속적 통합 및 배포 (CI/CD) 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.circleci.com',
+      icon: 'circleci',
+      components,
+    };
+  }
+}
+
+/**
+ * Auth0 상태 조회
+ */
+export async function fetchAuth0Status(): Promise<Service> {
+  try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://auth0.statuspage.io/api/v2/components.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
+
+    return {
+      service_name: 'auth0',
+      display_name: 'Auth0',
+      description: '인증 및 권한 관리 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://auth0.statuspage.io',
+      icon: 'auth0',
+      components,
+    };
+  } catch (error) {
+    console.error('Auth0 API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'User Authentication', status: 'operational' },
+      { name: 'Management API', status: 'operational' },
+      { name: 'Dashboard', status: 'operational' },
+      { name: 'Tenant Logs', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'auth0',
+      display_name: 'Auth0',
+      description: '인증 및 권한 관리 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://auth0.statuspage.io',
+      icon: 'auth0',
+      components,
+    };
+  }
+}
+
+/**
+ * SendGrid 상태 조회
+ */
+export async function fetchSendGridStatus(): Promise<Service> {
+  try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.sendgrid.com/api/v2/components.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
+
+    return {
+      service_name: 'sendgrid',
+      display_name: 'SendGrid',
+      description: '이메일 전송 및 마케팅 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.sendgrid.com',
+      icon: 'sendgrid',
+      components,
+    };
+  } catch (error) {
+    console.error('SendGrid API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Web API', status: 'operational' },
+      { name: 'SMTP', status: 'operational' },
+      { name: 'Marketing Campaigns', status: 'operational' },
+      { name: 'Event Webhook', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'sendgrid',
+      display_name: 'SendGrid',
+      description: '이메일 전송 및 마케팅 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.sendgrid.com',
+      icon: 'sendgrid',
+      components,
+    };
+  }
+}
+
+/**
+ * Cloudflare 상태 조회
+ */
+export async function fetchCloudflareStatus(): Promise<Service> {
+  try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://www.cloudflarestatus.com/api/v2/components.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
+
+    return {
+      service_name: 'cloudflare',
+      display_name: 'Cloudflare',
+      description: 'CDN, DNS, 보안 및 성능 최적화 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://www.cloudflarestatus.com',
+      icon: 'cloudflare',
+      components,
+    };
+  } catch (error) {
+    console.error('Cloudflare API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'CDN', status: 'operational' },
+      { name: 'DNS', status: 'operational' },
+      { name: 'SSL/TLS', status: 'operational' },
+      { name: 'Workers', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'cloudflare',
+      display_name: 'Cloudflare',
+      description: 'CDN, DNS, 보안 및 성능 최적화 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://www.cloudflarestatus.com',
+      icon: 'cloudflare',
+      components,
+    };
+  }
+}
+
+/**
+ * Datadog 상태 조회
+ */
+export async function fetchDatadogStatus(): Promise<Service> {
+  try {
+    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.datadoghq.com/api/v2/components.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = (data.components || [])
+      .filter((component: any) => !component.group_id && component.name !== 'Operational')
+      .map((component: any) => ({
+        name: component.name,
+        status: normalizeStatus(component.status),
+      }));
+
+    return {
+      service_name: 'datadog',
+      display_name: 'Datadog',
+      description: '모니터링, 로깅, APM 및 보안 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.datadoghq.com',
+      icon: 'datadog',
+      components,
+    };
+  } catch (error) {
+    console.error('Datadog API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Infrastructure Monitoring', status: 'operational' },
+      { name: 'APM', status: 'operational' },
+      { name: 'Logs', status: 'operational' },
+      { name: 'Synthetics', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'datadog',
+      display_name: 'Datadog',
+      description: '모니터링, 로깅, APM 및 보안 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.datadoghq.com',
+      icon: 'datadog',
+      components,
+    };
+  }
+}
+
+/**
  * 모든 서비스 상태를 병렬로 조회
  */
 export async function fetchAllServicesStatus(): Promise<Service[]> {
@@ -974,6 +1308,13 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchV0Status,
     fetchReplitStatus,
     fetchXAIStatus,
+    fetchHerokuStatus,
+    fetchAtlassianStatus,
+    fetchCircleCIStatus,
+    fetchAuth0Status,
+    fetchSendGridStatus,
+    fetchCloudflareStatus,
+    fetchDatadogStatus,
   ];
 
   try {
@@ -1019,6 +1360,13 @@ export const serviceFetchers = {
   v0: fetchV0Status,
   replit: fetchReplitStatus,
   xai: fetchXAIStatus,
+  heroku: fetchHerokuStatus,
+  atlassian: fetchAtlassianStatus,
+  circleci: fetchCircleCIStatus,
+  auth0: fetchAuth0Status,
+  sendgrid: fetchSendGridStatus,
+  cloudflare: fetchCloudflareStatus,
+  datadog: fetchDatadogStatus,
 };
 
 // 서비스 이름 목록

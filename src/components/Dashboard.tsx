@@ -20,6 +20,13 @@ import perplexityIcon from '@/assets/perplexity.png';
 import v0Icon from '@/assets/v0.png';
 import replitIcon from '@/assets/replit.png';
 import grokIcon from '@/assets/grok.png';
+import herokuIcon from '@/assets/heroku.png';
+import atlassianIcon from '@/assets/atlassian.png';
+import circleciIcon from '@/assets/circleci.png';
+import auth0Icon from '@/assets/auth0.png';
+import sendgridIcon from '@/assets/sendgrid.png';
+import cloudflareIcon from '@/assets/cloudflare.png';
+import datadogIcon from '@/assets/datadog.png';
 
 interface DashboardProps {
   className?: string;
@@ -75,23 +82,31 @@ const translations = {
     sortDefault: '기본',
     sortNameAsc: '이름 오름차순',
     sortNameDesc: '이름 내림차순',
+    maintenance: '점검 중',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT 웹 인터페이스 및 OpenAI API',
       anthropic: 'Claude 채팅 인터페이스 및 Anthropic API',
-      cursor: 'AI 기반 코드 에디터 및 개발 도구',
-      googleai: 'Google Gemini API 및 AI Studio 플랫폼',
-      github: '코드 저장소 및 협업 플랫폼',
-      netlify: '정적 사이트 호스팅 및 배포 플랫폼',
-      dockerhub: '컨테이너 이미지 레지스트리 및 저장소',
-      aws: '아마존 웹 서비스 클라우드 플랫폼',
-      slack: '팀 커뮤니케이션 및 협업 플랫폼',
-      firebase: 'Google 백엔드 서비스 플랫폼',
-      supabase: '오픈소스 Firebase 대안 백엔드 플랫폼',
-      perplexity: 'AI 검색 엔진 및 대화형 AI 플랫폼',
-      v0: 'AI 기반 UI 생성 및 프로토타이핑 플랫폼',
-      replit: '온라인 코딩 환경 및 협업 개발 플랫폼',
-      xai: 'Grok AI 모델 및 플랫폼 서비스'
+      cursor: 'AI 기반 코드 에디터',
+      googleai: 'Google AI Studio 및 Gemini API',
+      github: 'Git 저장소 호스팅 및 협업 플랫폼',
+      netlify: '정적 사이트 배포 및 호스팅',
+      dockerhub: '컨테이너 이미지 레지스트리',
+      aws: 'Amazon 웹 서비스 클라우드 플랫폼',
+      slack: '팀 커뮤니케이션 및 협업 도구',
+      firebase: 'Google의 앱 개발 플랫폼',
+      supabase: '오픈소스 Firebase 대안',
+      perplexity: 'AI 검색 및 질의응답 플랫폼',
+      v0: 'Vercel의 AI 기반 UI 생성 도구',
+      replit: '온라인 코딩 및 협업 IDE',
+      xai: 'Grok AI 모델 및 플랫폼',
+      heroku: '클라우드 애플리케이션 플랫폼 (PaaS)',
+      atlassian: 'Jira, Confluence, Bitbucket 등 개발 협업 도구',
+      circleci: '지속적 통합 및 배포 (CI/CD) 플랫폼',
+      auth0: '인증 및 권한 관리 플랫폼',
+      sendgrid: '이메일 전송 및 마케팅 플랫폼',
+      cloudflare: 'CDN, DNS, 보안 및 성능 최적화 서비스',
+      datadog: '모니터링, 로깅, APM 및 보안 플랫폼',
     }
   },
   en: {
@@ -116,26 +131,34 @@ const translations = {
     sortDefault: 'Default',
     sortNameAsc: 'Name A-Z',
     sortNameDesc: 'Name Z-A',
+    maintenance: 'Maintenance',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT web interface and OpenAI API',
       anthropic: 'Claude chat interface and Anthropic API',
-      cursor: 'AI-powered code editor and development tools',
-      googleai: 'Google Gemini API and AI Studio platform',
-      github: 'Code repository and collaboration platform',
-      netlify: 'Static site hosting and deployment platform',
-      dockerhub: 'Container image registry and repository',
+      cursor: 'AI-powered code editor',
+      googleai: 'Google AI Studio and Gemini API',
+      github: 'Git repository hosting and collaboration platform',
+      netlify: 'Static site deployment and hosting',
+      dockerhub: 'Container image registry',
       aws: 'Amazon Web Services cloud platform',
-      slack: 'Team communication and collaboration platform',
-      firebase: 'Google backend service platform',
-      supabase: 'Open source Firebase alternative backend platform',
-      perplexity: 'AI search engine and conversational AI platform',
-      v0: 'AI-powered UI generation and prototyping platform',
-      replit: 'Online coding environment and collaborative development platform',
-      xai: 'Grok AI model and platform services'
+      slack: 'Team communication and collaboration tool',
+      firebase: 'Google app development platform',
+      supabase: 'Open source Firebase alternative',
+      perplexity: 'AI search and Q&A platform',
+      v0: 'Vercel AI-powered UI generation tool',
+      replit: 'Online coding and collaboration IDE',
+      xai: 'Grok AI model and platform',
+      heroku: 'Cloud application platform (PaaS)',
+      atlassian: 'Jira, Confluence, Bitbucket and other dev collaboration tools',
+      circleci: 'Continuous integration and deployment (CI/CD) platform',
+      auth0: 'Authentication and authorization platform',
+      sendgrid: 'Email delivery and marketing platform',
+      cloudflare: 'CDN, DNS, security and performance optimization services',
+      datadog: 'Monitoring, logging, APM and security platform',
     }
   }
-  };
+};
 
 // 이미지 아이콘 매핑
 const getServiceIcon = (iconName: string): string => {
@@ -146,7 +169,7 @@ const getServiceIcon = (iconName: string): string => {
     googleai: googleaiIcon,
     github: githubIcon,
     netlify: netlifyIcon,
-    dockerhub: dockerIcon,
+    docker: dockerIcon,
     aws: awsIcon,
     slack: slackIcon,
     firebase: firebaseIcon,
@@ -155,6 +178,13 @@ const getServiceIcon = (iconName: string): string => {
     v0: v0Icon,
     replit: replitIcon,
     grok: grokIcon,
+    heroku: herokuIcon,
+    atlassian: atlassianIcon,
+    circleci: circleciIcon,
+    auth0: auth0Icon,
+    sendgrid: sendgridIcon,
+    cloudflare: cloudflareIcon,
+    datadog: datadogIcon,
   };
   return iconMap[iconName] || '';
 };
@@ -163,31 +193,50 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
   const iconSrc = getServiceIcon(iconName);
   
   if (iconSrc) {
-    // GitHub, Cursor, grok 아이콘에 흰색 배경 적용
-    const needsWhiteBackground = iconName === 'github' || iconName === 'cursor' || iconName === 'grok';
+    const needsWhiteBackground = ['github', 'cursor', 'netlify', 'perplexity', 'v0', 'replit', 'circleci', 'grok'].includes(iconName);
     
     return (
       <div className="relative group">
-      <img 
-        src={iconSrc} 
-        alt={iconName}
-        style={{ 
-          width: `${size}px`, 
-          height: `${size}px`,
-          objectFit: 'contain',
+        <img 
+          src={iconSrc} 
+          alt={`${iconName} icon`} 
+          style={{ 
+            width: `${size}px`, 
+            height: `${size}px`,
+            objectFit: 'contain',
             borderRadius: '8px',
-          backgroundColor: needsWhiteBackground ? '#ffffff' : 'transparent',
-          padding: needsWhiteBackground ? '2px' : '0'
-        }} 
+            backgroundColor: needsWhiteBackground ? '#ffffff' : 'transparent',
+            padding: needsWhiteBackground ? '2px' : '0'
+          }} 
           className="transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
-      />
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10"></div>
       </div>
     );
   }
   
-  // 폴백 아이콘
-  return <Wifi style={{ width: `${size}px`, height: `${size}px` }} className="text-blue-400" />;
+  // 아이콘이 없는 경우 서비스 이름의 첫 글자를 원형 배경에 표시
+  const firstLetter = iconName.charAt(0).toUpperCase();
+  const colors = [
+    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 
+    'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
+  ];
+  const colorIndex = iconName.charCodeAt(0) % colors.length;
+  const bgColor = colors[colorIndex];
+  
+  return (
+    <div 
+      className={`relative group flex items-center justify-center ${bgColor} text-white font-bold rounded-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}
+      style={{ 
+        width: `${size}px`, 
+        height: `${size}px`,
+        fontSize: `${size * 0.5}px`
+      }}
+    >
+      {firstLetter}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10"></div>
+    </div>
+  );
 };
 
 // 상태에 따른 이모지 반환
@@ -310,7 +359,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
         }
         
         return newServices.sort((a, b) => {
-          const order = ['openai', 'anthropic', 'cursor', 'googleai', 'github', 'netlify', 'dockerhub', 'aws', 'slack', 'firebase', 'supabase'];
+          const order = ['openai', 'anthropic', 'cursor', 'googleai', 'github', 'netlify', 'dockerhub', 'aws', 'slack', 'firebase', 'supabase', 'perplexity', 'v0', 'replit', 'xai', 'heroku', 'atlassian', 'circleci', 'auth0', 'sendgrid', 'cloudflare', 'datadog'];
           return order.indexOf(a.service_name) - order.indexOf(b.service_name);
         });
       });
@@ -622,12 +671,39 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'operational': return t.operational;
+      case 'degraded': return t.degraded;
+      case 'outage': return t.outage;
+      case 'maintenance': return t.maintenance;
+      default: return status;
+    }
+  };
+
+  const getStatusColorClass = (status: string) => {
+    switch (status) {
+      case 'operational':
+        return 'border-green-500/50 hover:border-green-500/80';
+      case 'degraded':
+        return 'border-yellow-500/50 hover:border-yellow-500/80';
+      case 'outage':
+        return 'border-red-500/50 hover:border-red-500/80';
+      default:
+        return 'border-gray-600/50 hover:border-gray-500/80';
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'operational': return 'status-operational';
-      case 'degraded': return 'status-degraded';
-      case 'outage': return 'status-major-outage';
-      default: return 'status-unknown';
+      case 'operational':
+        return 'status-operational';
+      case 'degraded':
+        return 'status-degraded';
+      case 'outage':
+        return 'status-major-outage';
+      default:
+        return 'status-unknown';
     }
   };
 
@@ -1169,17 +1245,19 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
                           <h2 className="text-base md:text-lg font-semibold text-foreground truncate">{service.display_name}</h2>
-                <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              loadServiceData(service.service_name as keyof typeof serviceFetchers);
-                            }}
-                            className="btn-icon focus-ring opacity-60 hover:opacity-100 transition-opacity flex-shrink-0"
-                            aria-label={`${service.display_name} ${t.refreshService}`}
-                            disabled={isLoading}
-                          >
-                            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-                          </button>
+                <div className="relative group">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      loadServiceData(service.service_name as keyof typeof serviceFetchers, false);
+                    }}
+                    disabled={serviceLoadingStates[service.service_name]}
+                    className={`p-2 rounded-full bg-gray-700/50 hover:bg-gray-600/80 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-lg group-hover:shadow-blue-500/20`}
+                    aria-label={t.refreshService}
+                  >
+                    <RefreshCw className={`w-4 h-4 text-gray-300 group-hover:text-white ${serviceLoadingStates[service.service_name] ? 'animate-spin-slow' : ''}`} />
+                  </button>
+                </div>
                         </div>
                         <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">{getServiceDescription(service.service_name)}</p>
                         {!expandedServices[service.service_name] && (
@@ -1189,53 +1267,40 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                         )}
                       </div>
                     </div>
-                    <button
-                      className="btn-icon focus-ring -mt-1 -mr-1 flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleServiceExpansion(service.service_name);
-                      }}
-                >
-                  {expandedServices[service.service_name] ? (
-                    <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
-                  )}
-                </button>
-              </div>
+                    <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => toggleServiceExpansion(service.service_name)}
+                        className="p-2 rounded-full bg-gray-700/50 hover:bg-gray-600/80 transition-all duration-300"
+                        aria-expanded={expandedServices[service.service_name]}
+                      >
+                        {expandedServices[service.service_name] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
 
-              {expandedServices[service.service_name] && (
-                <div className="mt-3 md:mt-4 space-y-1 md:space-y-2">
-                  {service.components
-                        .filter(component => filters[service.service_name]?.[component.name])
-                    .map(component => (
-                          <div key={component.name} className="component-card">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                <div className={`status-dot ${getStatusColor(component.status)} flex-shrink-0`} />
-                                {getStatusIcon(component.status)}
-                                <span className="text-xs md:text-sm text-foreground truncate">{component.name}</span>
-                        </div>
-                        <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleFavorite(service.service_name, component.name);
-                                }}
-                                className="btn-icon focus-ring flex-shrink-0"
-                        >
-                          <Star
-                                  className={`w-3 h-3 md:w-4 md:h-4 transition-all duration-300 ${
-                                    favorites[service.service_name]?.[component.name]
-                                      ? 'text-yellow-500 fill-yellow-500 scale-110'
-                                      : 'text-muted-foreground hover:text-yellow-400'
-                            }`}
-                          />
-                        </button>
+                  {expandedServices[service.service_name] && service.components && service.components.length > 0 && (
+                    <div className="mt-6 pl-4 pr-2 border-l-2 border-gray-700/50 ml-6">
+                      <h4 className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">{t.allServices}</h4>
+                      <ul className="space-y-2">
+                        {service.components.map((component, index) => (
+                          <li key={index} className="flex items-center justify-between text-sm animate-fade-in-up" style={{ animationDelay: `${index * 30}ms` }}>
+                            <span className="text-gray-300">{component.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-medium ${
+                                component.status === 'operational' ? 'text-green-400' :
+                                component.status === 'degraded' ? 'text-yellow-400' :
+                                component.status === 'outage' ? 'text-red-400' : 
+                                component.status === 'maintenance' ? 'text-blue-400' : 'text-gray-400'
+                              }`}>
+                                {getStatusText(component.status)}
+                              </span>
+                              {getStatusIcon(component.status)}
                             </div>
-                      </div>
-                    ))}
-                </div>
-              )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {/* 상태 확인 링크를 카드 하단에 배치 */}
                   <div className="mt-3 md:mt-4 pt-2 md:pt-3 border-t border-border/50">
@@ -1269,28 +1334,72 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       {/* 푸터 섹션 */}
       <footer className="footer-section">
         <div className="container mx-auto px-4">
-          <div className="text-center text-sm text-muted-foreground py-4">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <p className="flex items-center gap-2">
+          <div className="text-center text-sm text-muted-foreground py-6">
+            {/* 메인 통계 정보 */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-4">
+              <p className="flex items-center gap-2">
                 <div className="relative">
                   <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
                   {isAnyLoading && <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></div>}
                 </div>
-              <span>{t.autoUpdate}</span>
-            </p>
-            <span className="hidden sm:inline">|</span>
-            <p className="flex items-center gap-2">
+                <span>{t.autoUpdate} (30초)</span>
+              </p>
+              <span className="hidden sm:inline text-gray-600">•</span>
+              <p className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
                 <span>{t.monitoring}: {getServicesWithCalculatedStatus().length}{t.services}</span>
-            </p>
-          </div>
-                        {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
+              </p>
+              <span className="hidden sm:inline text-gray-600">•</span>
+              <p className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-green-400" />
+                <span>
+                  {getOverallStats().operational}/{getServicesWithCalculatedStatus().length} {language === 'ko' ? '정상 운영' : 'Operational'}
+                </span>
+              </p>
+            </div>
+
+            {/* 서비스 카테고리 정보 */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 text-xs">
+              <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded">
+                {language === 'ko' ? 'AI 서비스 7개' : '7 AI Services'}
+              </span>
+              <span className="px-2 py-1 bg-green-500/10 text-green-400 rounded">
+                {language === 'ko' ? '클라우드 5개' : '5 Cloud Services'}
+              </span>
+              <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded">
+                {language === 'ko' ? '개발도구 6개' : '6 Dev Tools'}
+              </span>
+              <span className="px-2 py-1 bg-orange-500/10 text-orange-400 rounded">
+                {language === 'ko' ? '기타 4개' : '4 Others'}
+              </span>
+            </div>
+
+            {/* 프로젝트 정보 */}
+            <div className="border-t border-border/30 pt-4">
+              <p className="text-xs text-muted-foreground/70 mb-2">
+                {language === 'ko' 
+                  ? '개발자를 위한 실시간 서비스 상태 모니터링 대시보드' 
+                  : 'Real-time Service Status Monitoring Dashboard for Developers'
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs">
+                <span>
+                  {language === 'ko' ? '마지막 업데이트' : 'Last Updated'}: {new Date().toLocaleString(language === 'ko' ? 'ko-KR' : 'en-US')}
+                </span>
+                <span className="hidden sm:inline text-gray-600">•</span>
+                <span>
+                  {language === 'ko' ? '데이터 소스: 공식 상태 API' : 'Data Source: Official Status APIs'}
+                </span>
+              </div>
+            </div>
+
+            {/* 정책 페이지 링크 - 화면에는 숨김 처리 */}
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs hidden">
-            <a 
+              <a 
                 href="/privacy-policy" 
                 className="hover:text-foreground transition-colors underline"
-              target="_blank" 
-              rel="noopener noreferrer"
+                target="_blank" 
+                rel="noopener noreferrer"
               >
                 {language === 'ko' ? '개인정보처리방침' : 'Privacy Policy'}
               </a>
@@ -1300,10 +1409,10 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 className="hover:text-foreground transition-colors underline"
                 target="_blank"
                 rel="noopener noreferrer"
-            >
+              >
                 {language === 'ko' ? '이용약관' : 'Terms of Service'}
-            </a>
-      </div>
+              </a>
+            </div>
           </div>
         </div>
       </footer>
