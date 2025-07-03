@@ -306,18 +306,64 @@ export async function fetchNetlifyStatus(): Promise<Service> {
  */
 export async function fetchDockerHubStatus(): Promise<Service> {
   try {
-    // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.docker.com/api/v2/components.json`
-    );
-    const data = response.data;
+    // 메인 상태와 컴포넌트 정보를 모두 가져옴
+    const [statusResponse, componentsResponse] = await Promise.allSettled([
+      apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/status.json`),
+      apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/components.json`),
+    ]);
 
-    const components: ServiceComponent[] = (data.components || [])
-      .filter((component: any) => !component.group_id && component.name !== 'Operational')
-      .map((component: any) => ({
-        name: component.name,
-        status: normalizeStatus(component.status),
-      }));
+    let components: ServiceComponent[] = [];
+    let overallStatus = 'operational';
+
+    // 전체 상태 확인
+    if (statusResponse.status === 'fulfilled') {
+      overallStatus = normalizeStatus(statusResponse.value.data.status?.indicator || 'operational');
+    }
+
+    // 컴포넌트 상태 확인
+    if (componentsResponse.status === 'fulfilled') {
+      const componentsData = componentsResponse.value.data.components || [];
+
+      // Docker 관련 주요 컴포넌트들 필터링
+      const dockerComponents = componentsData
+        .filter(
+          (component: any) =>
+            (component.name &&
+              !component.group_id &&
+              component.name !== 'Operational' &&
+              component.status !== 'operational') ||
+            true // 모든 컴포넌트 포함
+        )
+        .map((component: any) => ({
+          name: component.name,
+          status: normalizeStatus(component.status || 'operational'),
+        }));
+
+      if (dockerComponents.length > 0) {
+        components = dockerComponents;
+      } else {
+        // API에서 컴포넌트를 찾지 못한 경우 표준 Docker 컴포넌트 사용
+        components = [
+          { name: 'Docker Hub Registry', status: normalizeStatus(overallStatus) },
+          { name: 'Docker Hub Web Interface', status: normalizeStatus(overallStatus) },
+          { name: 'Docker Desktop', status: normalizeStatus(overallStatus) },
+          { name: 'Docker Build Cloud', status: normalizeStatus(overallStatus) },
+          { name: 'Docker Scout', status: normalizeStatus(overallStatus) },
+          { name: 'Docker Extensions', status: normalizeStatus(overallStatus) },
+        ];
+      }
+    } else {
+      // 컴포넌트 API 호출 실패 시 기본 컴포넌트 사용
+      console.warn('Docker Hub components API 호출 실패, 기본 컴포넌트 사용');
+      components = [
+        { name: 'Docker Hub Registry', status: normalizeStatus(overallStatus) },
+        { name: 'Docker Hub Web Interface', status: normalizeStatus(overallStatus) },
+        { name: 'Docker Desktop', status: normalizeStatus(overallStatus) },
+        { name: 'Docker Build Cloud', status: normalizeStatus(overallStatus) },
+        { name: 'Docker Scout', status: normalizeStatus(overallStatus) },
+        { name: 'Docker Extensions', status: normalizeStatus(overallStatus) },
+      ];
+    }
 
     return {
       service_name: 'dockerhub',
@@ -330,11 +376,15 @@ export async function fetchDockerHubStatus(): Promise<Service> {
     };
   } catch (error) {
     console.error('Docker Hub API 오류:', error);
+
+    // 완전한 API 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
       { name: 'Docker Hub Registry', status: 'operational' },
-      { name: 'Docker Hub Web', status: 'operational' },
+      { name: 'Docker Hub Web Interface', status: 'operational' },
       { name: 'Docker Desktop', status: 'operational' },
-      { name: 'Docker Build', status: 'operational' },
+      { name: 'Docker Build Cloud', status: 'operational' },
+      { name: 'Docker Scout', status: 'operational' },
+      { name: 'Docker Extensions', status: 'operational' },
     ];
 
     return {
