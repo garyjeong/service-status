@@ -315,7 +315,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     // 직접 번역 객체에서 찾기 - 간단하고 확실한 방법
     const description = t.services_desc[serviceName as keyof typeof t.services_desc];
     
-    if (description) {
+    if (description && description.trim()) {
       return description;
     }
     
@@ -328,6 +328,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       'github': { ko: 'Git 저장소 호스팅 및 협업 플랫폼', en: 'Git repository hosting and collaboration platform' },
       'netlify': { ko: '정적 사이트 배포 및 호스팅', en: 'Static site deployment and hosting' },
       'dockerhub': { ko: '컨테이너 이미지 레지스트리', en: 'Container image registry' },
+      'docker': { ko: '컨테이너 이미지 레지스트리', en: 'Container image registry' },
       'aws': { ko: 'Amazon 웹 서비스 클라우드 플랫폼', en: 'Amazon Web Services cloud platform' },
       'slack': { ko: '팀 커뮤니케이션 및 협업 도구', en: 'Team communication and collaboration tool' },
       'firebase': { ko: 'Google의 앱 개발 플랫폼', en: 'Google app development platform' },
@@ -336,6 +337,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       'v0': { ko: 'Vercel의 AI 기반 UI 생성 도구', en: 'Vercel AI-powered UI generation tool' },
       'replit': { ko: '온라인 코딩 및 협업 IDE', en: 'Online coding and collaboration IDE' },
       'xai': { ko: 'Grok AI 모델 및 플랫폼', en: 'Grok AI model and platform' },
+      'grok': { ko: 'Grok AI 모델 및 플랫폼', en: 'Grok AI model and platform' },
       'heroku': { ko: '클라우드 애플리케이션 플랫폼 (PaaS)', en: 'Cloud application platform (PaaS)' },
       'atlassian': { ko: 'Jira, Confluence, Bitbucket 등 개발 협업 도구', en: 'Jira, Confluence, Bitbucket and other dev collaboration tools' },
       'circleci': { ko: '지속적 통합 및 배포 (CI/CD) 플랫폼', en: 'Continuous integration and deployment (CI/CD) platform' },
@@ -350,8 +352,10 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       return language === 'ko' ? defaultDesc.ko : defaultDesc.en;
     }
     
-    // 최종 fallback
-    return language === 'ko' ? '서비스 상태를 모니터링합니다.' : 'Monitoring service status.';
+    // 최종 fallback - 서비스 이름 기반
+    return language === 'ko' 
+      ? `${serviceName.toUpperCase()} 서비스 상태를 모니터링합니다.` 
+      : `Monitoring ${serviceName.toUpperCase()} service status.`;
   };
 
   // 기본 필터 및 즐겨찾기 설정 생성
@@ -1276,7 +1280,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 onClick={() => toggleServiceExpansion(service.service_name)}
               >
                 {/* 상단: 아이콘, 제목, 새로고침/확장 버튼 */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <ServiceIcon iconName={service.icon} size={28} />
                     <div className="flex-1 min-w-0 self-center">
@@ -1308,8 +1312,8 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                   </div>
                 </div>
 
-                {/* 중앙: 상태, 설명 */}
-                <div className="flex-1 flex flex-col justify-center min-h-0 mb-3">
+                {/* 중앙: 설명, 상태 */}
+                <div className="flex-1 flex flex-col min-h-0 mb-3">
                   {expandedServices[service.service_name] ? (
                     <div className="mt-2 -mx-1 pr-1 custom-scrollbar overflow-y-auto">
                       {service.components && service.components.length > 0 ? (
@@ -1331,15 +1335,15 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       )}
                     </div>
                   ) : (
-                    <>
-                      <div className="flex items-center gap-1.5 mb-2">
+                    <div className="flex flex-col justify-center flex-1">
+                      <p className="service-description text-sm text-muted-foreground mb-2">
+                        {getServiceDescription(service.service_name)}
+                      </p>
+                      <div className="flex items-center gap-1.5">
                         <div className={`status-dot ${getStatusColor(service.status)}`} />
                         {getStatusIcon(service.status)}
                       </div>
-                      <p className="service-description text-sm text-muted-foreground">
-                        {getServiceDescription(service.service_name) || `${service.display_name} 서비스 상태를 모니터링합니다.`}
-                      </p>
-                    </>
+                    </div>
                   )}
                 </div>
 

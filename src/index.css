@@ -135,34 +135,32 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* 서비스 카드 - 더 트렌디한 스타일 */
+/* 서비스 카드 기본 스타일 */
 .service-card {
-  background: linear-gradient(145deg, var(--glass-bg), rgba(255, 255, 255, 0.02));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
-  padding: 1.25rem; /* 패딩 일관성 있게 조정 */
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: 100%;
 }
 
-/* 접힌 상태: 고정 높이 적용 및 컨텐츠 정렬 */
+/* 접힌 상태의 카드 높이 - 설명 공간 확보를 위해 증가 */
 .service-card:not(.expanded) {
-  height: 160px; /* 모든 카드 높이 통일 */
+  height: 180px; /* 160px에서 180px로 증가 */
 }
 
-/* 확장 상태: 자동 높이 */
 .service-card.expanded {
   height: auto;
-  min-height: 160px; /* 확장 시 최소 높이도 통일 */
+  min-height: 180px; /* 확장 시 최소 높이도 통일 */
 }
 
-/* 서비스 설명 영역 - 한 줄 ellipsis로 변경 */
+/* 서비스 설명 영역 - 공간 확보와 가시성 보장 */
 .service-description {
   display: -webkit-box;
   -webkit-line-clamp: 1; /* 한 줄로 제한 */
@@ -173,6 +171,8 @@ body::before {
   height: 1.5em; /* 한 줄 높이로 고정 */
   opacity: 1; /* 명시적으로 표시 */
   visibility: visible; /* 명시적으로 표시 */
+  margin-top: 0.25rem; /* 상태 표시와의 간격 */
+  flex-shrink: 0; /* 축소되지 않도록 보장 */
 }
 
 /* '클릭하여 세부 정보 보기' 텍스트 스타일 제거 */
