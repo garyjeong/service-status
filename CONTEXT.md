@@ -210,13 +210,22 @@ pnpm format      # Prettier 포맷팅
 - **GitHub Pages** - 무료 호스팅
 
 ### Docker 지원
-```bash
-# 이전 Python 버전 (backup/)
-docker-compose up -d
 
-# React 버전 (새로운 Dockerfile 필요)
+프로젝트는 프로덕션 준비가 완료된 Dockerfile을 포함하고 있습니다:
+- 멀티스테이지 빌드로 최종 이미지 크기 최적화
+- nginx 기반 정적 파일 서빙
+- 헬스체크 엔드포인트 포함 (`/health`)
+- pnpm 8.10.0 버전 고정
+
+```bash
+# Docker 이미지 빌드
 docker build -t ai-dashboard .
-docker run -p 3000:3000 ai-dashboard
+
+# Docker 컨테이너 실행 (포트 8080)
+docker run -d --name ai-dashboard -p 8080:80 ai-dashboard
+
+# 헬스체크 상태 확인
+docker inspect --format='{{.State.Health.Status}}' ai-dashboard
 ```
 
 ## 마이그레이션 히스토리

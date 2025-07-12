@@ -299,18 +299,53 @@ npx vercel --prod
 
 ### Docker 배포
 
-```dockerfile
-FROM node:18-alpine as builder
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile
+프로젝트는 멀티스테이지 빌드를 사용하는 최적화된 Dockerfile을 포함하고 있습니다.
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+#### Docker 이미지 빌드
+```bash
+docker build -t ai-dashboard .
+```
+
+#### Docker 컨테이너 실행
+```bash
+# 기본 실행
+docker run -d \
+  --name ai-dashboard \
+  -p 8080:80 \
+  ai-dashboard
+
+# 상세 옵션 포함 실행
+docker run -d \
+  --name ai-dashboard \
+  -p 8080:80 \
+  --restart unless-stopped \
+  -e TZ=Asia/Seoul \
+  ai-dashboard
+```
+
+#### 헬스체크 확인
+```bash
+# 헬스체크 상태 확인
+docker inspect --format='{{.State.Health.Status}}' ai-dashboard
+
+# 헬스체크 엔드포인트 직접 호출
+curl http://localhost:8080/health
+```
+
+#### 유용한 Docker 명령어
+```bash
+# 로그 확인
+docker logs -f ai-dashboard
+
+# 컨테이너 재시작
+docker restart ai-dashboard
+
+# 컨테이너 중지 및 삭제
+docker stop ai-dashboard
+docker rm ai-dashboard
+
+# 이미지 삭제
+docker rmi ai-dashboard
 ```
 
 ## 🎯 개발 가이드

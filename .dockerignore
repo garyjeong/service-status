@@ -22,8 +22,13 @@ coverage
 .gitignore
 README.md
 CONTEXT.md
+DESIGN.md
+THREADS.md
+NAVER_SEO_GUIDE.md
 .eslintrc.json
 .prettierrc
+.windsurfrules
+.roomodes
 
 # 로그 파일
 logs
@@ -38,7 +43,18 @@ logs
 .idea
 *.swp
 *.swo
+.cursor
 
 # OS 파일
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Docker 관련
+Dockerfile*
+.dockerignore
+
+# Task Master 관련
+.taskmaster/
+
+# 기타 마크다운 파일
+*.md 
