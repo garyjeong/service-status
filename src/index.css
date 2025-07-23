@@ -868,3 +868,14 @@ p {
   color: rgba(237, 236, 232, 0.8); 
   line-height: 1.5; 
 }
+
+/* 상태 페이지 링크 스타일 */
+.link-status-page {
+  color: var(--mint-primary);
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.link-status-page:hover {
+  color: #26e09f;
+  background: rgba(46, 255, 180, 0.1);
+}

@@ -1356,7 +1356,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     href={service.page_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors focus-ring rounded px-2 py-1 hover:bg-blue-500/10"
+                    className="inline-flex items-center gap-2 text-xs link-status-page focus-ring rounded px-2 py-1"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Globe className="w-3 h-3 flex-shrink-0" />
