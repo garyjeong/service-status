@@ -337,6 +337,9 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   const [isScrollingDown, setIsScrollingDown] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrollThreshold] = useState(10); // 스크롤 감지 임계값
+  
+  // 모바일 푸터 확장 상태
+  const [isFooterExpanded, setIsFooterExpanded] = useState(false);
 
   // 현재 언어의 번역 가져오기
   const t = translations[language];
@@ -652,25 +655,34 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     document.body.classList.remove('body-scroll-lock');
   };
 
-  // ESC 키로 모달 닫기
+  // ESC 키로 모달 닫기 및 모바일 푸터 축소
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFilterOpen) {
-        closeModal();
+      if (event.key === 'Escape') {
+        if (isFilterOpen) {
+          closeModal();
+        } else if (isFooterExpanded && isMobile) {
+          setIsFooterExpanded(false);
+        }
       }
     };
 
-    if (isFilterOpen) {
+    if (isFilterOpen || (isFooterExpanded && isMobile)) {
       document.addEventListener('keydown', handleEscKey);
+    }
+
+    if (isFilterOpen) {
       // 스크롤 잠금 적용
       document.body.classList.add('body-scroll-lock');
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscKey);
-      document.body.classList.remove('body-scroll-lock');
+      if (isFilterOpen) {
+        document.body.classList.remove('body-scroll-lock');
+      }
     };
-  }, [isFilterOpen]);
+  }, [isFilterOpen, isFooterExpanded, isMobile]);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -725,6 +737,20 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       ...prev,
       [serviceName]: !prev[serviceName]
     }));
+  };
+
+  // 모바일 푸터 토글 함수
+  const toggleMobileFooter = () => {
+    setIsFooterExpanded(prev => !prev);
+    
+    // 터치 피드백 애니메이션
+    const footerElement = document.querySelector('.mobile-footer-compact');
+    if (footerElement) {
+      footerElement.classList.add('tap-feedback');
+      setTimeout(() => {
+        footerElement.classList.remove('tap-feedback');
+      }, 300);
+    }
   };
 
   // 서비스의 선택 상태 계산 (all/none/some)
@@ -1147,30 +1173,30 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
               </button>
               
               {isLanguageDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
+                <div className="sort-dropdown">
                   <button
                     onClick={() => {
                       setLanguage('ko');
                       setIsLanguageDropdownOpen(false);
                     }}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
-                        language === 'ko' ? 'bg-accent' : ''
-                    }`}
+                    className={`sort-option ${language === 'ko' ? 'active' : ''}`}
                   >
-                    <span className="text-lg">🇰🇷</span>
-                    <span>한국어</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🇰🇷</span>
+                      <span>한국어</span>
+                    </div>
                   </button>
                   <button
                     onClick={() => {
                       setLanguage('en');
                       setIsLanguageDropdownOpen(false);
                     }}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-accent transition-colors text-sm ${
-                        language === 'en' ? 'bg-accent' : ''
-                    }`}
+                    className={`sort-option ${language === 'en' ? 'active' : ''}`}
                   >
-                    <span className="text-lg">🇺🇸</span>
-                    <span>English</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🇺🇸</span>
+                      <span>English</span>
+                    </div>
                   </button>
                 </div>
               )}
@@ -1295,30 +1321,30 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                   </button>
                   
                   {isLanguageDropdownOpen && (
-                    <div className="absolute left-0 mt-2 w-32 bg-card border border-border rounded-lg shadow-lg z-50 backdrop-blur-lg">
+                    <div className="sort-dropdown">
                       <button
                         onClick={() => {
                           setLanguage('ko');
                           setIsLanguageDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent transition-colors text-xs ${
-                          language === 'ko' ? 'bg-accent' : ''
-                        }`}
+                        className={`sort-option ${language === 'ko' ? 'active' : ''}`}
                       >
-                        <span className="text-sm">🇰🇷</span>
-                        <span>한국어</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🇰🇷</span>
+                          <span>한국어</span>
+                        </div>
                       </button>
                       <button
                         onClick={() => {
                           setLanguage('en');
                           setIsLanguageDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent transition-colors text-xs ${
-                          language === 'en' ? 'bg-accent' : ''
-                        }`}
+                        className={`sort-option ${language === 'en' ? 'active' : ''}`}
                       >
-                        <span className="text-sm">🇺🇸</span>
-                        <span>English</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🇺🇸</span>
+                          <span>English</span>
+                        </div>
                       </button>
                     </div>
                   )}
@@ -1620,7 +1646,61 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       {/* 푸터 섹션 */}
       <footer className="footer-section">
         <div className="container mx-auto px-4">
-          <div className="text-center text-sm text-muted-foreground py-4">
+          {/* 모바일: 콜랩시블 푸터 */}
+          <div className="md:hidden">
+            <div 
+              className={`mobile-footer-compact ${isFooterExpanded ? 'expanded' : ''}`}
+              onClick={toggleMobileFooter}
+            >
+              {/* 항상 표시되는 요약 */}
+              <div className="mobile-footer-summary">
+                                 <div className="flex items-center gap-2">
+                   <Activity className="w-4 h-4 text-mint-primary" />
+                   <span className="text-sm font-medium">
+                     {language === 'ko' 
+                       ? `${getFilteredServices().length}개 서비스 모니터링`
+                       : `Monitoring ${getFilteredServices().length} Services`
+                     }
+                   </span>
+                 </div>
+                <div className="mobile-footer-toggle-icon">
+                  ▼
+                </div>
+              </div>
+              
+              {/* 확장 시에만 표시되는 상세 정보 */}
+              <div className="mobile-footer-details">
+                {/* 서비스 카테고리 배지 */}
+                <div className="mobile-footer-badges">
+                  <span className="mobile-footer-badge bg-blue-500/10 text-blue-400">
+                    {language === 'ko' ? 'AI 7개' : '7 AI'}
+                  </span>
+                  <span className="mobile-footer-badge bg-green-500/10 text-green-400">
+                    {language === 'ko' ? '클라우드 5개' : '5 Cloud'}
+                  </span>
+                  <span className="mobile-footer-badge bg-purple-500/10 text-purple-400">
+                    {language === 'ko' ? '개발도구 6개' : '6 Dev'}
+                  </span>
+                  <span className="mobile-footer-badge bg-orange-500/10 text-orange-400">
+                    {language === 'ko' ? '기타 4개' : '4 Others'}
+                  </span>
+                </div>
+
+                {/* 통계 정보 */}
+                <div className="mobile-footer-stats">
+                  <div className="mobile-footer-stat-item">
+                    <Globe className="w-3 h-3 text-green-400" />
+                    <span>
+                      {getOverallStats().operational}/{getFilteredServices().length} {language === 'ko' ? '정상 운영' : 'Operational'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 데스크톱: 기존 푸터 유지 */}
+          <div className="hidden md:block text-center text-sm text-muted-foreground py-4">
             {/* 서비스 카테고리 정보 */}
             <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 text-xs mb-3">
               <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded">
