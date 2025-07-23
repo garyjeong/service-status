@@ -879,3 +879,359 @@ p {
   color: #26e09f;
   background: rgba(46, 255, 180, 0.1);
 }
+
+/* 🎨 필터 모달 시스템 - Bottega Veneta 감성 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: modalOverlayFadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(237, 236, 232, 0.12);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 모달 헤더 */
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(237, 236, 232, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: between;
+  background: var(--bg-tertiary);
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--mint-primary);
+  margin: 0;
+  flex: 1;
+  letter-spacing: -0.01em;
+}
+
+.modal-close-button {
+  background: transparent;
+  border: none;
+  color: var(--gray-secondary);
+  font-size: 1.5rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 1rem;
+}
+
+.modal-close-button:hover {
+  background: rgba(237, 236, 232, 0.1);
+  color: var(--mint-primary);
+  transform: scale(1.1);
+}
+
+/* 모달 바디 */
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+  background: var(--bg-secondary);
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    height: 100vh;
+  }
+  
+  .modal-header {
+    padding: 1rem 1.5rem;
+    border-radius: 0;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-title {
+    font-size: 1.125rem;
+  }
+}
+
+/* 애니메이션 */
+@keyframes modalOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -30px, 0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* 스크롤 방지 */
+.body-scroll-lock {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* 필터 그리드 개선 */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.filter-service-section {
+  background: var(--bg-primary);
+  border: 1px solid rgba(237, 236, 232, 0.06);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.filter-service-section:hover {
+  border-color: rgba(46, 255, 180, 0.15);
+  background: rgba(26, 26, 26, 0.8);
+}
+
+.filter-service-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-secondary);
+}
+
+.filter-component-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-component-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  group: true;
+}
+
+.filter-component-item:hover {
+  background: rgba(46, 255, 180, 0.05);
+}
+
+.filter-checkbox {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+  border: 1px solid rgba(237, 236, 232, 0.3);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-checkbox:checked {
+  background: var(--mint-primary);
+  border-color: var(--mint-primary);
+}
+
+.filter-component-label {
+  font-size: 0.875rem;
+  color: rgba(237, 236, 232, 0.8);
+  flex: 1;
+  transition: color 0.2s ease;
+}
+
+.filter-component-item:hover .filter-component-label {
+  color: var(--gray-secondary);
+}
+
+/* 🎨 스켈레톤 로딩 애니메이션 - 테마에 맞춤 */
+.service-card.animate-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 스켈레톤 요소들의 부드러운 그라데이션 애니메이션 */
+.service-card.animate-pulse > * {
+  background: linear-gradient(
+    90deg,
+    rgba(237, 236, 232, 0.08) 25%,
+    rgba(237, 236, 232, 0.15) 50%,
+    rgba(237, 236, 232, 0.08) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 2s infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 🎨 개선된 필터 모달 - 드롭다운 UX */
+.filter-service-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: rgba(237, 236, 232, 0.02);
+  border: 1px solid rgba(237, 236, 232, 0.04);
+}
+
+.filter-service-header:hover {
+  background: rgba(46, 255, 180, 0.05);
+  border-color: rgba(46, 255, 180, 0.1);
+}
+
+.filter-service-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-secondary);
+  margin: 0;
+  flex: 1;
+}
+
+/* 마스터 토글 버튼 스타일 */
+.filter-master-toggle {
+  background: var(--mint-primary);
+  color: var(--black-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-master-toggle:hover {
+  background: #26e09f;
+  transform: translateY(-1px);
+}
+
+/* 서비스별 전체 선택 체크박스 */
+.filter-service-checkbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 4px;
+  border: 1px solid rgba(237, 236, 232, 0.3);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.filter-service-checkbox:checked {
+  background: var(--mint-primary);
+  border-color: var(--mint-primary);
+}
+
+.filter-service-checkbox:indeterminate {
+  background: rgba(46, 255, 180, 0.3);
+  border-color: var(--mint-primary);
+}
+
+.filter-service-checkbox:indeterminate::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 2px;
+  background: var(--black-primary);
+  border-radius: 1px;
+}
+
+/* 컴포넌트 리스트 애니메이션 */
+.filter-component-list {
+  margin-top: 0.75rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(46, 255, 180, 0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}

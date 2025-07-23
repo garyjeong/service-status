@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { serviceFetchers, serviceNames } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import AdFitBanner from './AdFitBanner';
@@ -85,6 +85,9 @@ const translations = {
     sortNameAsc: '이름 오름차순',
     sortNameDesc: '이름 내림차순',
     maintenance: '점검 중',
+    filterTitle: '서비스 필터',
+    filterDescription: '표시할 서비스 구성 요소를 선택하세요',
+    close: '닫기',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT 웹 인터페이스 및 OpenAI API',
@@ -136,6 +139,9 @@ const translations = {
     sortNameAsc: 'Name A-Z',
     sortNameDesc: 'Name Z-A',
     maintenance: 'Maintenance',
+    filterTitle: 'Service Filter',
+    filterDescription: 'Select service components to display',
+    close: 'Close',
     // 서비스 설명
     services_desc: {
       openai: 'ChatGPT web interface and OpenAI API',
@@ -265,22 +271,44 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-// 스켈레톤 로딩 컴포넌트
+// 스켈레톤 로딩 컴포넌트 - 실제 카드와 동일한 구조와 높이
 const ServiceCardSkeleton = () => (
-  <div className="service-card animate-pulse">
-    <div className="flex items-start justify-between">
-      <div className="flex items-center gap-3 flex-1">
-        <div className="w-8 h-8 bg-gray-600 rounded-lg"></div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-5 bg-gray-600 rounded w-32"></div>
-            <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-          </div>
-          <div className="h-4 bg-gray-700 rounded w-48 mb-3"></div>
-          <div className="h-3 bg-gray-700 rounded w-24"></div>
+  <div className="service-card animate-pulse" style={{ height: '200px' }}>
+    {/* 상단: 아이콘, 제목, 새로고침 버튼 */}
+    <div className="flex items-center justify-between mb-1">
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        <div className="w-7 h-7 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(237, 236, 232, 0.15)' }}></div>
+        <div className="flex-1 min-w-0 self-center">
+          <div className="h-5 rounded w-32" style={{ backgroundColor: 'rgba(237, 236, 232, 0.2)' }}></div>
         </div>
       </div>
-      <div className="w-8 h-8 bg-gray-600 rounded"></div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="w-8 h-8 rounded" style={{ backgroundColor: 'rgba(237, 236, 232, 0.12)' }}></div>
+      </div>
+    </div>
+
+    {/* 중앙: 설명 및 상태 영역 */}
+    <div className="flex-1 flex flex-col min-h-0 mb-3">
+      <div className="flex flex-col justify-center flex-1">
+        {/* 서비스 설명 */}
+        <div className="space-y-2 mb-4">
+          <div className="h-4 rounded w-full" style={{ backgroundColor: 'rgba(237, 236, 232, 0.1)' }}></div>
+          <div className="h-4 rounded w-4/5" style={{ backgroundColor: 'rgba(237, 236, 232, 0.08)' }}></div>
+        </div>
+        {/* 상태 표시 */}
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(46, 255, 180, 0.3)' }}></div>
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(237, 236, 232, 0.15)' }}></div>
+        </div>
+      </div>
+    </div>
+
+    {/* 하단: 상태 페이지 링크 */}
+    <div className="pt-3 border-t border-border/50 mt-auto">
+      <div className="inline-flex items-center gap-2">
+        <div className="w-3 h-3 rounded flex-shrink-0" style={{ backgroundColor: 'rgba(237, 236, 232, 0.12)' }}></div>
+        <div className="h-3 rounded w-16" style={{ backgroundColor: 'rgba(237, 236, 232, 0.1)' }}></div>
+      </div>
     </div>
   </div>
 );
@@ -293,6 +321,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
   const [favorites, setFavorites] = useState<Favorites>({});
   const [expandedServices, setExpandedServices] = useState<ServiceExpansion>({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filterExpandedServices, setFilterExpandedServices] = useState<{[key: string]: boolean}>({});
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -544,14 +573,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     loadAllServicesData(true);
   }, []);
 
-  // 30초마다 자동 업데이트
+  // 30초마다 자동 업데이트 (필터링된 서비스만)
   useEffect(() => {
     const interval = setInterval(() => {
-      loadAllServicesData();
+      loadFilteredServicesData();
     }, 30000); // 30초 간격
 
     return () => clearInterval(interval);
-  }, []);
+  }, [filters, services]); // filters와 services 변경 시 재시작
 
   // 윈도우 리사이즈 이벤트 리스너
   useEffect(() => {
@@ -616,6 +645,33 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     };
   }, [isMobile, lastScrollY, scrollThreshold]);
 
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setIsFilterOpen(false);
+    // 스크롤 잠금 해제
+    document.body.classList.remove('body-scroll-lock');
+  };
+
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isFilterOpen) {
+        closeModal();
+      }
+    };
+
+    if (isFilterOpen) {
+      document.addEventListener('keydown', handleEscKey);
+      // 스크롤 잠금 적용
+      document.body.classList.add('body-scroll-lock');
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.classList.remove('body-scroll-lock');
+    };
+  }, [isFilterOpen]);
+
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -664,13 +720,112 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     }));
   };
 
-  const refreshData = async () => {
-    await loadAllServicesData();
+  const toggleFilterServiceExpansion = (serviceName: string) => {
+    setFilterExpandedServices(prev => ({
+      ...prev,
+      [serviceName]: !prev[serviceName]
+    }));
   };
 
-  // 정렬 함수
+  // 서비스의 선택 상태 계산 (all/none/some)
+  const getServiceSelectionState = (serviceName: string): 'all' | 'none' | 'some' => {
+    const service = services.find(s => s.service_name === serviceName);
+    if (!service || !service.components.length) return 'none';
+    
+    const selectedCount = service.components.filter(component => 
+      filters[serviceName]?.[component.name]
+    ).length;
+    
+    if (selectedCount === 0) return 'none';
+    if (selectedCount === service.components.length) return 'all';
+    return 'some';
+  };
+
+  // 서비스별 전체 선택/해제
+  const toggleAllComponentsForService = (serviceName: string) => {
+    const state = getServiceSelectionState(serviceName);
+    const newValue = state !== 'all';
+    
+    setFilters(prev => {
+      const service = services.find(s => s.service_name === serviceName);
+      if (!service) return prev;
+      
+      const updatedServiceFilters: {[key: string]: boolean} = {};
+      service.components.forEach(component => {
+        updatedServiceFilters[component.name] = newValue;
+      });
+      
+      return {
+        ...prev,
+        [serviceName]: updatedServiceFilters
+      };
+    });
+  };
+
+  // 전체 선택 상태 계산
+  const getMasterSelectionState = (): 'all' | 'none' | 'some' => {
+    if (!services.length) return 'none';
+    
+    const allStates = services.map(service => getServiceSelectionState(service.service_name));
+    const allSelected = allStates.every(state => state === 'all');
+    const noneSelected = allStates.every(state => state === 'none');
+    
+    if (allSelected) return 'all';
+    if (noneSelected) return 'none';
+    return 'some';
+  };
+
+  // 모든 서비스 전체 선택/해제
+  const toggleAllServices = () => {
+    const masterState = getMasterSelectionState();
+    const newValue = masterState !== 'all';
+    
+    setFilters(prev => {
+      const newFilters: ComponentFilter = {};
+      services.forEach(service => {
+        newFilters[service.service_name] = {};
+        service.components.forEach(component => {
+          newFilters[service.service_name][component.name] = newValue;
+        });
+      });
+      return newFilters;
+    });
+  };
+
+  // 필터링된 서비스 반환 (최소 1개 컴포넌트가 선택된 서비스만)
+  const getFilteredServices = () => {
+    return services.filter(service => {
+      const hasSelectedComponent = service.components.some(component => 
+        filters[service.service_name]?.[component.name]
+      );
+      return hasSelectedComponent;
+    });
+  };
+
+  // 필터링된 서비스만 새로고침
+  const loadFilteredServicesData = async () => {
+    const filteredServices = getFilteredServices();
+    const serviceNames = filteredServices.map(s => s.service_name as keyof typeof serviceFetchers);
+    
+    setLastUpdate(new Date());
+    
+    const loadPromises = serviceNames.map((serviceName) => 
+      loadServiceData(serviceName, false)
+    );
+    await Promise.allSettled(loadPromises);
+  };
+
+  const refreshData = async () => {
+    await loadFilteredServicesData(); // 필터링된 서비스만 새로고침
+  };
+
+  // 정렬 함수 (필터 적용)
   const getSortedServices = () => {
-    const servicesWithStatus = getServicesWithCalculatedStatus();
+    const filteredServices = getFilteredServices(); // 필터 적용
+    const servicesWithStatus = filteredServices.map(service => ({
+      ...service,
+      status: calculateServiceStatus(service.components)
+    }));
     
     switch (sortType) {
       case 'name-asc':
@@ -790,7 +945,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     }));
   };
 
-  // 즐겨찾기 항목들을 가져오는 함수
+  // 즐겨찾기 항목들을 가져오는 함수 (필터링 적용)
   const getFavoriteComponents = () => {
     const favoriteItems: Array<{
       serviceName: string;
@@ -800,9 +955,11 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
       icon: string;
     }> = [];
 
-    getServicesWithCalculatedStatus().forEach(service => {
+    const filteredServices = getFilteredServices(); // 필터링된 서비스만
+    filteredServices.forEach(service => {
       service.components.forEach(component => {
-        if (favorites[service.service_name]?.[component.name]) {
+        if (favorites[service.service_name]?.[component.name] && 
+            filters[service.service_name]?.[component.name]) { // 필터에서도 선택된 것만
           favoriteItems.push({
             serviceName: service.service_name,
             serviceDisplayName: service.display_name,
@@ -817,9 +974,14 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     return favoriteItems;
   };
 
-  // 전체 상태 요약 계산
+  // 전체 상태 요약 계산 (필터링된 서비스 기준)
   const getOverallStats = () => {
-    const servicesWithStatus = getServicesWithCalculatedStatus();
+    const filteredServices = getFilteredServices();
+    const servicesWithStatus = filteredServices.map(service => ({
+      ...service,
+      status: calculateServiceStatus(service.components)
+    }));
+    
     const totalServices = servicesWithStatus.length;
     const operational = servicesWithStatus.filter(s => s.status === 'operational').length;
     const degraded = servicesWithStatus.filter(s => s.status === 'degraded').length;
@@ -1186,33 +1348,110 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
           <AdFitBanner />
         </div>
 
+        {/* 필터 모달 */}
         {isFilterOpen && (
-          <div className="card-base mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map(service => (
-                <div key={service.service_name} className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                    <ServiceIcon iconName={service.icon} size={20} />
-                    {service.display_name}
-                  </h3>
-                  <div className="space-y-1">
-                    {service.components.map(component => (
-                      <label key={component.name} className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="checkbox"
-                          checked={filters[service.service_name]?.[component.name] || false}
-                          onChange={() => toggleComponentFilter(service.service_name, component.name)}
-                          className="w-4 h-4 rounded border-border bg-secondary focus-ring"
-                        />
-                        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                          {component.name}
-                        </span>
-                        {getStatusEmoji(component.status)}
-                      </label>
-                    ))}
-                  </div>
+          <div className="modal-overlay" onClick={closeModal}>
+            <div 
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="filter-modal-title"
+            >
+              {/* 모달 헤더 */}
+              <div className="modal-header">
+                <h2 id="filter-modal-title" className="modal-title">
+                  {t.filterTitle}
+                </h2>
+                <div className="flex items-center gap-3">
+                  <button 
+                    className="filter-master-toggle"
+                    onClick={toggleAllServices}
+                  >
+                    전체 {getMasterSelectionState() === 'all' ? '해제' : '선택'}
+                  </button>
+                  <button
+                    onClick={closeModal}
+                    className="modal-close-button focus-ring"
+                    aria-label={t.close}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-              ))}
+              </div>
+              
+              {/* 모달 바디 */}
+              <div className="modal-body">
+                <p className="text-sm text-muted-foreground mb-6">
+                  {t.filterDescription}
+                </p>
+                
+                <div className="filter-grid">
+                  {services.map(service => (
+                    <div key={service.service_name} className="filter-service-section">
+                      <div className="filter-service-header">
+                        <div 
+                          className="flex items-center gap-3 flex-1 cursor-pointer"
+                          onClick={() => toggleFilterServiceExpansion(service.service_name)}
+                        >
+                          <ServiceIcon iconName={service.icon} size={24} />
+                          <h3 className="filter-service-title">
+                            {service.display_name}
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            className="filter-service-checkbox focus-ring"
+                            checked={getServiceSelectionState(service.service_name) === 'all'}
+                            ref={(el) => {
+                              if (el) {
+                                el.indeterminate = getServiceSelectionState(service.service_name) === 'some';
+                              }
+                            }}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              toggleAllComponentsForService(service.service_name);
+                            }}
+                          />
+                          <button
+                            onClick={() => toggleFilterServiceExpansion(service.service_name)}
+                            className="p-1 hover:bg-mint-primary/10 rounded"
+                          >
+                            <ChevronDown 
+                              className={`w-5 h-5 transition-transform duration-300 ${
+                                filterExpandedServices[service.service_name] ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {filterExpandedServices[service.service_name] && (
+                        <div className="filter-component-list">
+                          {service.components.map(component => (
+                            <label 
+                              key={component.name} 
+                              className="filter-component-item"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={filters[service.service_name]?.[component.name] || false}
+                                onChange={() => toggleComponentFilter(service.service_name, component.name)}
+                                className="filter-checkbox focus-ring"
+                              />
+                              <span className="filter-component-label">
+                                {component.name}
+                              </span>
+                              <div className={`status-dot ${getStatusColor(component.status)}`} />
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
