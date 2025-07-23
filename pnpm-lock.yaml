@@ -28,6 +28,12 @@ dependencies:
     version: 19.1.0(react@19.1.0)
 
 devDependencies:
+  '@stagewise-plugins/react':
+    specifier: ^0.6.2
+    version: 0.6.2(@stagewise/toolbar@0.6.2)
+  '@stagewise/toolbar-react':
+    specifier: ^0.6.2
+    version: 0.6.2(@types/react@19.1.8)(react@19.1.0)
   '@tailwindcss/postcss':
     specifier: ^4.1.10
     version: 4.1.10
@@ -930,6 +936,29 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@stagewise-plugins/react@0.6.2(@stagewise/toolbar@0.6.2):
+    resolution: {integrity: sha512-IZVWgxeO2GFQj8wTFacIkmlF7YlZn4T5MN3cyrYo5wdYo2RATGIX4+pugPmPYQUjq2Gm+OSLR2hxKfBq32Y2Qg==}
+    peerDependencies:
+      '@stagewise/toolbar': 0.6.2
+    dependencies:
+      '@stagewise/toolbar': 0.6.2
+    dev: true
+
+  /@stagewise/toolbar-react@0.6.2(@types/react@19.1.8)(react@19.1.0):
+    resolution: {integrity: sha512-fKgINBKCgUWzeSdP8Nfs5cSchCS4yf9bMOROnVqAgMbT77yGhZ4nYWGNL/nkaCAkE7uyrpSvtbHT4ut2PDoJLw==}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      react: '>=18.0.0'
+    dependencies:
+      '@stagewise/toolbar': 0.6.2
+      '@types/react': 19.1.8
+      react: 19.1.0
+    dev: true
+
+  /@stagewise/toolbar@0.6.2:
+    resolution: {integrity: sha512-WN7PWaOT6YQKjJYL4/85V5UU0eZEws+/UBT/J4wJOEbFxoluLuchqh7xVTmUZTtw0q0xpzlgX8Vb0kAZf/pjmw==}
+    dev: true
 
   /@tailwindcss/node@4.1.10:
     resolution: {integrity: sha512-2ACf1znY5fpRBwRhMgj9ZXvb2XZW8qs+oTfotJ2C5xR0/WNL7UHZ7zXl6s+rUqedL1mNi+0O+WQr5awGowS3PQ==}
