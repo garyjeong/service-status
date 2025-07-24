@@ -280,8 +280,8 @@ const ServiceCardSkeleton = () => (
         <div className="w-7 h-7 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(237, 236, 232, 0.15)' }}></div>
         <div className="flex-1 min-w-0 self-center">
           <div className="h-5 rounded w-32" style={{ backgroundColor: 'rgba(237, 236, 232, 0.2)' }}></div>
+          </div>
         </div>
-      </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <div className="w-8 h-8 rounded" style={{ backgroundColor: 'rgba(237, 236, 232, 0.12)' }}></div>
       </div>
@@ -1182,8 +1182,8 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     className={`sort-option ${language === 'ko' ? 'active' : ''}`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">🇰🇷</span>
-                      <span>한국어</span>
+                    <span className="text-lg">🇰🇷</span>
+                    <span>한국어</span>
                     </div>
                   </button>
                   <button
@@ -1194,8 +1194,8 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                     className={`sort-option ${language === 'en' ? 'active' : ''}`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">🇺🇸</span>
-                      <span>English</span>
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
                     </div>
                   </button>
                 </div>
@@ -1331,7 +1331,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-lg">🇰🇷</span>
-                          <span>한국어</span>
+                        <span>한국어</span>
                         </div>
                       </button>
                       <button
@@ -1343,7 +1343,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-lg">🇺🇸</span>
-                          <span>English</span>
+                        <span>English</span>
                         </div>
                       </button>
                     </div>
@@ -1413,7 +1413,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                 </p>
                 
                 <div className="filter-grid">
-                  {services.map(service => (
+              {services.map(service => (
                     <div key={service.service_name} className="filter-service-section">
                       <div className="filter-service-header">
                         <div 
@@ -1422,8 +1422,8 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                         >
                           <ServiceIcon iconName={service.icon} size={24} />
                           <h3 className="filter-service-title">
-                            {service.display_name}
-                          </h3>
+                    {service.display_name}
+                  </h3>
                         </div>
                         <div className="flex items-center gap-2">
                           <input
@@ -1455,27 +1455,27 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
                       
                       {filterExpandedServices[service.service_name] && (
                         <div className="filter-component-list">
-                          {service.components.map(component => (
+                    {service.components.map(component => (
                             <label 
                               key={component.name} 
                               className="filter-component-item"
                             >
-                              <input
-                                type="checkbox"
-                                checked={filters[service.service_name]?.[component.name] || false}
-                                onChange={() => toggleComponentFilter(service.service_name, component.name)}
+                        <input
+                          type="checkbox"
+                          checked={filters[service.service_name]?.[component.name] || false}
+                          onChange={() => toggleComponentFilter(service.service_name, component.name)}
                                 className="filter-checkbox focus-ring"
-                              />
+                        />
                               <span className="filter-component-label">
-                                {component.name}
-                              </span>
+                          {component.name}
+                        </span>
                               <div className={`status-dot ${getStatusColor(component.status)}`} />
-                            </label>
-                          ))}
-                        </div>
+                      </label>
+                    ))}
+                  </div>
                       )}
-                    </div>
-                  ))}
+                </div>
+              ))}
                 </div>
               </div>
             </div>

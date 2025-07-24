@@ -59,7 +59,7 @@
   border-color: rgb(var(--border));
 }
 
-body {
+  body {
   margin: 0;
   padding: 0;
   background: var(--bg-primary);
@@ -161,7 +161,7 @@ body::before {
   background: var(--mint-primary);
   transform: scaleX(0);
   transition: transform 0.3s ease;
-}
+  }
 
 .service-card:hover::after {
   transform: scaleX(1);
@@ -412,7 +412,7 @@ body::before {
   background: rgba(26, 26, 26, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(237, 236, 232, 0.08);
-}
+  }
   
 .layout-sticky-footer {
   display: flex;
