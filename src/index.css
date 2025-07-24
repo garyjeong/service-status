@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* ✨ 사용자 지정 폰트 적용 */
+@font-face {
+  font-family: 'EunpyeongSagaDogseoTitle-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2507-1@1.0/EunpyeongSagaDogseoTitle-Regular.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
 /* 🎨 새로운 컬러 팔레트 - Bottega Veneta & Jacquemus 감성 */
 :root {
   /* === 메인 컬러 팔레트 === */
@@ -56,7 +64,7 @@ body {
   padding: 0;
   background: var(--bg-primary);
   color: var(--gray-secondary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'EunpyeongSagaDogseoTitle-Regular', sans-serif;
   font-feature-settings: 'cv11', 'ss01';
   font-variation-settings: 'opsz' 32;
   overflow-x: hidden;
@@ -116,25 +124,26 @@ body::before {
   display: flex;
   flex-direction: column;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  width: 100%; /* grid 셀 너비에 맞춰 균일하게 */
 }
 
 /* 접힌 상태의 카드 높이 */
 .service-card:not(.expanded) {
   height: 200px;
+  min-width: 0; /* flexbox 압축 방지 */
 }
 
 .service-card.expanded {
   height: auto;
   min-height: 200px;
+  min-width: 0; /* flexbox 압축 방지 */
 }
 
 /* 서비스 설명 영역 */
 .service-description {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   line-height: 1.6;
   opacity: 0.8;
   margin-top: 0.5rem;
@@ -573,6 +582,8 @@ body::before {
   gap: 1rem;
   /* 화면 크기별로 명시적인 컬럼 수를 지정하여 너비 불일치 문제 해결 */
   grid-template-columns: repeat(1, 1fr);
+  /* 모든 그리드 아이템이 동일한 높이를 갖도록 */
+  grid-auto-rows: 1fr;
 }
 
 /* 태블릿 (sm) */
