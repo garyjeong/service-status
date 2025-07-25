@@ -1,12 +1,7 @@
 @import "tailwindcss";
 
-/* ✨ 사용자 지정 폰트 적용 */
-@font-face {
-  font-family: 'EunpyeongSagaDogseoTitle-Regular';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2507-1@1.0/EunpyeongSagaDogseoTitle-Regular.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-}
+/* ✨ Spoqa Han Sans Neo 폰트 적용 */
+@import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css);
 
 /* 🎨 새로운 컬러 팔레트 - Bottega Veneta & Jacquemus 감성 */
 :root {
@@ -57,6 +52,7 @@
 /* Base styles - 새로운 배경 시스템 */
 * {
   border-color: rgb(var(--border));
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
 }
 
   body {
@@ -64,7 +60,7 @@
   padding: 0;
   background: var(--bg-primary);
   color: var(--gray-secondary);
-  font-family: 'EunpyeongSagaDogseoTitle-Regular', sans-serif;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-feature-settings: 'cv11', 'ss01';
   font-variation-settings: 'opsz' 32;
   overflow-x: hidden;
@@ -218,6 +214,7 @@ body::before {
   color: var(--black-primary);
   padding: 0.875rem 1.75rem;
   border-radius: 12px;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
@@ -239,6 +236,7 @@ body::before {
   padding: 0.875rem 1.25rem;
   border: 1px solid rgba(237, 236, 232, 0.2);
   border-radius: 12px;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   font-weight: 500;
@@ -261,6 +259,7 @@ body::before {
   border: 1px solid rgba(237, 236, 232, 0.1);
   cursor: pointer;
   color: rgba(237, 236, 232, 0.7);
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
@@ -666,6 +665,7 @@ body::before {
   border: none;
   border-radius: 8px;
   color: var(--gray-secondary);
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-size: 0.875rem;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -777,6 +777,7 @@ body::before {
 /* 🎨 타이포그래피 시스템 - 세련되고 읽기 쉬운 */
 .text-gradient {
   color: var(--mint-primary);
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.3;
@@ -793,6 +794,7 @@ body::before {
 /* 데스크탑 타이틀 - 더 큰 임팩트 */
 .desktop-title {
   font-size: 2.75rem; /* 44px */
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 800;
   color: var(--mint-primary);
   letter-spacing: -0.03em;
@@ -848,6 +850,7 @@ a:hover {
 /* 헤딩 계층 구조 */
 h1 { 
   color: var(--mint-primary); 
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 800; 
   letter-spacing: -0.03em; 
   line-height: 1.2;
@@ -855,6 +858,7 @@ h1 {
 
 h2 { 
   color: var(--gray-secondary); 
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 700; 
   letter-spacing: -0.02em; 
   line-height: 1.3;
@@ -862,6 +866,7 @@ h2 {
 
 h3 { 
   color: var(--gray-secondary); 
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 600; 
   letter-spacing: -0.01em; 
   line-height: 1.4;
@@ -870,6 +875,7 @@ h3 {
 /* 본문 텍스트 */
 p { 
   color: var(--gray-secondary); 
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   line-height: 1.6; 
   letter-spacing: -0.005em; 
 }
@@ -877,6 +883,7 @@ p {
 /* 작은 텍스트 */
 .text-sm, .text-xs { 
   color: rgba(237, 236, 232, 0.8); 
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   line-height: 1.5; 
 }
 
@@ -936,6 +943,7 @@ p {
 
 .modal-title {
   font-size: 1.25rem;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 700;
   color: var(--mint-primary);
   margin: 0;
@@ -947,6 +955,7 @@ p {
   background: transparent;
   border: none;
   color: var(--gray-secondary);
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-size: 1.5rem;
   width: 2rem;
   height: 2rem;
@@ -1065,6 +1074,7 @@ p {
   gap: 0.75rem;
   margin-bottom: 1rem;
   font-size: 1rem;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 600;
   color: var(--gray-secondary);
 }
@@ -1107,6 +1117,7 @@ p {
 
 .filter-component-label {
   font-size: 0.875rem;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   color: rgba(237, 236, 232, 0.8);
   flex: 1;
   transition: color 0.2s ease;
@@ -1171,6 +1182,7 @@ p {
 
 .filter-service-title {
   font-size: 1rem;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 600;
   color: var(--gray-secondary);
   margin: 0;
@@ -1184,6 +1196,7 @@ p {
   padding: 0.5rem 1rem;
   border-radius: 8px;
   border: none;
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
