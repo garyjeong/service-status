@@ -29,6 +29,14 @@ import auth0Icon from '@/assets/auth0.png';
 import sendgridIcon from '@/assets/sendgrid.png';
 import cloudflareIcon from '@/assets/cloudflare.png';
 import datadogIcon from '@/assets/datadog.png';
+// Zeta Global uses a generic icon until specific icon is available
+import zetaGlobalIcon from '@/assets/datadog.png';
+// New service icons
+import vercelIcon from '@/assets/netlify.png'; // Using netlify icon as placeholder for Vercel
+import stripeIcon from '@/assets/slack.png'; // Using slack icon as placeholder for Stripe
+import mongodbIcon from '@/assets/firebase.png'; // Using firebase icon as placeholder for MongoDB
+import huggingfaceIcon from '@/assets/gpt.png'; // Using GPT icon as placeholder for Hugging Face
+import gitlabIcon from '@/assets/github.png'; // Using GitHub icon as placeholder for GitLab
 
 interface DashboardProps {
   className?: string;
@@ -114,6 +122,12 @@ const translations = {
       sendgrid: '이메일 전송 및 마케팅 플랫폼',
       cloudflare: 'CDN, DNS, 보안 및 성능 최적화 서비스',
       datadog: '모니터링, 로깅, APM 및 보안 플랫폼',
+      zetaglobal: '마케팅 플랫폼 및 데이터 분석 서비스',
+      vercel: '프론트엔드 클라우드 플랫폼 및 서버리스 배포 서비스',
+      stripe: '온라인 결제 처리 및 금융 인프라 플랫폼',
+      mongodb: '클라우드 NoSQL 데이터베이스 서비스',
+      huggingface: 'AI 모델 허브 및 머신러닝 플랫폼',
+      gitlab: 'DevOps 플랫폼 및 Git 저장소 호스팅 서비스',
     }
   },
   en: {
@@ -168,6 +182,12 @@ const translations = {
       sendgrid: 'Email delivery and marketing platform',
       cloudflare: 'CDN, DNS, security and performance optimization services',
       datadog: 'Monitoring, logging, APM and security platform',
+      zetaglobal: 'Marketing platform and data analytics service',
+      vercel: 'Frontend cloud platform and serverless deployment service',
+      stripe: 'Online payment processing and financial infrastructure platform',
+      mongodb: 'Cloud NoSQL database service',
+      huggingface: 'AI model hub and machine learning platform',
+      gitlab: 'DevOps platform and Git repository hosting service',
     }
   }
 };
@@ -197,6 +217,12 @@ const getServiceIcon = (iconName: string): string => {
     sendgrid: sendgridIcon,
     cloudflare: cloudflareIcon,
     datadog: datadogIcon,
+    zetaglobal: zetaGlobalIcon,
+    vercel: vercelIcon,
+    stripe: stripeIcon,
+    mongodb: mongodbIcon,
+    huggingface: huggingfaceIcon,
+    gitlab: gitlabIcon,
   };
   return iconMap[iconName] || '';
 };
@@ -205,7 +231,7 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
   const iconSrc = getServiceIcon(iconName);
   
   if (iconSrc) {
-    const needsWhiteBackground = ['github', 'cursor', 'netlify', 'perplexity', 'v0', 'replit', 'circleci', 'grok'].includes(iconName);
+    const needsWhiteBackground = ['github', 'cursor', 'netlify', 'perplexity', 'v0', 'replit', 'circleci', 'grok', 'vercel', 'stripe', 'gitlab'].includes(iconName);
     
     return (
       <div className="relative group">

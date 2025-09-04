@@ -1339,6 +1339,390 @@ export async function fetchDatadogStatus(): Promise<Service> {
 }
 
 /**
+ * Zeta Global 상태 조회
+ */
+export async function fetchZetaGlobalStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.zetaglobal.net/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'Web Application', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Platform', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Platform Access', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Data Import', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'Audience Segmentation',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      { name: 'Campaigns', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Reports', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'End-to-End Sending Infrastructure',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      { name: 'API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Auth API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'People API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Events API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Customers API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Recommendations', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Resources API', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'zetaglobal',
+      display_name: 'Zeta Global',
+      description: '마케팅 플랫폼 및 데이터 분석 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.zetaglobal.net',
+      icon: 'zetaglobal',
+      components,
+    };
+  } catch (error) {
+    console.error('Zeta Global API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Web Application', status: 'operational' },
+      { name: 'Platform', status: 'operational' },
+      { name: 'Platform Access', status: 'operational' },
+      { name: 'Data Import', status: 'operational' },
+      { name: 'Audience Segmentation', status: 'operational' },
+      { name: 'Campaigns', status: 'operational' },
+      { name: 'Reports', status: 'operational' },
+      { name: 'End-to-End Sending Infrastructure', status: 'operational' },
+      { name: 'API', status: 'operational' },
+      { name: 'Auth API', status: 'operational' },
+      { name: 'People API', status: 'operational' },
+      { name: 'Events API', status: 'operational' },
+      { name: 'Customers API', status: 'operational' },
+      { name: 'Recommendations', status: 'operational' },
+      { name: 'Resources API', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'zetaglobal',
+      display_name: 'Zeta Global',
+      description: '마케팅 플랫폼 및 데이터 분석 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.zetaglobal.net',
+      icon: 'zetaglobal',
+      components,
+    };
+  }
+}
+
+/**
+ * Vercel 플랫폼 상태 조회 (v0와 별도)
+ */
+export async function fetchVercelStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://www.vercel-status.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'Edge Network', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'Serverless Functions',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      { name: 'Edge Functions', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Build System', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Dashboard', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'CLI', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Domains', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Analytics', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Postgres', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Blob Storage', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'vercel',
+      display_name: 'Vercel',
+      description: '프론트엔드 클라우드 플랫폼 및 서버리스 배포 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://www.vercel-status.com',
+      icon: 'vercel',
+      components,
+    };
+  } catch (error) {
+    console.error('Vercel API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Edge Network', status: 'operational' },
+      { name: 'Serverless Functions', status: 'operational' },
+      { name: 'Edge Functions', status: 'operational' },
+      { name: 'Build System', status: 'operational' },
+      { name: 'Dashboard', status: 'operational' },
+      { name: 'CLI', status: 'operational' },
+      { name: 'Domains', status: 'operational' },
+      { name: 'Analytics', status: 'operational' },
+      { name: 'Postgres', status: 'operational' },
+      { name: 'Blob Storage', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'vercel',
+      display_name: 'Vercel',
+      description: '프론트엔드 클라우드 플랫폼 및 서버리스 배포 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://www.vercel-status.com',
+      icon: 'vercel',
+      components,
+    };
+  }
+}
+
+/**
+ * Stripe 상태 조회
+ */
+export async function fetchStripeStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.stripe.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Dashboard', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Webhooks', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Connect', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Checkout', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Billing', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Issuing', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Terminal', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Sigma', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Atlas', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'stripe',
+      display_name: 'Stripe',
+      description: '온라인 결제 처리 및 금융 인프라 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.stripe.com',
+      icon: 'stripe',
+      components,
+    };
+  } catch (error) {
+    console.error('Stripe API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'API', status: 'operational' },
+      { name: 'Dashboard', status: 'operational' },
+      { name: 'Webhooks', status: 'operational' },
+      { name: 'Connect', status: 'operational' },
+      { name: 'Checkout', status: 'operational' },
+      { name: 'Billing', status: 'operational' },
+      { name: 'Issuing', status: 'operational' },
+      { name: 'Terminal', status: 'operational' },
+      { name: 'Sigma', status: 'operational' },
+      { name: 'Atlas', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'stripe',
+      display_name: 'Stripe',
+      description: '온라인 결제 처리 및 금융 인프라 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.stripe.com',
+      icon: 'stripe',
+      components,
+    };
+  }
+}
+
+/**
+ * MongoDB Atlas 상태 조회
+ */
+export async function fetchMongoDBStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.mongodb.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'Clusters', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Atlas Data API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Atlas Search', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'Atlas Device Sync',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      { name: 'Charts', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Atlas Functions', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Atlas Triggers', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Atlas GraphQL', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Data Lake', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Online Archive', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'mongodb',
+      display_name: 'MongoDB Atlas',
+      description: '클라우드 NoSQL 데이터베이스 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.mongodb.com',
+      icon: 'mongodb',
+      components,
+    };
+  } catch (error) {
+    console.error('MongoDB API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Clusters', status: 'operational' },
+      { name: 'Atlas Data API', status: 'operational' },
+      { name: 'Atlas Search', status: 'operational' },
+      { name: 'Atlas Device Sync', status: 'operational' },
+      { name: 'Charts', status: 'operational' },
+      { name: 'Atlas Functions', status: 'operational' },
+      { name: 'Atlas Triggers', status: 'operational' },
+      { name: 'Atlas GraphQL', status: 'operational' },
+      { name: 'Data Lake', status: 'operational' },
+      { name: 'Online Archive', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'mongodb',
+      display_name: 'MongoDB Atlas',
+      description: '클라우드 NoSQL 데이터베이스 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.mongodb.com',
+      icon: 'mongodb',
+      components,
+    };
+  }
+}
+
+/**
+ * Hugging Face 상태 조회
+ */
+export async function fetchHuggingFaceStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.huggingface.co/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'Hub', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Inference API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'Inference Endpoints',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      { name: 'Spaces', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Datasets', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'AutoTrain', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Model Cards', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'Transformers Library',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+    ];
+
+    return {
+      service_name: 'huggingface',
+      display_name: 'Hugging Face',
+      description: 'AI 모델 허브 및 머신러닝 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.huggingface.co',
+      icon: 'huggingface',
+      components,
+    };
+  } catch (error) {
+    console.error('Hugging Face API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'Hub', status: 'operational' },
+      { name: 'Inference API', status: 'operational' },
+      { name: 'Inference Endpoints', status: 'operational' },
+      { name: 'Spaces', status: 'operational' },
+      { name: 'Datasets', status: 'operational' },
+      { name: 'AutoTrain', status: 'operational' },
+      { name: 'Model Cards', status: 'operational' },
+      { name: 'Transformers Library', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'huggingface',
+      display_name: 'Hugging Face',
+      description: 'AI 모델 허브 및 머신러닝 플랫폼',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.huggingface.co',
+      icon: 'huggingface',
+      components,
+    };
+  }
+}
+
+/**
+ * GitLab 상태 조회
+ */
+export async function fetchGitLabStatus(): Promise<Service> {
+  try {
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.gitlab.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    const components: ServiceComponent[] = [
+      { name: 'GitLab.com', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Git Operations', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'CI/CD', status: normalizeStatus(data.status?.indicator || 'operational') },
+      {
+        name: 'Container Registry',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      {
+        name: 'Package Registry',
+        status: normalizeStatus(data.status?.indicator || 'operational'),
+      },
+      { name: 'Pages', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'API', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Webhooks', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Merge Requests', status: normalizeStatus(data.status?.indicator || 'operational') },
+      { name: 'Issues', status: normalizeStatus(data.status?.indicator || 'operational') },
+    ];
+
+    return {
+      service_name: 'gitlab',
+      display_name: 'GitLab',
+      description: 'DevOps 플랫폼 및 Git 저장소 호스팅 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.gitlab.com',
+      icon: 'gitlab',
+      components,
+    };
+  } catch (error) {
+    console.error('GitLab API 오류:', error);
+    const components: ServiceComponent[] = [
+      { name: 'GitLab.com', status: 'operational' },
+      { name: 'Git Operations', status: 'operational' },
+      { name: 'CI/CD', status: 'operational' },
+      { name: 'Container Registry', status: 'operational' },
+      { name: 'Package Registry', status: 'operational' },
+      { name: 'Pages', status: 'operational' },
+      { name: 'API', status: 'operational' },
+      { name: 'Webhooks', status: 'operational' },
+      { name: 'Merge Requests', status: 'operational' },
+      { name: 'Issues', status: 'operational' },
+    ];
+
+    return {
+      service_name: 'gitlab',
+      display_name: 'GitLab',
+      description: 'DevOps 플랫폼 및 Git 저장소 호스팅 서비스',
+      status: calculateServiceStatus(components),
+      page_url: 'https://status.gitlab.com',
+      icon: 'gitlab',
+      components,
+    };
+  }
+}
+
+/**
  * 모든 서비스 상태를 병렬로 조회
  */
 export async function fetchAllServicesStatus(): Promise<Service[]> {
@@ -1365,6 +1749,12 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchSendGridStatus,
     fetchCloudflareStatus,
     fetchDatadogStatus,
+    fetchZetaGlobalStatus,
+    fetchVercelStatus,
+    fetchStripeStatus,
+    fetchMongoDBStatus,
+    fetchHuggingFaceStatus,
+    fetchGitLabStatus,
   ];
 
   try {
@@ -1417,6 +1807,12 @@ export const serviceFetchers = {
   sendgrid: fetchSendGridStatus,
   cloudflare: fetchCloudflareStatus,
   datadog: fetchDatadogStatus,
+  zetaglobal: fetchZetaGlobalStatus,
+  vercel: fetchVercelStatus,
+  stripe: fetchStripeStatus,
+  mongodb: fetchMongoDBStatus,
+  huggingface: fetchHuggingFaceStatus,
+  gitlab: fetchGitLabStatus,
 };
 
 // 서비스 이름 목록
