@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
-import { serviceFetchers, serviceNames } from '../services/api';
+import { serviceFetchers, serviceNames, StatusUtils } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import AdFitBanner from './AdFitBanner';
 
@@ -874,7 +874,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     const filteredServices = getFilteredServices(); // 필터 적용
     const servicesWithStatus = filteredServices.map(service => ({
       ...service,
-      status: calculateServiceStatus(service.components)
+      status: StatusUtils.calculateServiceStatus(service.components)
     }));
     
     switch (sortType) {
@@ -967,28 +967,13 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     }
   };
 
-  // api.ts에서 같은 함수를 가져와서 사용
-  const calculateServiceStatus = (components: ServiceComponent[]): 'operational' | 'degraded' | 'outage' => {
-    if (components.some(c => c.status === 'outage')) {
-      const outageCount = components.filter(c => c.status === 'outage').length;
-      const totalCount = components.length;
-      
-      if (outageCount === totalCount) {
-        return 'outage';
-      }
-      return 'degraded';
-    }
-    if (components.some(c => c.status === 'degraded')) {
-      return 'degraded';
-    }
-    return 'operational';
-  };
+  // StatusUtils.StatusUtils.calculateServiceStatus 사용
 
   // 계산된 상태를 포함한 서비스 데이터를 가져오는 함수
   const getServicesWithCalculatedStatus = () => {
     return services.map(service => ({
       ...service,
-      status: calculateServiceStatus(service.components)
+      status: StatusUtils.calculateServiceStatus(service.components)
     }));
   };
 
@@ -1026,7 +1011,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     const filteredServices = getFilteredServices();
     const servicesWithStatus = filteredServices.map(service => ({
       ...service,
-      status: calculateServiceStatus(service.components)
+      status: StatusUtils.calculateServiceStatus(service.components)
     }));
     
     const totalServices = servicesWithStatus.length;
