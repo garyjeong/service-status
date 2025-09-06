@@ -1,19 +1,32 @@
 import axios, { AxiosInstance } from 'axios';
 
-// 간단한 상태 타입 정의
+// 상태 타입 정의
+export type StatusType = 'operational' | 'degraded' | 'outage' | 'maintenance';
+
 export interface ServiceComponent {
   name: string;
-  status: 'operational' | 'degraded' | 'outage' | 'maintenance';
+  status: StatusType;
 }
 
 export interface Service {
   service_name: string;
   display_name: string;
   description: string;
-  status: 'operational' | 'degraded' | 'outage' | 'maintenance';
+  status: StatusType;
   page_url: string;
   icon: string;
   components: ServiceComponent[];
+}
+
+// 서비스 구성 인터페이스
+interface ServiceConfig {
+  service_name: string;
+  display_name: string;
+  description: string;
+  page_url: string;
+  icon: string;
+  api_url: string;
+  components: string[];
 }
 
 // CORS 프록시 설정 (개발 환경용)
@@ -31,274 +44,197 @@ const createApiClient = (timeout = 10000): AxiosInstance => {
 
 const apiClient = createApiClient();
 
-/**
- * 상태 문자열을 표준화
- */
-function normalizeStatus(status: string): 'operational' | 'degraded' | 'outage' | 'maintenance' {
-  const normalizedStatus = status.toLowerCase();
+// 공통 유틸리티 함수들
+class StatusUtils {
+  /**
+   * 상태 문자열을 표준화
+   */
+  static normalizeStatus(status: string): StatusType {
+    const normalizedStatus = status.toLowerCase();
 
-  if (
-    normalizedStatus.includes('operational') ||
-    normalizedStatus.includes('none') ||
-    normalizedStatus === 'good'
-  ) {
-    return 'operational';
-  }
-  if (
-    normalizedStatus.includes('degraded') ||
-    normalizedStatus.includes('minor') ||
-    normalizedStatus.includes('partial')
-  ) {
-    return 'degraded';
-  }
-  if (
-    normalizedStatus.includes('outage') ||
-    normalizedStatus.includes('major') ||
-    normalizedStatus.includes('critical')
-  ) {
-    return 'outage';
-  }
-  if (normalizedStatus.includes('maintenance') || normalizedStatus.includes('scheduled')) {
-    return 'maintenance';
-  }
-
-  return 'operational'; // 기본값
-}
-
-/**
- * 하위 컴포넌트들의 상태에 따라 상위 서비스 상태를 계산
- */
-function calculateServiceStatus(
-  components: ServiceComponent[]
-): 'operational' | 'degraded' | 'outage' | 'maintenance' {
-  if (components.some(c => c.status === 'outage')) {
-    const outageCount = components.filter(c => c.status === 'outage').length;
-    const totalCount = components.length;
-
-    if (outageCount === totalCount) {
+    if (
+      normalizedStatus.includes('operational') ||
+      normalizedStatus.includes('none') ||
+      normalizedStatus === 'good'
+    ) {
+      return 'operational';
+    }
+    if (
+      normalizedStatus.includes('degraded') ||
+      normalizedStatus.includes('minor') ||
+      normalizedStatus.includes('partial')
+    ) {
+      return 'degraded';
+    }
+    if (
+      normalizedStatus.includes('outage') ||
+      normalizedStatus.includes('major') ||
+      normalizedStatus.includes('critical')
+    ) {
       return 'outage';
     }
-    return 'degraded';
+    if (normalizedStatus.includes('maintenance') || normalizedStatus.includes('scheduled')) {
+      return 'maintenance';
+    }
+
+    return 'operational'; // 기본값
   }
-  if (components.some(c => c.status === 'degraded')) {
-    return 'degraded';
+
+  /**
+   * 하위 컴포넌트들의 상태에 따라 상위 서비스 상태를 계산
+   */
+  static calculateServiceStatus(components: ServiceComponent[]): StatusType {
+    if (components.some(c => c.status === 'outage')) {
+      const outageCount = components.filter(c => c.status === 'outage').length;
+      const totalCount = components.length;
+
+      if (outageCount === totalCount) {
+        return 'outage';
+      }
+      return 'degraded';
+    }
+    if (components.some(c => c.status === 'degraded')) {
+      return 'degraded';
+    }
+    if (components.some(c => c.status === 'maintenance')) {
+      return 'maintenance';
+    }
+    return 'operational';
   }
-  if (components.some(c => c.status === 'maintenance')) {
-    return 'maintenance';
+}
+
+// 서비스 설정 중앙화
+const SERVICES_CONFIG: Record<string, ServiceConfig> = {
+  openai: {
+    service_name: 'openai',
+    display_name: 'OpenAI ChatGPT',
+    description: 'ChatGPT 웹 인터페이스 및 OpenAI API',
+    page_url: 'https://status.openai.com',
+    icon: 'openai',
+    api_url: 'https://status.openai.com/api/v2/status.json',
+    components: ['ChatGPT Web', 'OpenAI API', 'DALL-E', 'Whisper API', 'GPT-4 API', 'GPT-3.5 API'],
+  },
+  anthropic: {
+    service_name: 'anthropic',
+    display_name: 'Anthropic Claude',
+    description: 'Claude 채팅 인터페이스 및 Anthropic API',
+    page_url: 'https://status.anthropic.com',
+    icon: 'anthropic',
+    api_url: 'https://status.anthropic.com/api/v2/status.json',
+    components: [
+      'Claude Chat',
+      'Anthropic API',
+      'Claude Pro',
+      'API Console',
+      'Claude-3 Opus',
+      'Claude-3 Sonnet',
+      'Claude-3 Haiku',
+    ],
+  },
+  github: {
+    service_name: 'github',
+    display_name: 'GitHub',
+    description: '코드 저장소 및 협업 플랫폼',
+    page_url: 'https://www.githubstatus.com',
+    icon: 'github',
+    api_url: 'https://www.githubstatus.com/api/v2/status.json',
+    components: [
+      'Git Operations',
+      'API Requests',
+      'Issues & PRs',
+      'Actions',
+      'Pages',
+      'Packages',
+      'Codespaces',
+      'Copilot',
+    ],
+  },
+  netlify: {
+    service_name: 'netlify',
+    display_name: 'Netlify',
+    description: '정적 사이트 호스팅 및 배포 플랫폼',
+    page_url: 'https://www.netlifystatus.com',
+    icon: 'netlify',
+    api_url: 'https://www.netlifystatus.com/api/v2/status.json',
+    components: ['CDN', 'Builds', 'Edge Functions', 'Forms', 'DNS', 'Identity', 'Analytics'],
+  },
+};
+
+// 공통 API 처리 클래스
+class ServiceStatusFetcher {
+  static async fetchServiceStatus(serviceName: string): Promise<Service> {
+    const config = SERVICES_CONFIG[serviceName];
+    if (!config) {
+      throw new Error(`Unknown service: ${serviceName}`);
+    }
+
+    try {
+      const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
+      const data = response.data;
+      const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
+
+      const components: ServiceComponent[] = config.components.map(componentName => ({
+        name: componentName,
+        status: baseStatus,
+      }));
+
+      return {
+        service_name: config.service_name,
+        display_name: config.display_name,
+        description: config.description,
+        status: StatusUtils.calculateServiceStatus(components),
+        page_url: config.page_url,
+        icon: config.icon,
+        components,
+      };
+    } catch (error) {
+      console.error(`${config.service_name} API 오류:`, error);
+
+      // 오류 시 기본 상태 반환
+      const components: ServiceComponent[] = config.components.map(componentName => ({
+        name: componentName,
+        status: 'operational' as StatusType,
+      }));
+
+      return {
+        service_name: config.service_name,
+        display_name: config.display_name,
+        description: config.description,
+        status: StatusUtils.calculateServiceStatus(components),
+        page_url: config.page_url,
+        icon: config.icon,
+        components,
+      };
+    }
   }
-  return 'operational';
 }
 
 /**
  * OpenAI 상태 조회
  */
 export async function fetchOpenAIStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.openai.com/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      { name: 'ChatGPT Web', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'OpenAI API', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'DALL-E', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Whisper API', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'GPT-4 API', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'GPT-3.5 API', status: normalizeStatus(data.status?.indicator || 'operational') },
-    ];
-
-    return {
-      service_name: 'openai',
-      display_name: 'OpenAI ChatGPT',
-      description: 'ChatGPT 웹 인터페이스 및 OpenAI API',
-      status: calculateServiceStatus(components),
-      page_url: 'https://status.openai.com',
-      icon: 'openai',
-      components,
-    };
-  } catch (error) {
-    console.error('OpenAI API 오류:', error);
-    const components: ServiceComponent[] = [
-      { name: 'ChatGPT Web', status: 'operational' },
-      { name: 'OpenAI API', status: 'operational' },
-      { name: 'DALL-E', status: 'operational' },
-      { name: 'Whisper API', status: 'operational' },
-      { name: 'GPT-4 API', status: 'operational' },
-      { name: 'GPT-3.5 API', status: 'operational' },
-    ];
-
-    return {
-      service_name: 'openai',
-      display_name: 'OpenAI ChatGPT',
-      description: 'ChatGPT 웹 인터페이스 및 OpenAI API',
-      status: calculateServiceStatus(components),
-      page_url: 'https://status.openai.com',
-      icon: 'openai',
-      components,
-    };
-  }
+  return ServiceStatusFetcher.fetchServiceStatus('openai');
 }
 
 /**
  * Anthropic 상태 조회
  */
 export async function fetchAnthropicStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.anthropic.com/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      { name: 'Claude Chat', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Anthropic API', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Claude Pro', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'API Console', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Claude-3 Opus', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Claude-3 Sonnet', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Claude-3 Haiku', status: normalizeStatus(data.status?.indicator || 'operational') },
-    ];
-
-    return {
-      service_name: 'anthropic',
-      display_name: 'Anthropic Claude',
-      description: 'Claude 채팅 인터페이스 및 Anthropic API',
-      status: calculateServiceStatus(components),
-      page_url: 'https://status.anthropic.com',
-      icon: 'anthropic',
-      components,
-    };
-  } catch (error) {
-    console.error('Anthropic API 오류:', error);
-    const components: ServiceComponent[] = [
-      { name: 'Claude Chat', status: 'operational' },
-      { name: 'Anthropic API', status: 'operational' },
-      { name: 'Claude Pro', status: 'operational' },
-      { name: 'API Console', status: 'operational' },
-      { name: 'Claude-3 Opus', status: 'operational' },
-      { name: 'Claude-3 Sonnet', status: 'operational' },
-      { name: 'Claude-3 Haiku', status: 'operational' },
-    ];
-
-    return {
-      service_name: 'anthropic',
-      display_name: 'Anthropic Claude',
-      description: 'Claude 채팅 인터페이스 및 Anthropic API',
-      status: calculateServiceStatus(components),
-      page_url: 'https://status.anthropic.com',
-      icon: 'anthropic',
-      components,
-    };
-  }
+  return ServiceStatusFetcher.fetchServiceStatus('anthropic');
 }
 
 /**
  * GitHub 상태 조회
  */
 export async function fetchGitHubStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.githubstatus.com/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      { name: 'Git Operations', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'API Requests', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Issues & PRs', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Actions', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Pages', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Packages', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Codespaces', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Copilot', status: normalizeStatus(data.status?.indicator || 'operational') },
-    ];
-
-    return {
-      service_name: 'github',
-      display_name: 'GitHub',
-      description: '코드 저장소 및 협업 플랫폼',
-      status: calculateServiceStatus(components),
-      page_url: 'https://www.githubstatus.com',
-      icon: 'github',
-      components,
-    };
-  } catch (error) {
-    console.error('GitHub API 오류:', error);
-    const components: ServiceComponent[] = [
-      { name: 'Git Operations', status: 'operational' },
-      { name: 'API Requests', status: 'operational' },
-      { name: 'Issues & PRs', status: 'operational' },
-      { name: 'Actions', status: 'operational' },
-      { name: 'Pages', status: 'operational' },
-      { name: 'Packages', status: 'operational' },
-      { name: 'Codespaces', status: 'operational' },
-      { name: 'Copilot', status: 'operational' },
-    ];
-
-    return {
-      service_name: 'github',
-      display_name: 'GitHub',
-      description: '코드 저장소 및 협업 플랫폼',
-      status: calculateServiceStatus(components),
-      page_url: 'https://www.githubstatus.com',
-      icon: 'github',
-      components,
-    };
-  }
+  return ServiceStatusFetcher.fetchServiceStatus('github');
 }
 
 /**
  * Netlify 상태 조회
  */
 export async function fetchNetlifyStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.netlifystatus.com/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      { name: 'CDN', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Builds', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Edge Functions', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Forms', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'DNS', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Identity', status: normalizeStatus(data.status?.indicator || 'operational') },
-      { name: 'Analytics', status: normalizeStatus(data.status?.indicator || 'operational') },
-    ];
-
-    return {
-      service_name: 'netlify',
-      display_name: 'Netlify',
-      description: '정적 사이트 호스팅 및 배포 플랫폼',
-      status: calculateServiceStatus(components),
-      page_url: 'https://www.netlifystatus.com',
-      icon: 'netlify',
-      components,
-    };
-  } catch (error) {
-    console.error('Netlify API 오류:', error);
-    const components: ServiceComponent[] = [
-      { name: 'CDN', status: 'operational' },
-      { name: 'Builds', status: 'operational' },
-      { name: 'Edge Functions', status: 'operational' },
-      { name: 'Forms', status: 'operational' },
-      { name: 'DNS', status: 'operational' },
-      { name: 'Identity', status: 'operational' },
-      { name: 'Analytics', status: 'operational' },
-    ];
-
-    return {
-      service_name: 'netlify',
-      display_name: 'Netlify',
-      description: '정적 사이트 호스팅 및 배포 플랫폼',
-      status: calculateServiceStatus(components),
-      page_url: 'https://www.netlifystatus.com',
-      icon: 'netlify',
-      components,
-    };
-  }
+  return ServiceStatusFetcher.fetchServiceStatus('netlify');
 }
 
 /**

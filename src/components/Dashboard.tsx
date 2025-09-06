@@ -969,18 +969,15 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
     }
   };
 
-  // 하위 컴포넌트들의 상태에 따라 상위 서비스 상태를 계산하는 함수
+  // api.ts에서 같은 함수를 가져와서 사용
   const calculateServiceStatus = (components: ServiceComponent[]): 'operational' | 'degraded' | 'outage' => {
     if (components.some(c => c.status === 'outage')) {
-      // 하나라도 완전 장애가 있으면 전체를 장애로 표시
       const outageCount = components.filter(c => c.status === 'outage').length;
       const totalCount = components.length;
       
-      // 모든 서비스가 장애인 경우만 빨간색(outage)
       if (outageCount === totalCount) {
         return 'outage';
       }
-      // 일부만 장애인 경우 노란색(degraded)
       return 'degraded';
     }
     if (components.some(c => c.status === 'degraded')) {
