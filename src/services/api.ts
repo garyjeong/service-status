@@ -25,8 +25,10 @@ interface ServiceConfig {
   description: string;
   page_url: string;
   icon: string;
-  api_url: string;
-  components: string[];
+  kind: 'statuspage' | 'website';
+  api_url?: string;
+  components?: string[];
+  componentUrls?: { [componentName: string]: string };
 }
 
 // CORS 프록시 설정 (개발 환경용)
@@ -103,6 +105,25 @@ class StatusUtils {
   }
 }
 
+// 단순 웹사이트 가용성 체크 유틸리티 (2xx/3xx → operational, 그 외/에러 → outage)
+async function websiteComponentsFromUrls(
+  urlEntries: Array<[string, string]>
+): Promise<ServiceComponent[]> {
+  const results = await Promise.allSettled(
+    urlEntries.map(([, url]) => apiClient.get(`${CORS_PROXY}${url}`, { timeout: 8000 }))
+  );
+
+  return results.map((result, idx) => {
+    const [name] = urlEntries[idx];
+    if (result.status === 'fulfilled') {
+      const code = result.value.status;
+      const ok = code >= 200 && code < 400;
+      return { name, status: ok ? 'operational' : 'outage' };
+    }
+    return { name, status: 'outage' };
+  });
+}
+
 // 서비스 설정 중앙화
 const SERVICES_CONFIG: Record<string, ServiceConfig> = {
   openai: {
@@ -111,6 +132,7 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
     description: 'ChatGPT 웹 인터페이스 및 OpenAI API',
     page_url: 'https://status.openai.com',
     icon: 'openai',
+    kind: 'statuspage',
     api_url: 'https://status.openai.com/api/v2/status.json',
     components: ['ChatGPT Web', 'OpenAI API', 'DALL-E', 'Whisper API', 'GPT-4 API', 'GPT-3.5 API'],
   },
@@ -120,6 +142,7 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
     description: 'Claude 채팅 인터페이스 및 Anthropic API',
     page_url: 'https://status.anthropic.com',
     icon: 'anthropic',
+    kind: 'statuspage',
     api_url: 'https://status.anthropic.com/api/v2/status.json',
     components: [
       'Claude Chat',
@@ -137,6 +160,7 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
     description: '코드 저장소 및 협업 플랫폼',
     page_url: 'https://www.githubstatus.com',
     icon: 'github',
+    kind: 'statuspage',
     api_url: 'https://www.githubstatus.com/api/v2/status.json',
     components: [
       'Git Operations',
@@ -155,8 +179,75 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
     description: '정적 사이트 호스팅 및 배포 플랫폼',
     page_url: 'https://www.netlifystatus.com',
     icon: 'netlify',
+    kind: 'statuspage',
     api_url: 'https://www.netlifystatus.com/api/v2/status.json',
     components: ['CDN', 'Builds', 'Edge Functions', 'Forms', 'DNS', 'Identity', 'Analytics'],
+  },
+  groq: {
+    service_name: 'groq',
+    display_name: 'Groq / GroqCloud',
+    description: 'Groq 모델/플랫폼 웹 및 콘솔 가용성 모니터링',
+    page_url: 'https://groq.com',
+    icon: 'groq',
+    kind: 'website',
+    componentUrls: {
+      Website: 'https://groq.com',
+      Console: 'https://console.groq.com',
+    },
+  },
+  leonardo: {
+    service_name: 'leonardo',
+    display_name: 'Leonardo.Ai',
+    description: 'Leonardo.Ai 웹앱 가용성 모니터링',
+    page_url: 'https://leonardo.ai',
+    icon: 'leonardo',
+    kind: 'website',
+    componentUrls: { Website: 'https://leonardo.ai' },
+  },
+  hailuo: {
+    service_name: 'hailuo',
+    display_name: 'Hailuo AI',
+    description: 'Hailuo AI 웹앱 가용성 모니터링',
+    page_url: 'https://hailuoai.video',
+    icon: 'hailuo',
+    kind: 'website',
+    componentUrls: { Website: 'https://hailuoai.video' },
+  },
+  consensus: {
+    service_name: 'consensus',
+    display_name: 'Consensus',
+    description: 'Consensus 연구 검색 웹앱 가용성 모니터링',
+    page_url: 'https://consensus.app',
+    icon: 'consensus',
+    kind: 'website',
+    componentUrls: { Website: 'https://consensus.app' },
+  },
+  deepseek: {
+    service_name: 'deepseek',
+    display_name: 'DeepSeek',
+    description: 'DeepSeek 웹/문서 가용성 모니터링(기본 웹)',
+    page_url: 'https://deepseek.com',
+    icon: 'deepseek',
+    kind: 'website',
+    componentUrls: { Website: 'https://deepseek.com' },
+  },
+  mage: {
+    service_name: 'mage',
+    display_name: 'Mage (mage.space)',
+    description: 'Mage 이미지 생성 웹앱 가용성 모니터링',
+    page_url: 'https://www.mage.space',
+    icon: 'mage',
+    kind: 'website',
+    componentUrls: { Website: 'https://www.mage.space' },
+  },
+  vooster: {
+    service_name: 'vooster',
+    display_name: 'Vooster',
+    description: 'Vooster 웹앱 가용성 모니터링',
+    page_url: 'https://vooster.ai',
+    icon: 'vooster',
+    kind: 'website',
+    componentUrls: { Website: 'https://vooster.ai' },
   },
 };
 
@@ -168,34 +259,49 @@ class ServiceStatusFetcher {
       throw new Error(`Unknown service: ${serviceName}`);
     }
 
-    try {
-      const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
-      const data = response.data;
-      const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
+    // statuspage 기반
+    if (config.kind === 'statuspage') {
+      try {
+        const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
+        const data = response.data;
+        const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
-      const components: ServiceComponent[] = config.components.map(componentName => ({
-        name: componentName,
-        status: baseStatus,
-      }));
+        const components: ServiceComponent[] = (config.components || []).map(componentName => ({
+          name: componentName,
+          status: baseStatus,
+        }));
 
-      return {
-        service_name: config.service_name,
-        display_name: config.display_name,
-        description: config.description,
-        status: StatusUtils.calculateServiceStatus(components),
-        page_url: config.page_url,
-        icon: config.icon,
-        components,
-      };
-    } catch (error) {
-      console.error(`${config.service_name} API 오류:`, error);
+        return {
+          service_name: config.service_name,
+          display_name: config.display_name,
+          description: config.description,
+          status: StatusUtils.calculateServiceStatus(components),
+          page_url: config.page_url,
+          icon: config.icon,
+          components,
+        };
+      } catch (error) {
+        console.error(`${config.service_name} API 오류:`, error);
+        const components: ServiceComponent[] = (config.components || []).map(componentName => ({
+          name: componentName,
+          status: 'operational' as StatusType,
+        }));
+        return {
+          service_name: config.service_name,
+          display_name: config.display_name,
+          description: config.description,
+          status: StatusUtils.calculateServiceStatus(components),
+          page_url: config.page_url,
+          icon: config.icon,
+          components,
+        };
+      }
+    }
 
-      // 오류 시 기본 상태 반환
-      const components: ServiceComponent[] = config.components.map(componentName => ({
-        name: componentName,
-        status: 'operational' as StatusType,
-      }));
-
+    // website 기반
+    if (config.kind === 'website') {
+      const entries = Object.entries(config.componentUrls || {});
+      const components = await websiteComponentsFromUrls(entries);
       return {
         service_name: config.service_name,
         display_name: config.display_name,
@@ -206,6 +312,8 @@ class ServiceStatusFetcher {
         components,
       };
     }
+
+    throw new Error(`Unsupported service kind: ${config.kind}`);
   }
 }
 
@@ -1691,6 +1799,14 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchMongoDBStatus,
     fetchHuggingFaceStatus,
     fetchGitLabStatus,
+    // website 기반 신규 항목들 (요청분)
+    () => ServiceStatusFetcher.fetchServiceStatus('groq'),
+    () => ServiceStatusFetcher.fetchServiceStatus('leonardo'),
+    () => ServiceStatusFetcher.fetchServiceStatus('hailuo'),
+    () => ServiceStatusFetcher.fetchServiceStatus('consensus'),
+    () => ServiceStatusFetcher.fetchServiceStatus('deepseek'),
+    () => ServiceStatusFetcher.fetchServiceStatus('mage'),
+    () => ServiceStatusFetcher.fetchServiceStatus('vooster'),
   ];
 
   try {
@@ -1749,6 +1865,13 @@ export const serviceFetchers = {
   mongodb: fetchMongoDBStatus,
   huggingface: fetchHuggingFaceStatus,
   gitlab: fetchGitLabStatus,
+  groq: () => ServiceStatusFetcher.fetchServiceStatus('groq'),
+  leonardo: () => ServiceStatusFetcher.fetchServiceStatus('leonardo'),
+  hailuo: () => ServiceStatusFetcher.fetchServiceStatus('hailuo'),
+  consensus: () => ServiceStatusFetcher.fetchServiceStatus('consensus'),
+  deepseek: () => ServiceStatusFetcher.fetchServiceStatus('deepseek'),
+  mage: () => ServiceStatusFetcher.fetchServiceStatus('mage'),
+  vooster: () => ServiceStatusFetcher.fetchServiceStatus('vooster'),
 };
 
 // 서비스 이름 목록

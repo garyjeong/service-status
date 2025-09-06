@@ -3,8 +3,6 @@ import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, 
 import { serviceFetchers, serviceNames } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import AdFitBanner from './AdFitBanner';
-import { StagewiseToolbar } from '@stagewise/toolbar-react';
-import ReactPlugin from '@stagewise-plugins/react';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -1068,7 +1066,7 @@ const Dashboard: React.FC<DashboardProps> = ({ className = '' }) => {
 
   return (
     <div className={`bg-background text-foreground layout-sticky-both ${getMobileScrollClass()} ${className} min-h-screen min-h-dvh`}>
-      <StagewiseToolbar config={{ plugins: [ReactPlugin] }} />
+      {/* Stagewise toolbar removed */}
       {/* 헤더 섹션 */}
       <header className="header-section">
         <div className="container mx-auto px-4">
