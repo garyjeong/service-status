@@ -2,47 +2,54 @@
 
 실시간으로 개발자가 자주 사용하는 외부 서비스들의 상태를 모니터링하는 다크 테마 전용 React 대시보드입니다.
 
-## ⚡ 기술 스택 (2024년 최신)
+## ⚡ 기술 스택 (2025년 최신)
 
 - **Frontend**: React 19 + TypeScript 5.8
 - **Build Tool**: Vite 6.3
-- **Package Manager**: pnpm
-- **Styling**: Tailwind CSS 4.1 + CSS Variables
+- **Package Manager**: pnpm 8.10+
+- **Styling**: Tailwind CSS 4.1 + CSS Variables + 모듈화된 CSS 시스템
+- **State Management**: Zustand 5.0 + 영속성 미들웨어
 - **Testing**: Vitest 3.2 + Testing Library 16.3
 - **HTTP Client**: Axios 1.10
-- **Icons**: 실제 AI 서비스 로고 이미지 + Lucide React 0.516
-- **State Management**: React Hooks + TanStack Query 5.8
-- **Development**: VS Code F5 디버그 모드 지원
+- **Icons**: 실제 서비스 로고 이미지 + Lucide React 0.516
+- **UI Components**: 모듈화된 컴포넌트 시스템
+- **Internationalization**: JSON 기반 다국어 시스템
+- **Development**: VS Code Tasks + ESLint + Prettier
+- **Infrastructure**: Docker + GitHub Actions + AWS ECR
 
-## 🚀 지원되는 서비스
+## 🚀 지원되는 서비스 (총 18개)
 
-### AI 서비스
+### 🤖 AI/ML 서비스 (7개)
 
 - **OpenAI ChatGPT** - ChatGPT 웹 인터페이스 및 OpenAI API
-  - 하위 컴포넌트: ChatGPT Web, OpenAI API, DALL-E, Whisper API, GPT-4 API, GPT-3.5 API
 - **Anthropic Claude** - Claude 채팅 인터페이스 및 Anthropic API
-  - 하위 컴포넌트: Claude Chat, Anthropic API, Claude Pro, API Console, Claude-3 모델들
 - **Cursor Editor** - AI 기반 코드 에디터 및 개발 도구
-  - 하위 컴포넌트: Desktop App, AI Copilot, Sync Service, Extensions, Editor Core, AI Assistant
 - **Google AI Studio** - Google Gemini API 및 AI Studio 플랫폼
-  - 하위 컴포넌트: Gemini API, AI Studio, Model Garden, Vertex AI, Gemini Vision
+- **Perplexity AI** - AI 검색 엔진 및 대화형 AI 플랫폼
+- **Groq / GroqCloud** - Groq AI 모델 플랫폼 및 추론 서비스
+- **DeepSeek** - DeepSeek AI 모델 및 플랫폼 서비스
 
-### 외부 서비스
+### ☁️ 클라우드 서비스 (6개)
+
+- **AWS** - 아마존 웹 서비스 클라우드 플랫폼
+- **Firebase** - Google 백엔드 서비스 플랫폼
+- **Supabase** - 오픈소스 Firebase 대안 백엔드 플랫폼
+- **Netlify** - 정적 사이트 호스팅 및 배포 플랫폼
+- **Heroku** - 클라우드 애플리케이션 플랫폼 (PaaS)
+- **Cloudflare** - CDN, DNS, 보안 및 성능 최적화 서비스
+
+### 🛠️ 개발 도구 (3개)
 
 - **GitHub** - 코드 저장소 및 협업 플랫폼
-  - 하위 컴포넌트: Git Operations, API Requests, Issues & PRs, Actions, Pages, Packages, Codespaces, Copilot
-- **Netlify** - 정적 사이트 호스팅 및 배포
-  - 하위 컴포넌트: CDN, Builds, Edge Functions, Forms, DNS, Identity, Analytics
-- **Docker Hub** - 컨테이너 이미지 레지스트리
-  - 하위 컴포넌트: Registry, Build Service, Webhooks, Organizations, Authentication, Container Registry
-- **AWS** - 클라우드 컴퓨팅 플랫폼
-  - 하위 컴포넌트: EC2, S3, RDS, Lambda, CloudFront, Route 53, CloudWatch, IAM, ECS, EKS
-- **Slack** - 팀 커뮤니케이션 플랫폼
-  - 하위 컴포넌트: Messaging, Calls, File Sharing, Apps & Integrations, Notifications, Search, Workspace Admin, Enterprise Grid
-- **Firebase** - 백엔드 서비스 플랫폼
-  - 하위 컴포넌트: Realtime Database, Firestore, Authentication, Hosting, Functions, Storage, Cloud Messaging, Remote Config, Crashlytics, Performance
-- **Supabase** - 오픈소스 Firebase 대안 백엔드 플랫폼
-  - 하위 컴포넌트: Analytics, API Gateway, Auth, Connection Pooler, Dashboard, Database, Edge Functions, Management API, Realtime, Storage
+- **Replit** - 온라인 코딩 환경 및 협업 개발 플랫폼
+- **CircleCI** - 지속적 통합 및 배포 (CI/CD) 플랫폼
+
+### 💼 비즈니스 서비스 (2개)
+
+- **Auth0** - 인증 및 권한 관리 플랫폼
+- **Datadog** - 모니터링, 로깅, APM 및 보안 플랫폼
+
+모든 서비스는 **전용 상태 페이지**를 통해 실시간 모니터링되며, 각 서비스의 하위 컴포넌트별 상태를 세부적으로 표시합니다.
 
 ## 📦 설치 및 실행
 
@@ -122,40 +129,115 @@ pnpm type-check
 # - "Launch Dev Server + Chrome" - 복합 설정
 ```
 
-## 🏗️ 프로젝트 구조
+## 🏗️ 프로젝트 구조 (모듈화된 아키텍처)
 
 ```
 src/
-├── assets/             # 정적 리소스 (서비스 로고)
-│   ├── aws.png         # AWS 로고
-│   ├── claude.png      # Anthropic 로고
-│   ├── cursor.png      # Cursor 로고
-│   ├── docker.png      # Docker Hub 로고
-│   ├── firebase.png    # Firebase 로고
-│   ├── github.png      # GitHub 로고
-│   ├── google-ai-studio.png # Google AI 로고
-│   ├── gpt.png         # OpenAI 로고
-│   ├── netlify.png     # Netlify 로고
-│   ├── slack.png       # Slack 로고
-│   └── supabase.jpg    # Supabase 로고
-├── components/         # React 컴포넌트
-│   ├── Dashboard.tsx   # 메인 대시보드 (올인원 컴포넌트)
-│   └── AdFitBanner.tsx # Kakao AdFit 광고 컴포넌트 (고정 728x90, 스타일 변형 금지)
-├── hooks/             # Custom React Hooks
-│   └── useStatus.ts   # 상태 관리 훅
-├── services/          # API 서비스
-│   └── api.ts        # 외부 API 통신
-├── types/            # TypeScript 타입 정의
-│   └── status.ts     # 상태 관련 타입
-├── utils/            # 유틸리티 함수
-│   └── status.ts     # 상태 변환 및 계산
-├── vite-env.d.ts     # Vite 환경 타입 (이미지 import 포함)
-└── main.tsx          # 앱 진입점
+├── assets/                    # 정적 리소스 (18개 서비스 로고)
+│   ├── gpt.png               # OpenAI 로고
+│   ├── claude.png            # Anthropic 로고
+│   ├── cursor.png            # Cursor 로고
+│   ├── google-ai-studio.png  # Google AI 로고
+│   ├── perplexity.png        # Perplexity 로고
+│   ├── grok.png              # Groq 로고
+│   ├── github.png            # GitHub 로고
+│   ├── netlify.png           # Netlify 로고
+│   ├── aws.png               # AWS 로고
+│   ├── firebase.png          # Firebase 로고
+│   ├── supabase.jpg          # Supabase 로고
+│   ├── heroku.png            # Heroku 로고
+│   ├── cloudflare.png        # Cloudflare 로고
+│   ├── replit.png            # Replit 로고
+│   ├── circleci.png          # CircleCI 로고
+│   ├── auth0.png             # Auth0 로고
+│   ├── datadog.png           # Datadog 로고
+│   └── v0.png                # v0 로고
+├── components/               # 모듈화된 React 컴포넌트
+│   ├── Dashboard/           # 메인 대시보드
+│   │   ├── Dashboard.tsx    # 메인 컨테이너
+│   │   ├── Header/          # 헤더 컴포넌트들
+│   │   │   ├── DashboardHeader.tsx
+│   │   │   ├── StatusSummary.tsx
+│   │   │   └── ControlPanel.tsx
+│   │   ├── Content/         # 콘텐츠 컴포넌트들
+│   │   │   ├── ServiceCard.tsx
+│   │   │   ├── ServiceGrid.tsx
+│   │   │   ├── CategoryView.tsx
+│   │   │   └── FavoriteSection.tsx
+│   │   └── Modals/          # 모달 컴포넌트들
+│   │       └── FilterModal.tsx
+│   ├── Layout/              # 반응형 레이아웃 시스템
+│   │   ├── ResponsiveLayout.tsx
+│   │   └── ResponsiveWrapper.tsx
+│   ├── ui/                  # 재사용 가능한 UI 컴포넌트
+│   │   ├── Button.tsx
+│   │   └── StatusBadge.tsx
+│   └── AdFitBanner.tsx      # 광고 컴포넌트
+├── hooks/                   # 커스텀 React 훅
+│   ├── useResponsive.ts     # 반응형 관리 훅
+│   └── useTranslation.ts    # 다국어 번역 훅
+├── store/                   # 상태 관리
+│   └── dashboardStore.ts    # Zustand 스토어
+├── services/               # API 서비스
+│   └── api.ts              # 18개 서비스 API 통신
+├── types/                  # TypeScript 타입 정의
+│   ├── ui.ts               # UI 관련 타입
+│   ├── colors.ts           # 색상 시스템 타입
+│   └── categories.ts       # 서비스 카테고리 타입
+├── utils/                  # 유틸리티 함수
+│   └── tailwind.ts         # Tailwind 유틸리티
+├── styles/                 # 모듈화된 CSS 시스템
+│   ├── main.css            # 메인 CSS 진입점
+│   ├── themes/             # 테마 및 변수
+│   │   └── variables.css
+│   ├── base/               # 기본 스타일
+│   │   ├── reset.css
+│   │   └── typography.css
+│   ├── components/         # 컴포넌트별 스타일
+│   │   ├── cards.css
+│   │   ├── buttons.css
+│   │   ├── status.css
+│   │   ├── modals.css
+│   │   ├── filters.css
+│   │   └── dropdowns.css
+│   ├── layouts/           # 레이아웃 스타일
+│   │   └── layout.css
+│   └── utilities/         # 유틸리티 스타일
+│       └── utilities.css
+├── locales/               # 다국어 지원
+│   ├── ko/                # 한국어
+│   │   ├── dashboard.json
+│   │   ├── accessibility.json
+│   │   └── services.json
+│   └── en/                # 영어
+│       ├── dashboard.json
+│       ├── accessibility.json
+│       └── services.json
+├── vite-env.d.ts          # Vite 환경 타입
+└── main.tsx               # 앱 진입점
 
-test.html             # 정적 HTML 데모
-backup/               # 이전 Python FastAPI 버전
-tests/                # 테스트 파일
-public/               # 정적 파일
+docs/                      # 문서
+├── GITHUB_ACTIONS_SETUP.md # GitHub Actions 설정 가이드
+├── TAILWIND_INTEGRATION.md # Tailwind 통합 가이드
+└── ecr-policy.json        # ECR 정책 템플릿
+
+tests/                     # 테스트 디렉토리
+├── components/            # 컴포넌트 테스트
+├── services/              # 서비스 테스트
+├── utils/                 # 유틸리티 테스트
+└── integration/           # 통합 테스트
+
+.github/workflows/         # GitHub Actions
+└── deploy.yml             # ECR 자동 배포
+
+public/                    # 정적 파일
+├── favicon.svg
+├── robots.txt
+├── sitemap.xml
+└── ads.txt
+
+Dockerfile                 # Docker 컨테이너 설정
+nginx.conf                 # Nginx 설정
 ```
 
 ## 🎨 주요 기능
@@ -167,14 +249,16 @@ public/               # 정적 파일
 - **실시간 상태 변경 알림** - 상태 변화 시 즉시 반영
 - **즐겨찾기 보존** - 새로고침 후에도 즐겨찾기 설정 유지
 
-### 개선된 사용자 인터페이스 (2024년 12월 업데이트)
+### 🎨 현대적 UI/UX 시스템 (2025년 1월 최신)
 
-- **서비스 아이콘 상단 정렬** - 모든 서비스 아이콘이 카드 상단에 위치
-- **상태 표시 최적화** - 아이콘 바로 아래에 상태 점과 아이콘 배치
-- **상태페이지 링크 하단 배치** - 각 서비스 카드 하단에 상태페이지 링크 위치
-- **중복 이모지 제거** - 하위 서비스에서 불필요한 이모지 표시 제거
-- **개별 서비스 새로고침** - 각 서비스 카드에서 독립적인 새로고침 버튼
-- **Kakao AdFit 광고 통합** - AdFit 가이드라인 준수를 위한 고정 728x90 배너 광고 (스타일 변형 금지)
+- **모듈화된 컴포넌트 아키텍처** - 1814줄 단일 컴포넌트 → 15개+ 전문화된 컴포넌트
+- **반응형 디자인 시스템** - 모바일/태블릿/데스크톱 최적화 + 통합된 브레이크포인트
+- **Zustand 중앙화 상태 관리** - 20개+ useState → 1개 스토어 + 영속성 지원
+- **Tailwind CSS 4.1 통합 시스템** - CSS 변수와 완전 통합 + 타입 안전성
+- **다국어 JSON 시스템** - 한국어/영어 지원 + 네임스페이스 기반 구조
+- **접근성(A11y) 완전 지원** - WCAG 가이드라인 준수 + 다국어 aria-label
+- **성능 최적화** - React.memo + useMemo + useCallback 적용
+- **CSS 모듈화** - 1488줄 단일 파일 → 8개 카테고리별 파일
 
 ### 아이콘 시스템
 
@@ -437,30 +521,72 @@ docker rmi ai-dashboard
 
 ## 📈 최근 업데이트
 
-### v2.1.1 (2024년 12월 - 최신)
+### v3.0.0 (2025년 1월 - 최신)
 
-- 🎯 **AdFit 심사 통과**: 광고 영역 스타일링 완전 제거로 가이드라인 준수
-- 📐 **고정 배너 크기**: AdFitBanner 컴포넌트를 728x90 고정 사이즈로 변경
-- 🚫 **스타일 변형 금지**: 둥근 모서리, 테두리, 배경 등 모든 커스텀 스타일 제거
-- 📋 **가이드라인 문서화**: ADFIT_INTEGRATION.md에 심사 통과 가이드라인 추가
+- 🏗️ **아키텍처 전면 개편**: 모놀리식 → 모듈화된 컴포넌트 시스템
+- 🎨 **UI/UX 현대화**: 1814줄 단일 컴포넌트 → 15개+ 전문화된 컴포넌트
+- 🏪 **Zustand 상태 관리**: 20개+ useState → 중앙화된 스토어 + 영속성
+- 📱 **반응형 시스템 통합**: 통합된 브레이크포인트 + 컴포넌트 기반 조건부 렌더링
+- 🎨 **Tailwind CSS 4.1 완전 통합**: CSS 변수 + 타입 안전성 + 유틸리티 함수
+- 🌍 **다국어 JSON 시스템**: 네임스페이스 기반 번역 + 템플릿 변수 지원
+- ♿ **접근성 완전 지원**: WCAG 가이드라인 + 다국어 aria-label
+- ⚡ **성능 최적화**: React.memo + useMemo + useCallback 대폭 적용
+- 🗂️ **CSS 모듈화**: 1488줄 단일 파일 → 8개 카테고리별 모듈
+- 🔧 **개발자 경험 향상**: TypeScript 타입 안전성 + VS Code Tasks + ESLint
+- 🚀 **인프라 자동화**: GitHub Actions + AWS ECR + Docker 멀티스테이지 빌드
 
 ### v2.1.0 (2024년 12월)
 
 - ✨ **UI/UX 대폭 개선**: 서비스 아이콘 상단 정렬, 상태 표시 최적화
 - 🔄 **개별 서비스 새로고침**: 각 서비스별 독립적인 새로고침 버튼 추가
 - 💾 **즐겨찾기 보존**: 새로고침 후에도 즐겨찾기 설정 유지
-- 🎨 **레이아웃 개선**: 상태페이지 링크를 카드 하단으로 이동
-- 🧹 **UI 정리**: 하위 서비스에서 중복 이모지 제거
 - ⚡ **성능 개선**: 15초 자동 업데이트 (이전 30초에서 개선)
 - 🌍 **다국어 지원**: 한국어/영어 전환 기능
 - 📱 **반응형 개선**: 모바일/데스크톱 최적화
 
-### v2.0.0 (이전)
+### v2.0.0 (초기 버전)
 
 - ✨ **실제 AI 서비스 로고 이미지 적용**: 이모지 대신 공식 로고 사용
-- 🎨 **아이콘 크기 증대**: 24px → 48px로 가독성 향상
 - 📱 **하위 컴포넌트 상태 모니터링**: 각 서비스의 세부 컴포넌트별 상태 표시
-- 🌓 **다크/라이트 모드**: 테마 전환 기능
-- 📄 **HTML 데모 버전**: 의존성 없는 정적 HTML 버전 제공
 - 🔧 **TypeScript 완전 지원**: 이미지 import 타입 안전성
 - ⚡ **성능 최적화**: 인라인 스타일 및 최적화된 컴포넌트 구조
+
+### 📊 개선 지표 (v2.0 → v3.0)
+
+- **코드 베이스**: 3,302줄 → 모듈화된 구조
+- **컴포넌트**: 1개 거대 → 15개+ 전문화
+- **CSS**: 1개 거대 파일 → 8개 모듈
+- **상태 관리**: 분산된 hooks → 중앙화된 스토어
+- **타입 안전성**: 부분적 → 100% TypeScript
+- **접근성**: 기본적 → WCAG 완전 준수
+- **성능**: 기본적 → 메모이제이션 최적화
+- **다국어**: 하드코딩 → JSON 모듈 시스템
+
+## 🔧 주요 개발 도구 및 인프라
+
+### ⚙️ 개발 환경
+
+- **VS Code Tasks**: 개발 서버, 빌드, 테스트 자동화
+- **ESLint + Prettier**: 코드 품질 및 포맷팅 자동화
+- **TypeScript**: 100% 타입 안전성
+- **Vitest**: 테스트 자동화 및 커버리지
+
+### 🚀 배포 인프라
+
+- **GitHub Actions**: CI/CD 자동화
+- **AWS ECR**: 컨테이너 이미지 관리
+- **Docker**: 멀티스테이지 빌드 최적화
+- **Nginx**: 정적 파일 서빙 최적화
+
+### 📚 문서화
+
+- **[Tailwind 통합 가이드](docs/TAILWIND_INTEGRATION.md)**: 색상 시스템 및 유틸리티 사용법
+- **[GitHub Actions 설정](docs/GITHUB_ACTIONS_SETUP.md)**: 자동 배포 설정 가이드
+- **[ECR 정책 템플릿](docs/ecr-policy.json)**: AWS ECR 권한 설정
+
+### 🎯 코드 품질
+
+- **모듈화된 아키텍처**: 관심사 분리 및 재사용성
+- **반응형 컴포넌트 시스템**: 디바이스별 최적화
+- **타입 안전한 색상 시스템**: Tailwind + TypeScript 통합
+- **성능 최적화**: 메모이제이션 및 코드 분할
