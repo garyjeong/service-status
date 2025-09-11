@@ -1,7 +1,9 @@
 /* 🎨 솔리드 카드 시스템 - Bottega Veneta 감성 */
 
+/* 기본 카드 스타일 - 이제 Tailwind 클래스로 대체 가능 */
+/* 사용법: bg-card border rounded-lg p-8 shadow-service-card hover:border-ring/20 hover:shadow-service-card-hover */
 .card-base {
-  background: var(--bg-secondary);
+  background: rgb(var(--card));
   border: 1px solid rgba(237, 236, 232, 0.08);
   border-radius: var(--radius);
   padding: 2rem;
@@ -16,7 +18,6 @@
 
 /* 서비스 카드 - 미니멀하고 세련된 */
 .service-card {
-  @apply card-base;
   background: var(--bg-secondary);
   border: 1px solid rgba(237, 236, 232, 0.08);
   border-radius: 1rem;

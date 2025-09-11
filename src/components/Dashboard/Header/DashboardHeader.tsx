@@ -2,6 +2,8 @@ import React from 'react';
 import { RefreshCw, Settings } from 'lucide-react';
 import StatusSummary from './StatusSummary';
 import ControlPanel from './ControlPanel';
+import { DesktopOnly, MobileOnly } from '../../Layout/ResponsiveWrapper';
+import ResponsiveLayout from '../../Layout/ResponsiveLayout';
 import { Service } from '../../../services/api';
 import { Language, ViewMode, SortType } from '../../../types/ui';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -101,50 +103,53 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   return (
     <header className="header-section">
-      <div className="container mx-auto px-4">
+      <ResponsiveLayout>
         {/* 데스크톱 헤더 레이아웃 */}
-        <div className="hidden md:flex justify-between items-center py-4">
-          {/* 좌측: 서비스 제목 */}
-          <h1 
-            className="desktop-title font-bold text-gradient cursor-pointer"
-            onClick={onTitleClick}
-            data-text={translations.title}
-            title={tA('clickEffect')}
-          >
-            {translations.title}
-          </h1>
-          
-          {/* 우측: 상태 표시 + 버튼들 */}
-          <div className="flex items-center gap-4">
-            <StatusSummary
-              stats={stats}
-              loadingCount={loadingCount}
-              translations={translations}
-            />
+        <DesktopOnly>
+          <div className="flex justify-between items-center py-4">
+            {/* 좌측: 서비스 제목 */}
+            <h1 
+              className="desktop-title font-bold text-gradient cursor-pointer"
+              onClick={onTitleClick}
+              data-text={translations.title}
+              title={tA('clickEffect')}
+            >
+              {translations.title}
+            </h1>
             
-            <ControlPanel
-              viewMode={viewMode}
-              sortType={sortType}
-              language={language}
-              isSortDropdownOpen={isSortDropdownOpen}
-              isLanguageDropdownOpen={isLanguageDropdownOpen}
-              isLoading={isLoading}
-              translations={translations}
-              onRefresh={onRefresh}
-              onFilterOpen={onFilterOpen}
-              onLanguageChange={onLanguageChange}
-              onLanguageToggle={onLanguageToggle}
-              onViewModeChange={onViewModeChange}
-              onSortChange={onSortChange}
-              onSortToggle={onSortToggle}
-            />
+            {/* 우측: 상태 표시 + 버튼들 */}
+            <div className="flex items-center gap-4">
+              <StatusSummary
+                stats={stats}
+                loadingCount={loadingCount}
+                translations={translations}
+              />
+              
+              <ControlPanel
+                viewMode={viewMode}
+                sortType={sortType}
+                language={language}
+                isSortDropdownOpen={isSortDropdownOpen}
+                isLanguageDropdownOpen={isLanguageDropdownOpen}
+                isLoading={isLoading}
+                translations={translations}
+                onRefresh={onRefresh}
+                onFilterOpen={onFilterOpen}
+                onLanguageChange={onLanguageChange}
+                onLanguageToggle={onLanguageToggle}
+                onViewModeChange={onViewModeChange}
+                onSortChange={onSortChange}
+                onSortToggle={onSortToggle}
+              />
+            </div>
           </div>
-        </div>
+        </DesktopOnly>
         
         {/* 모바일 헤더 레이아웃 */}
-        <div className="md:hidden py-4">
-          {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
-          <div className="flex justify-between items-center mb-3">
+        <MobileOnly>
+          <div className="py-4">
+            {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
+            <div className="flex justify-between items-center mb-3">
             <h1 
               className="text-2xl font-bold text-gradient cursor-pointer"
               onClick={onTitleClick}
@@ -237,8 +242,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               />
             </div>
           </div>
-        </div>
-      </div>
+          </div>
+        </MobileOnly>
+      </ResponsiveLayout>
     </header>
   );
 };

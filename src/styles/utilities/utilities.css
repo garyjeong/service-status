@@ -26,14 +26,8 @@
 .bg-tertiary { background: var(--bg-tertiary); }
 .bg-accent { background: var(--bg-accent); }
 
-/* 반응형 */
-.mobile-only { display: block; }
-.desktop-only { display: none; }
-
-@media (min-width: 768px) {
-  .mobile-only { display: none; }
-  .desktop-only { display: block; }
-}
+/* 반응형 - Tailwind 기반으로 단순화 */
+/* 이제 ResponsiveWrapper 컴포넌트를 사용하므로 CSS 클래스는 제거 */
 
 /* 스켈레톤 로딩 애니메이션 - 테마에 맞춤 */
 .skeleton {
@@ -68,29 +62,8 @@
   overflow: hidden;
 }
 
-/* 모바일 최적화 */
-@media (max-width: 768px) {
-  /* 모바일에서 패딩 조정 */
-  .mobile-padding {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  /* 모바일에서 마진 조정 */
-  .mobile-margin {
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
-  
-  /* 모바일에서 텍스트 크기 조정 */
-  .mobile-text-sm {
-    font-size: 0.875rem;
-  }
-  
-  .mobile-text-xs {
-    font-size: 0.75rem;
-  }
-}
+/* 모바일 최적화 - Tailwind 클래스로 대체 권장 */
+/* 예: px-4 md:px-6 lg:px-8, text-sm md:text-base 등 */
 
 /* 터치 피드백 */
 .touch-feedback {

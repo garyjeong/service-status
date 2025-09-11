@@ -35,7 +35,7 @@
   border-top: 1px solid rgba(var(--border), 0.5);
 }
 
-/* 헤더와 푸터 모두 고정 */
+/* 태블릿 이상에서 헤더와 푸터 고정 */
 @media (min-width: 768px) {
   .layout-sticky-both {
     height: 100vh;
@@ -89,34 +89,8 @@
   outline-offset: 2px;
 }
 
-/* 컨테이너 */
-.container {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 640px) {
-  .container { max-width: 640px; }
-}
-
-@media (min-width: 768px) {
-  .container { max-width: 768px; }
-}
-
-@media (min-width: 1024px) {
-  .container { max-width: 1024px; }
-}
-
-@media (min-width: 1280px) {
-  .container { max-width: 1280px; }
-}
-
-@media (min-width: 1536px) {
-  .container { max-width: 1536px; }
-}
+/* 컨테이너 - Tailwind의 container 클래스 사용으로 제거 */
+/* ResponsiveLayout 컴포넌트에서 동적으로 처리 */
 
 /* 스크롤 방지 */
 .body-scroll-lock {

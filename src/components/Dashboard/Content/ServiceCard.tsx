@@ -3,6 +3,7 @@ import { RefreshCw, ChevronDown, ChevronUp, Globe } from 'lucide-react';
 import { Service, ServiceComponent } from '../../../services/api';
 import { Language } from '../../../types/ui';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { useResponsive } from '../../../hooks/useResponsive';
 
 // 이미지 import (원본에서 가져옴)
 import openaiIcon from '../../../assets/gpt.png';
@@ -130,9 +131,10 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
   onToggleExpansion,
   onRefresh,
 }) => {
-  // 번역 훅 사용
+  // 훅 사용
   const { getServiceDescription } = useTranslation('services');
   const { t: tA } = useTranslation('accessibility');
+  const { isMobile, isTablet } = useResponsive();
 
   // 메모이제이션된 서비스 설명
   const serviceDescription = useMemo(() => 
@@ -256,19 +258,22 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleExpansion();
-            }}
-            className="btn-icon md:hidden"
-            aria-label={isExpanded 
-              ? tA('collapseService', { serviceName: service.display_name })
-              : tA('expandService', { serviceName: service.display_name })
-            }
-          >
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+          {/* 모바일과 태블릿에서만 확장/축소 버튼 표시 */}
+          {(isMobile || isTablet) && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleExpansion();
+              }}
+              className="btn-icon"
+              aria-label={isExpanded 
+                ? tA('collapseService', { serviceName: service.display_name })
+                : tA('expandService', { serviceName: service.display_name })
+              }
+            >
+              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          )}
         </div>
       </div>
 
