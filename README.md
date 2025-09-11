@@ -1,5 +1,7 @@
 # 🌐 외부 서비스 상태 모니터링 대시보드
 
+🐳 **ECR 자동 배포 준비 완료** - main 브랜치 푸시 시 자동으로 ECR에 Docker 이미지가 빌드됩니다.
+
 실시간으로 개발자가 자주 사용하는 외부 서비스들의 상태를 모니터링하는 다크 테마 전용 React 대시보드입니다.
 
 ## ⚡ 기술 스택 (2024년 최신)
@@ -17,6 +19,7 @@
 ## 🚀 지원되는 서비스
 
 ### AI 서비스
+
 - **OpenAI ChatGPT** - ChatGPT 웹 인터페이스 및 OpenAI API
   - 하위 컴포넌트: ChatGPT Web, OpenAI API, DALL-E, Whisper API, GPT-4 API, GPT-3.5 API
 - **Anthropic Claude** - Claude 채팅 인터페이스 및 Anthropic API
@@ -27,6 +30,7 @@
   - 하위 컴포넌트: Gemini API, AI Studio, Model Garden, Vertex AI, Gemini Vision
 
 ### 외부 서비스
+
 - **GitHub** - 코드 저장소 및 협업 플랫폼
   - 하위 컴포넌트: Git Operations, API Requests, Issues & PRs, Actions, Pages, Packages, Codespaces, Copilot
 - **Netlify** - 정적 사이트 호스팅 및 배포
@@ -159,12 +163,14 @@ public/               # 정적 파일
 ## 🎨 주요 기능
 
 ### 실시간 상태 모니터링
+
 - **15초마다 자동 상태 업데이트** (이전 30초에서 개선)
 - **수동 새로고침 기능** - 전체 및 개별 서비스 새로고침
 - **실시간 상태 변경 알림** - 상태 변화 시 즉시 반영
 - **즐겨찾기 보존** - 새로고침 후에도 즐겨찾기 설정 유지
 
 ### 개선된 사용자 인터페이스 (2024년 12월 업데이트)
+
 - **서비스 아이콘 상단 정렬** - 모든 서비스 아이콘이 카드 상단에 위치
 - **상태 표시 최적화** - 아이콘 바로 아래에 상태 점과 아이콘 배치
 - **상태페이지 링크 하단 배치** - 각 서비스 카드 하단에 상태페이지 링크 위치
@@ -173,12 +179,14 @@ public/               # 정적 파일
 - **Kakao AdFit 광고 통합** - AdFit 가이드라인 준수를 위한 고정 728x90 배너 광고 (스타일 변형 금지)
 
 ### 아이콘 시스템
+
 - **실제 서비스 로고**: 각 서비스에 최적화된 PNG 이미지 내장
 - **일관된 크기**: 32px 크기로 최적화 (카드 내), 24px (즐겨찾기)
 - **TypeScript 지원**: 완전한 타입 안전성 보장
 - **호버 효과**: 부드러운 애니메이션과 그라데이션 효과
 
 ### 사용자 인터페이스
+
 - **반응형 디자인** (모바일/데스크톱 지원)
 - **다크 테마 전용** (개발자 친화적 인터페이스)
 - **전체 시스템 상태 요약** - 헤더에 통합 상태 표시
@@ -187,9 +195,10 @@ public/               # 정적 파일
 - **즐겨찾기 시스템** - 중요한 서비스 컴포넌트 즐겨찾기
 
 ### 상태 시각화
+
 - 색상으로 구분된 상태 표시
   - 🟢 정상 운영 (operational)
-  - 🟡 성능 저하 (degraded)  
+  - 🟡 성능 저하 (degraded)
   - 🔴 서비스 장애 (outage)
 - **서비스별 하위 컴포넌트 상태** 세부 정보
 - **전체 시스템 상태 요약** - 로딩/정상/저하/장애 서비스 수 표시
@@ -197,6 +206,7 @@ public/               # 정적 파일
 - **스켈레톤 로딩 UI** - 개별 서비스 로딩 중 표시
 
 ### 다중 버전 지원
+
 - **React SPA**: 모던 웹앱 버전
 - **정적 HTML**: 의존성 없는 단순 버전
 
@@ -280,6 +290,28 @@ proxy: {
 
 ## 🚀 배포
 
+### AWS ECR 자동 배포 (추천)
+
+GitHub Actions를 통한 AWS ECR 자동 배포를 지원합니다.
+
+#### 설정 방법
+
+1. **GitHub Repository Secrets 설정**:
+   - `AWS_ACCESS_KEY_ID`: AWS 액세스 키
+   - `AWS_SECRET_ACCESS_KEY`: AWS 시크릿 키
+
+2. **배포 트리거**:
+   - `main` 또는 `master` 브랜치에 push 시 자동 배포
+   - Pull Request 생성 시 빌드 테스트
+
+3. **생성되는 이미지**:
+   ```
+   014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:latest
+   014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:<commit-sha>
+   ```
+
+자세한 설정 가이드는 [GitHub Actions 설정 가이드](docs/GITHUB_ACTIONS_SETUP.md)를 참조하세요.
+
 ### Netlify 배포
 
 ```bash
@@ -297,16 +329,18 @@ pnpm build
 npx vercel --prod
 ```
 
-### Docker 배포
+### Docker 로컬 배포
 
 프로젝트는 멀티스테이지 빌드를 사용하는 최적화된 Dockerfile을 포함하고 있습니다.
 
 #### Docker 이미지 빌드
+
 ```bash
 docker build -t ai-dashboard .
 ```
 
 #### Docker 컨테이너 실행
+
 ```bash
 # 기본 실행
 docker run -d \
@@ -324,6 +358,7 @@ docker run -d \
 ```
 
 #### 헬스체크 확인
+
 ```bash
 # 헬스체크 상태 확인
 docker inspect --format='{{.State.Health.Status}}' ai-dashboard
@@ -333,6 +368,7 @@ curl http://localhost:8080/health
 ```
 
 #### 유용한 Docker 명령어
+
 ```bash
 # 로그 확인
 docker logs -f ai-dashboard
@@ -404,12 +440,14 @@ docker rmi ai-dashboard
 ## 📈 최근 업데이트
 
 ### v2.1.1 (2024년 12월 - 최신)
+
 - 🎯 **AdFit 심사 통과**: 광고 영역 스타일링 완전 제거로 가이드라인 준수
 - 📐 **고정 배너 크기**: AdFitBanner 컴포넌트를 728x90 고정 사이즈로 변경
 - 🚫 **스타일 변형 금지**: 둥근 모서리, 테두리, 배경 등 모든 커스텀 스타일 제거
 - 📋 **가이드라인 문서화**: ADFIT_INTEGRATION.md에 심사 통과 가이드라인 추가
 
 ### v2.1.0 (2024년 12월)
+
 - ✨ **UI/UX 대폭 개선**: 서비스 아이콘 상단 정렬, 상태 표시 최적화
 - 🔄 **개별 서비스 새로고침**: 각 서비스별 독립적인 새로고침 버튼 추가
 - 💾 **즐겨찾기 보존**: 새로고침 후에도 즐겨찾기 설정 유지
@@ -420,6 +458,7 @@ docker rmi ai-dashboard
 - 📱 **반응형 개선**: 모바일/데스크톱 최적화
 
 ### v2.0.0 (이전)
+
 - ✨ **실제 AI 서비스 로고 이미지 적용**: 이모지 대신 공식 로고 사용
 - 🎨 **아이콘 크기 증대**: 24px → 48px로 가독성 향상
 - 📱 **하위 컴포넌트 상태 모니터링**: 각 서비스의 세부 컴포넌트별 상태 표시

@@ -1,0 +1,235 @@
+name: 🚀 Build and Deploy to ECR
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ACCOUNT_ID: "014125597282"
+  ECR_REPOSITORY: service-status
+  ECR_REGISTRY: 014125597282.dkr.ecr.ap-northeast-2.amazonaws.com
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8.10.0'
+
+jobs:
+  # 코드 품질 검사
+  quality-check:
+    name: 🔍 Code Quality Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm run type-check
+
+      - name: Lint check
+        run: pnpm run lint
+
+      - name: Build test
+        run: pnpm run build
+
+  # ECR 빌드 및 배포
+  build-and-deploy:
+    name: 🐳 Build and Deploy to ECR
+    runs-on: ubuntu-latest
+    needs: [quality-check]
+    if: always() && (needs.quality-check.result == 'success' || github.event_name == 'push')
+    
+    outputs:
+      image-uri: ${{ steps.build.outputs.image-uri }}
+      image-tag: ${{ steps.meta.outputs.tags }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # OIDC 인증 방식 (보안 강화)
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsECRPush
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-ECR-Deploy
+
+      # 대체 인증 방식 (Secrets 사용)
+      - name: Configure AWS credentials (Secrets)
+        if: ${{ failure() }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ECR 리포지토리 자동 생성
+      - name: Ensure ECR repository exists
+        run: |
+          echo "🔍 Checking ECR repository: $ECR_REPOSITORY"
+          aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" --region "$AWS_REGION" >/dev/null 2>&1 || {
+            echo "📦 Creating ECR repository: $ECR_REPOSITORY"
+            aws ecr create-repository \
+              --repository-name "$ECR_REPOSITORY" \
+              --region "$AWS_REGION" \
+              --image-scanning-configuration scanOnPush=true \
+              --encryption-configuration encryptionType=AES256
+          }
+
+      # Docker 메타데이터 추출
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Service Status Dashboard
+            org.opencontainers.image.description=Real-time service status monitoring dashboard
+            org.opencontainers.image.vendor=Gary Jeong
+            org.opencontainers.image.licenses=MIT
+
+      # ECR 로그인
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Docker Buildx 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64
+
+      # Docker 이미지 빌드 및 푸시
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      # 빌드 결과 출력
+      - name: Build summary
+        run: |
+          echo "## 🎉 ECR 배포 완료!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 이미지 정보" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry**: \`${{ env.ECR_REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository**: \`${{ env.ECR_REPOSITORY }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags**: \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 배포 명령어" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# ECR 로그인" >> $GITHUB_STEP_SUMMARY
+          echo "aws ecr get-login-password --region ${{ env.AWS_REGION }} | \\" >> $GITHUB_STEP_SUMMARY
+          echo "docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# 컨테이너 실행" >> $GITHUB_STEP_SUMMARY
+          echo "docker run -p 8080:80 ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # 보안 스캔
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: [build-and-deploy]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsECRPush
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Wait for image scan
+        run: |
+          echo "🔍 Waiting for ECR image scan to complete..."
+          sleep 30
+
+      - name: Get scan results
+        continue-on-error: true
+        run: |
+          echo "📋 ECR Image Scan Results:"
+          aws ecr describe-image-scan-findings \
+            --repository-name ${{ env.ECR_REPOSITORY }} \
+            --image-id imageTag=latest \
+            --region ${{ env.AWS_REGION }} \
+            --query 'imageScanFindings.findingCounts' \
+            --output table || echo "⏳ Scan still in progress or no findings"
+
+  # 배포 알림 (선택사항)
+  notify:
+    name: 📢 Deploy Notification
+    runs-on: ubuntu-latest
+    needs: [build-and-deploy, security-scan]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Success notification
+        if: needs.build-and-deploy.result == 'success'
+        run: |
+          echo "✅ ECR 배포 성공!"
+          echo "🐳 이미지: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest"
+          echo "📅 배포 시간: $(date)"
+
+      - name: Failure notification
+        if: needs.build-and-deploy.result == 'failure'
+        run: |
+          echo "❌ ECR 배포 실패!"
+          echo "🔍 로그를 확인해주세요."
+          exit 1

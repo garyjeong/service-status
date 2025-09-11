@@ -186,68 +186,22 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
   groq: {
     service_name: 'groq',
     display_name: 'Groq / GroqCloud',
-    description: 'Groq 모델/플랫폼 웹 및 콘솔 가용성 모니터링',
-    page_url: 'https://groq.com',
+    description: 'Groq AI 모델 플랫폼 및 추론 서비스',
+    page_url: 'https://groqstatus.com',
     icon: 'groq',
-    kind: 'website',
-    componentUrls: {
-      Website: 'https://groq.com',
-      Console: 'https://console.groq.com',
-    },
-  },
-  leonardo: {
-    service_name: 'leonardo',
-    display_name: 'Leonardo.Ai',
-    description: 'Leonardo.Ai 웹앱 가용성 모니터링',
-    page_url: 'https://leonardo.ai',
-    icon: 'leonardo',
-    kind: 'website',
-    componentUrls: { Website: 'https://leonardo.ai' },
-  },
-  hailuo: {
-    service_name: 'hailuo',
-    display_name: 'Hailuo AI',
-    description: 'Hailuo AI 웹앱 가용성 모니터링',
-    page_url: 'https://hailuoai.video',
-    icon: 'hailuo',
-    kind: 'website',
-    componentUrls: { Website: 'https://hailuoai.video' },
-  },
-  consensus: {
-    service_name: 'consensus',
-    display_name: 'Consensus',
-    description: 'Consensus 연구 검색 웹앱 가용성 모니터링',
-    page_url: 'https://consensus.app',
-    icon: 'consensus',
-    kind: 'website',
-    componentUrls: { Website: 'https://consensus.app' },
+    kind: 'statuspage',
+    api_url: 'https://groqstatus.com/api/v2/status.json',
+    components: ['API', 'Console', 'Playground', 'Dashboard'],
   },
   deepseek: {
     service_name: 'deepseek',
     display_name: 'DeepSeek',
-    description: 'DeepSeek 웹/문서 가용성 모니터링(기본 웹)',
-    page_url: 'https://deepseek.com',
+    description: 'DeepSeek AI 모델 및 플랫폼 서비스',
+    page_url: 'https://status.deepseek.com',
     icon: 'deepseek',
-    kind: 'website',
-    componentUrls: { Website: 'https://deepseek.com' },
-  },
-  mage: {
-    service_name: 'mage',
-    display_name: 'Mage (mage.space)',
-    description: 'Mage 이미지 생성 웹앱 가용성 모니터링',
-    page_url: 'https://www.mage.space',
-    icon: 'mage',
-    kind: 'website',
-    componentUrls: { Website: 'https://www.mage.space' },
-  },
-  vooster: {
-    service_name: 'vooster',
-    display_name: 'Vooster',
-    description: 'Vooster 웹앱 가용성 모니터링',
-    page_url: 'https://vooster.ai',
-    icon: 'vooster',
-    kind: 'website',
-    componentUrls: { Website: 'https://vooster.ai' },
+    kind: 'statuspage',
+    api_url: 'https://status.deepseek.com/api/v2/status.json',
+    components: ['API', 'Chat', 'Coder', 'Reasoning'],
   },
 };
 
@@ -2032,14 +1986,9 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchMongoDBStatus,
     fetchHuggingFaceStatus,
     fetchGitLabStatus,
-    // website 기반 신규 항목들 (요청분)
+    // statuspage 기반 추가 서비스들
     () => ServiceStatusFetcher.fetchServiceStatus('groq'),
-    () => ServiceStatusFetcher.fetchServiceStatus('leonardo'),
-    () => ServiceStatusFetcher.fetchServiceStatus('hailuo'),
-    () => ServiceStatusFetcher.fetchServiceStatus('consensus'),
     () => ServiceStatusFetcher.fetchServiceStatus('deepseek'),
-    () => ServiceStatusFetcher.fetchServiceStatus('mage'),
-    () => ServiceStatusFetcher.fetchServiceStatus('vooster'),
   ];
 
   try {
@@ -2099,12 +2048,7 @@ export const serviceFetchers = {
   huggingface: fetchHuggingFaceStatus,
   gitlab: fetchGitLabStatus,
   groq: () => ServiceStatusFetcher.fetchServiceStatus('groq'),
-  leonardo: () => ServiceStatusFetcher.fetchServiceStatus('leonardo'),
-  hailuo: () => ServiceStatusFetcher.fetchServiceStatus('hailuo'),
-  consensus: () => ServiceStatusFetcher.fetchServiceStatus('consensus'),
   deepseek: () => ServiceStatusFetcher.fetchServiceStatus('deepseek'),
-  mage: () => ServiceStatusFetcher.fetchServiceStatus('mage'),
-  vooster: () => ServiceStatusFetcher.fetchServiceStatus('vooster'),
 };
 
 // 서비스 이름 목록
