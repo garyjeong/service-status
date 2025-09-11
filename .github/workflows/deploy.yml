@@ -2,9 +2,9 @@ name: Build and Deploy to ECR
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 env:
   AWS_REGION: ap-northeast-2

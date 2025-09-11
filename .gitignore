@@ -40,5 +40,5 @@ node_modules
 
 # Taskmaster, Cursor, and Playwright MCP files
 .taskmaster/
-.cursor/
-.playwright-mcp/ 
+.cursor
+.playwright-mcp
