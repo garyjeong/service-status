@@ -1,0 +1,169 @@
+/* 🎨 유틸리티 클래스들 - 새로운 컬러 팔레트 */
+
+/* 그라데이션 유틸리티 */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--mint-primary) 0%, var(--green-success) 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--mint-primary) 0%, var(--green-success) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 색상 유틸리티 */
+.text-primary { color: rgb(var(--primary)); }
+.text-secondary { color: rgb(var(--secondary-foreground)); }
+.text-muted { color: rgb(var(--muted-foreground)); }
+.text-success { color: var(--green-success); }
+.text-warning { color: rgb(var(--status-degraded)); }
+.text-danger { color: rgb(var(--destructive)); }
+
+/* 배경 유틸리티 */
+.bg-primary { background: var(--bg-primary); }
+.bg-secondary { background: var(--bg-secondary); }
+.bg-tertiary { background: var(--bg-tertiary); }
+.bg-accent { background: var(--bg-accent); }
+
+/* 반응형 */
+.mobile-only { display: block; }
+.desktop-only { display: none; }
+
+@media (min-width: 768px) {
+  .mobile-only { display: none; }
+  .desktop-only { display: block; }
+}
+
+/* 스켈레톤 로딩 애니메이션 - 테마에 맞춤 */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(237, 236, 232, 0.05) 0%,
+    rgba(237, 236, 232, 0.15) 50%,
+    rgba(237, 236, 232, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* 스켈레톤 요소들의 부드러운 그라데이션 애니메이션 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 🎨 스켈레톤 로딩 애니메이션 - 테마에 맞춤 */
+.skeleton-card {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(237, 236, 232, 0.08);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  /* 모바일에서 패딩 조정 */
+  .mobile-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* 모바일에서 마진 조정 */
+  .mobile-margin {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  /* 모바일에서 텍스트 크기 조정 */
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-text-xs {
+    font-size: 0.75rem;
+  }
+}
+
+/* 터치 피드백 */
+.touch-feedback {
+  -webkit-tap-highlight-color: rgba(46, 255, 180, 0.2);
+  tap-highlight-color: rgba(46, 255, 180, 0.2);
+}
+
+/* 포커스 가시성 개선 */
+.focus-visible:focus-visible {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 2px;
+}
+
+/* 접근성을 위한 숨김 클래스 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 고대비 모드 대응 */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 60 60 60;
+    --ring: 255 255 255;
+  }
+  
+  .service-card {
+    border-width: 2px;
+  }
+  
+  .btn-base {
+    border-width: 2px;
+  }
+}
+
+/* 애니메이션 감소 설정 대응 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 다크모드 선호도 대응 (이미 다크 테마이므로 라이트 모드 대응) */
+@media (prefers-color-scheme: light) {
+  /* 필요시 라이트 모드 오버라이드 */
+}
+
+/* Print 스타일 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .service-card {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+    break-inside: avoid;
+  }
+}

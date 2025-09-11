@@ -1,0 +1,138 @@
+/* 🎨 타이포그래피 시스템 - 세련되고 읽기 쉬운 */
+
+/* 기본 텍스트 그라데이션 */
+.text-gradient {
+  background: linear-gradient(135deg, var(--mint-primary) 0%, var(--green-success) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease-in-out infinite;
+}
+
+/* 데스크탑 타이틀 - 더 큰 임팩트 */
+.desktop-title {
+  font-size: 2.25rem;
+  font-weight: 900; /* 더 굵게 */
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--mint-primary) 0%, var(--green-success) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  display: inline-block;
+}
+
+/* 모바일 반응형 조정 */
+@media (max-width: 768px) {
+  .desktop-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* 클릭 효과 - 매우 절제된 */
+.desktop-title.clicked {
+  transform: scale(1.02);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 헤딩 계층 구조 */
+h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: rgb(var(--foreground));
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: rgb(var(--foreground));
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  color: rgb(var(--foreground));
+}
+
+/* 본문 텍스트 */
+p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(var(--muted-foreground));
+}
+
+/* 작은 텍스트 */
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* 텍스트 유틸리티 클래스 개선 */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* 링크 스타일 */
+.link-status-page {
+  color: rgb(var(--muted-foreground));
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+  text-decoration: none;
+}
+
+.link-status-page:hover {
+  color: rgb(var(--primary));
+  background: rgba(var(--primary), 0.1);
+}
+
+/* 상태 페이지 링크 스타일 */
+.link-status-page:hover .w-3 {
+  transform: translateX(2px);
+  transition: transform 0.2s ease;
+}
+
+/* 텍스트 줄 제한 유틸리티 */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 텍스트 truncate */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 서비스 설명 영역 */
+.service-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  max-height: 2.8em; /* line-height * 2 */
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}

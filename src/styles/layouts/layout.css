@@ -1,0 +1,165 @@
+/* 🎨 Fixed Layout System - 새로운 컬러 팔레트 적용 */
+
+/* 메인 레이아웃 구조 */
+.layout-sticky-both {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 섹션 */
+.header-section {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(var(--background), 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(var(--border), 0.5);
+}
+
+/* 메인 콘텐츠 영역 */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+/* 푸터 섹션 */
+.footer-section {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: rgba(var(--background), 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(var(--border), 0.5);
+}
+
+/* 헤더와 푸터 모두 고정 */
+@media (min-width: 768px) {
+  .layout-sticky-both {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  
+  .main-content {
+    overflow-y: auto;
+    height: calc(100vh - 120px); /* 헤더, 푸터 높이 제외 */
+    height: calc(100dvh - 120px);
+  }
+}
+
+/* 모바일에서는 고정 해제 */
+@media (max-width: 767px) {
+  .header-section,
+  .footer-section {
+    position: relative;
+  }
+  
+  .layout-sticky-both {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  .main-content {
+    flex: 1;
+    overflow-y: visible;
+  }
+}
+
+/* 모바일 스크롤 숨김 클래스 */
+.mobile-scroll-hidden {
+  @media (max-width: 768px) {
+    .header-section {
+      transform: translateY(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    .footer-section {
+      transform: translateY(100%);
+      transition: transform 0.3s ease-in-out;
+    }
+  }
+}
+
+/* 포커스 링 개선 */
+.focus-ring:focus {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 2px;
+}
+
+/* 컨테이너 */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container { max-width: 640px; }
+}
+
+@media (min-width: 768px) {
+  .container { max-width: 768px; }
+}
+
+@media (min-width: 1024px) {
+  .container { max-width: 1024px; }
+}
+
+@media (min-width: 1280px) {
+  .container { max-width: 1280px; }
+}
+
+@media (min-width: 1536px) {
+  .container { max-width: 1536px; }
+}
+
+/* 스크롤 방지 */
+.body-scroll-lock {
+  overflow: hidden;
+}
+
+/* 모바일 뷰포트 최적화 - 하얀색 배경 제거 */
+@media (max-width: 768px) {
+  /* 모든 iOS Safari 특수 처리 */
+  body {
+    background: var(--bg-primary) !important;
+  }
+  
+  /* 주소창/탭바 영역까지 배경색 적용 */
+  html {
+    background: var(--bg-primary) !important;
+  }
+  
+  /* 상태바 영역 배경 적용 (PWA 대응) */
+  meta[name="theme-color"] {
+    content: var(--bg-primary);
+  }
+}
+
+/* 스크롤 영역 최적화 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(46, 255, 180, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(46, 255, 180, 0.3);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(46, 255, 180, 0.5);
+}

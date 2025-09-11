@@ -1,0 +1,32 @@
+{
+  "descriptions": {
+    "openai": "ChatGPT web interface and OpenAI API",
+    "anthropic": "Claude chat interface and Anthropic API",
+    "cursor": "AI-powered code editor",
+    "googleai": "Google AI Studio and Gemini API",
+    "github": "Git repository hosting and collaboration platform",
+    "netlify": "Static site deployment and hosting",
+    "dockerhub": "Container image registry",
+    "docker": "Container image registry",
+    "aws": "Amazon Web Services cloud platform",
+    "slack": "Team communication and collaboration tool",
+    "firebase": "Google app development platform",
+    "supabase": "Open source Firebase alternative",
+    "perplexity": "AI search and Q&A platform",
+    "v0": "Vercel AI-powered UI generation tool",
+    "replit": "Online coding and collaboration IDE",
+    "xai": "Grok AI model and platform",
+    "grok": "Grok AI model and platform",
+    "heroku": "Cloud application platform (PaaS)",
+    "atlassian": "Jira, Confluence, Bitbucket and other dev collaboration tools",
+    "circleci": "Continuous integration and deployment (CI/CD) platform",
+    "auth0": "Authentication and authorization platform",
+    "sendgrid": "Email delivery and marketing platform",
+    "cloudflare": "CDN, DNS, security and performance optimization services",
+    "datadog": "Monitoring, logging, APM and security platform",
+    "groq": "AI inference acceleration platform",
+    "deepseek": "AI model and inference platform"
+  },
+  "fallback": "Monitoring {{serviceName}} service status.",
+  "noComponents": "No detailed component information available."
+}

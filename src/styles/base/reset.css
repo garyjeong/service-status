@@ -1,0 +1,94 @@
+/* ✨ Spoqa Han Sans Neo 폰트 적용 */
+@import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css);
+
+/* Base styles - 새로운 배경 시스템 */
+* {
+  border-color: rgb(var(--border));
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary);
+  color: var(--gray-secondary);
+  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+  font-feature-settings: 'cv11', 'ss01';
+  font-variation-settings: 'opsz' 32;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  letter-spacing: -0.01em; /* 세련된 글자 간격 */
+}
+
+/* 배경 애니메이션 효과 제거 - 미니멀한 접근 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 80%, rgba(46, 255, 180, 0.03) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(0, 168, 107, 0.02) 0%, transparent 50%);
+  z-index: -1;
+}
+
+/* 전체 앱 컨테이너 - 새로운 배경 시스템 */
+#root {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* 모바일에서 배경색 강제 적용 */
+@media (max-width: 768px) {
+  html, body, #root {
+    background: var(--bg-primary) !important;
+    background-color: var(--bg-primary) !important;
+  }
+  
+  /* iOS Safari의 하단 홈 바 영역 고려 */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Android Chrome의 주소창 숨김 고려 */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+/* 스크롤바 스타일링 - 새로운 컬러 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(46, 255, 180, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(46, 255, 180, 0.5);
+}
+
+/* Firefox 스크롤바 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(46, 255, 180, 0.3) var(--bg-tertiary);
+}

@@ -1,0 +1,43 @@
+/* 메인 스타일 진입점 - 모듈화된 CSS 시스템 */
+
+/* Tailwind CSS 기본 Import */
+@import "tailwindcss";
+
+/* 테마 및 변수 */
+@import "./themes/variables.css";
+
+/* 기본 스타일 */
+@import "./base/reset.css";
+@import "./base/typography.css";
+
+/* 레이아웃 */
+@import "./layouts/layout.css";
+
+/* 컴포넌트 스타일 */
+@import "./components/cards.css";
+@import "./components/buttons.css";
+@import "./components/status.css";
+@import "./components/modals.css";
+@import "./components/filters.css";
+@import "./components/dropdowns.css";
+
+/* 유틸리티 */
+@import "./utilities/utilities.css";
+
+/* AdFit 광고 스타일 제거 - 카카오 가이드라인 준수 */
+ins.adsbygoogle {
+  background: transparent !important;
+}
+
+.adsbygoogle {
+  background: transparent !important;
+}
+
+/* 광고 컨테이너 스타일 최소화 */
+.ad-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px;
+  background: transparent;
+}

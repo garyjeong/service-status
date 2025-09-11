@@ -1,0 +1,170 @@
+/* 상태 표시기 - 네온 효과 추가 */
+.status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* 모바일에서 상태 표시기 최적화 */
+@media (max-width: 768px) {
+  .status-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+}
+
+/* 데스크탑에서 상태 표시기 */
+@media (min-width: 769px) {
+  .status-dot {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  
+  .status-dot::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: pulse 2s infinite;
+  }
+}
+
+/* 상태별 색상 정의 - 새로운 팔레트 */
+.status-operational {
+  background: rgb(var(--status-operational));
+  box-shadow: 0 0 8px rgba(var(--status-operational), 0.4);
+}
+
+.status-operational::after {
+  background: rgb(var(--status-operational));
+}
+
+.status-degraded,
+.status-degraded-performance {
+  background: rgb(var(--status-degraded));
+  box-shadow: 0 0 8px rgba(var(--status-degraded), 0.4);
+}
+
+.status-degraded::after,
+.status-degraded-performance::after {
+  background: rgb(var(--status-degraded));
+}
+
+.status-partial-outage,
+.status-major-outage {
+  background: rgb(var(--status-major-outage));
+  box-shadow: 0 0 8px rgba(var(--status-major-outage), 0.4);
+}
+
+.status-partial-outage::after,
+.status-major-outage::after {
+  background: rgb(var(--status-major-outage));
+}
+
+.status-maintenance {
+  background: rgb(var(--status-maintenance));
+  box-shadow: 0 0 8px rgba(var(--status-maintenance), 0.4);
+}
+
+.status-maintenance::after {
+  background: rgb(var(--status-maintenance));
+}
+
+.status-unknown {
+  background: rgb(var(--status-unknown));
+  box-shadow: 0 0 8px rgba(var(--status-unknown), 0.2);
+}
+
+.status-unknown::after {
+  background: rgb(var(--status-unknown));
+}
+
+/* 펄스 애니메이션 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+}
+
+/* 애니메이션 - 더 절제된 버전 */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 로딩 애니메이션 개선 */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 특별한 로딩 효과 */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(237, 236, 232, 0.05) 0%,
+    rgba(237, 236, 232, 0.15) 50%,
+    rgba(237, 236, 232, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

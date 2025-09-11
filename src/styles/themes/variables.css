@@ -1,0 +1,45 @@
+/* 🎨 새로운 컬러 팔레트 - Bottega Veneta & Jacquemus 감성 */
+:root {
+  /* === 메인 컬러 팔레트 === */
+  --mint-primary: #2EFFB4;      /* 메인 민트 - 버튼, 강조요소 */
+  --black-primary: #030303;     /* 블랙 - 텍스트, 상단바 */
+  --gray-secondary: #EDECE8;    /* 그레이 - 서브텍스트, 구분선 */
+  --green-success: #00A86B;     /* 딥그린 - 정상상태 */
+  --mint-light: #D1F7E3;       /* 연민트 - 카드배경 */
+  
+  /* === 배경 시스템 === */
+  --bg-primary: #0A0A0A;        /* 메인 배경 */
+  --bg-secondary: #141414;      /* 카드 배경 */
+  --bg-tertiary: #1A1A1A;      /* 네비게이션, 헤더 배경 */
+  --bg-accent: #1F1F1F;        /* 액센트 배경 */
+  
+  /* === 상태 컬러 === */
+  --status-operational: 0 168 107;    /* #00A86B - 딥그린 */
+  --status-degraded: 230 165 50;      /* #E6A532 - 고급스러운 골드 */
+  --status-partial-outage: 214 48 49; /* #D63031 - 절제된 레드 */
+  --status-major-outage: 214 48 49;   /* #D63031 - 절제된 레드 */
+  --status-maintenance: 46 255 180;   /* #2EFFB4 - 민트 */
+  --status-unknown: 237 236 232;      /* #EDECE8 - 그레이 */
+  
+  /* === 기존 Tailwind 호환 변수들 === */
+  --background: 10 10 10;         /* #0A0A0A */
+  --foreground: 237 236 232;      /* #EDECE8 */
+  --card: 20 20 20;              /* #141414 */
+  --card-foreground: 237 236 232;
+  --popover: 20 20 20;
+  --popover-foreground: 237 236 232;
+  --primary: 46 255 180;          /* #2EFFB4 */
+  --primary-foreground: 3 3 3;    /* #030303 */
+  --secondary: 26 26 26;          /* #1A1A1A */
+  --secondary-foreground: 237 236 232;
+  --muted: 31 31 31;             /* #1F1F1F */
+  --muted-foreground: 180 180 180;
+  --accent: 26 26 26;
+  --accent-foreground: 237 236 232;
+  --destructive: 214 48 49;       /* #D63031 */
+  --destructive-foreground: 237 236 232;
+  --border: 31 31 31;            /* #1F1F1F */
+  --input: 31 31 31;
+  --ring: 46 255 180;            /* #2EFFB4 */
+  --radius: 1rem;                /* 16px - 더 큰 border-radius */
+}

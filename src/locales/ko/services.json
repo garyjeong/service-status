@@ -1,0 +1,32 @@
+{
+  "descriptions": {
+    "openai": "ChatGPT 웹 인터페이스 및 OpenAI API",
+    "anthropic": "Claude 채팅 인터페이스 및 Anthropic API",
+    "cursor": "AI 기반 코드 에디터",
+    "googleai": "Google AI Studio 및 Gemini API",
+    "github": "Git 저장소 호스팅 및 협업 플랫폼",
+    "netlify": "정적 사이트 배포 및 호스팅",
+    "dockerhub": "컨테이너 이미지 레지스트리",
+    "docker": "컨테이너 이미지 레지스트리",
+    "aws": "Amazon 웹 서비스 클라우드 플랫폼",
+    "slack": "팀 커뮤니케이션 및 협업 도구",
+    "firebase": "Google의 앱 개발 플랫폼",
+    "supabase": "오픈소스 Firebase 대안",
+    "perplexity": "AI 검색 및 질의응답 플랫폼",
+    "v0": "Vercel의 AI 기반 UI 생성 도구",
+    "replit": "온라인 코딩 및 협업 IDE",
+    "xai": "Grok AI 모델 및 플랫폼",
+    "grok": "Grok AI 모델 및 플랫폼",
+    "heroku": "클라우드 애플리케이션 플랫폼 (PaaS)",
+    "atlassian": "Jira, Confluence, Bitbucket 등 개발 협업 도구",
+    "circleci": "지속적 통합 및 배포 (CI/CD) 플랫폼",
+    "auth0": "인증 및 권한 관리 플랫폼",
+    "sendgrid": "이메일 전송 및 마케팅 플랫폼",
+    "cloudflare": "CDN, DNS, 보안 및 성능 최적화 서비스",
+    "datadog": "모니터링, 로깅, APM 및 보안 플랫폼",
+    "groq": "AI 추론 가속 플랫폼",
+    "deepseek": "AI 모델 및 추론 플랫폼"
+  },
+  "fallback": "{{serviceName}} 서비스 상태를 모니터링합니다.",
+  "noComponents": "세부 컴포넌트 정보가 없습니다."
+}

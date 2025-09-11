@@ -1,0 +1,14 @@
+{
+  "languageSelector": "Select language",
+  "sortSelector": "Select sort method",
+  "expandService": "View {{serviceName}} service details",
+  "collapseService": "Collapse {{serviceName}} service",
+  "refreshButton": "Refresh",
+  "filterButton": "Open filter",
+  "closeButton": "Close",
+  "toggleCategory": "Toggle {{categoryName}} category",
+  "toggleServiceInFilter": "Toggle {{serviceName}} service",
+  "removeFavorite": "Remove {{serviceName}} {{componentName}} from favorites",
+  "addFavorite": "Add {{serviceName}} {{componentName}} to favorites",
+  "clickEffect": "Click for special effect!"
+}

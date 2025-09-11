@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import CompactDashboard from './components/CompactDashboard';
+import './styles/main.css';
+import Dashboard from './components/Dashboard/Dashboard';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <CompactDashboard />
+    <Dashboard />
   </React.StrictMode>,
 ); 

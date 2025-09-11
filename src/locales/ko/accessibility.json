@@ -1,0 +1,14 @@
+{
+  "languageSelector": "언어 선택",
+  "sortSelector": "정렬 방식 선택",
+  "expandService": "{{serviceName}} 서비스 상세 정보 보기",
+  "collapseService": "{{serviceName}} 서비스 접기",
+  "refreshButton": "새로고침",
+  "filterButton": "필터 열기",
+  "closeButton": "닫기",
+  "toggleCategory": "{{categoryName}} 카테고리 펼치기/접기",
+  "toggleServiceInFilter": "{{serviceName}} 서비스 펼치기/접기",
+  "removeFavorite": "{{serviceName}} {{componentName}} 즐겨찾기에서 제거",
+  "addFavorite": "{{serviceName}} {{componentName}} 즐겨찾기에 추가",
+  "clickEffect": "클릭하여 특별한 효과 보기!"
+}
