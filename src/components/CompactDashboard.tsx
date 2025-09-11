@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, Globe, Zap, TrendingUp, Activity, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
+import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, X, Activity, TrendingUp, Zap, ArrowUpDown, ArrowUp, ArrowDown, Globe } from 'lucide-react';
 import { serviceFetchers, serviceNames, StatusUtils } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import { SERVICE_CATEGORIES, groupServicesByCategory } from '../types/categories';
+import type { ComponentFilter, Favorites, ServiceExpansion, ViewMode, SortType, Language } from '../types/ui';
 import AdFitBanner from './AdFitBanner';
+import StatusBadge from './StatusBadge';
+import LanguageSelector from './LanguageSelector';
+import SortDropdown from './SortDropdown';
+import ViewModeToggle from './ViewModeToggle';
 
 // 이미지 import 추가
 import openaiIcon from '@/assets/gpt.png';
@@ -33,31 +38,9 @@ interface CompactDashboardProps {
   className?: string;
 }
 
-interface ComponentFilter {
-  [serviceName: string]: {
-    [componentName: string]: boolean;
-  };
-}
-
-interface Favorites {
-  [serviceName: string]: {
-    [componentName: string]: boolean;
-  };
-}
-
-interface ServiceExpansion {
-  [serviceName: string]: boolean;
-}
-
 interface ServiceLoadingState {
   [serviceName: string]: boolean;
 }
-
-// 언어 타입 정의
-type Language = 'ko' | 'en';
-
-// 정렬 타입 정의
-type SortType = 'default' | 'name-asc' | 'name-desc';
 
 // 번역 데이터
 const translations = {
@@ -65,7 +48,7 @@ const translations = {
     title: '서비스 상태 대시보드',
     refresh: '새로고침',
     filter: '필터',
-    autoUpdate: '자동 업데이트: 15초마다',
+    autoUpdate: '자동 업데이트: 30초마다',
     monitoring: '모니터링 중인 서비스',
     services: '개',
     subtitle: 'AI 서비스와 외부 서비스의 실시간 상태를 모니터링합니다.',
@@ -76,6 +59,8 @@ const translations = {
     statusPage: '상태 페이지',
     operational: '정상',
     degraded: '성능 저하',
+    degradedPerformance: '성능 저하',
+    majorOutage: '장애',
     outage: '장애',
     clickToExpand: '클릭하여 세부 정보 보기',
     refreshService: '서비스 새로고침',
@@ -94,7 +79,7 @@ const translations = {
     title: 'Service Status Dashboard',
     refresh: 'Refresh',
     filter: 'Filter',
-    autoUpdate: 'Auto Update: Every 15 seconds',
+    autoUpdate: 'Auto Update: Every 30 seconds',
     monitoring: 'Monitoring Services',
     services: 'services',
     subtitle: 'Real-time monitoring of AI services and external services.',
@@ -105,6 +90,8 @@ const translations = {
     statusPage: 'Status Page',
     operational: 'Operational',
     degraded: 'Degraded',
+    degradedPerformance: 'Degraded Performance',
+    majorOutage: 'Major Outage',
     outage: 'Outage',
     clickToExpand: 'Click to view details',
     refreshService: 'Refresh service',
@@ -265,7 +252,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   const [isDesktop, setIsDesktop] = useState(false);
   
   // 뷰 모드 상태 추가
-  const [viewMode, setViewMode] = useState<'category' | 'list'>('category');
+  const [viewMode, setViewMode] = useState<ViewMode>('category');
   
   // 카테고리 확장 상태 (카테고리 뷰에서만 사용)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -1002,53 +989,58 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
             <div className="flex items-center gap-4">
               {/* 상태 요약 카드 */}
               <div className="flex items-center gap-4 text-sm">
-                {loadingCount > 0 && (
-                  <div className="flex items-center gap-2 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                    <RefreshCw className="w-3 h-3 animate-spin text-blue-400" />
-                    <span className="text-blue-400 font-medium">{loadingCount}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-400 font-medium">{stats.operational}</span>
-                </div>
-                {stats.degraded > 0 && (
-                  <div className="flex items-center gap-2 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                    <span className="text-yellow-400 font-medium">{stats.degraded}</span>
-                  </div>
-                )}
-                {stats.outage > 0 && (
-                  <div className="flex items-center gap-2 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
-                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                    <span className="text-red-400 font-medium">{stats.outage}</span>
-                  </div>
-                )}
+                <StatusBadge
+                  status="unknown"
+                  count={loadingCount}
+                  isLoading={loadingCount > 0}
+                  translations={{
+                    operational: t.operational,
+                    degraded: t.degradedPerformance,
+                    outage: t.majorOutage,
+                    loading: t.loading
+                  }}
+                />
+                <StatusBadge
+                  status="operational"
+                  count={stats.operational}
+                  translations={{
+                    operational: t.operational,
+                    degraded: t.degradedPerformance,
+                    outage: t.majorOutage,
+                    loading: t.loading
+                  }}
+                />
+                <StatusBadge
+                  status="degraded_performance"
+                  count={stats.degraded}
+                  translations={{
+                    operational: t.operational,
+                    degraded: t.degradedPerformance,
+                    outage: t.majorOutage,
+                    loading: t.loading
+                  }}
+                />
+                <StatusBadge
+                  status="major_outage"
+                  count={stats.outage}
+                  translations={{
+                    operational: t.operational,
+                    degraded: t.degradedPerformance,
+                    outage: t.majorOutage,
+                    loading: t.loading
+                  }}
+                />
               </div>
               
               {/* 뷰 모드 토글 버튼 */}
-              <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('category')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    viewMode === 'category' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {t.categoryView}
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    viewMode === 'list' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {t.listView}
-                </button>
-              </div>
+              <ViewModeToggle
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                translations={{
+                  category: t.categoryView,
+                  list: t.listView
+                }}
+              />
               
               {/* 새로고침 버튼 */}
               <button
@@ -1070,98 +1062,25 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               </button>
               
               {/* 정렬 버튼 */}
-              <div className="relative sort-dropdown-container">
-                <button
-                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                  className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-                >
-                  {getSortIcon()}
-                  <span>{getSortLabel()}</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                
-                {isSortDropdownOpen && (
-                  <div className="sort-dropdown">
-                    <button
-                      onClick={() => handleSortChange('default')}
-                      className={`sort-option ${sortType === 'default' ? 'active' : ''}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="w-4 h-4" />
-                        <span>{t.sortDefault}</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleSortChange('name-asc')}
-                      className={`sort-option ${sortType === 'name-asc' ? 'active' : ''}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ArrowUp className="w-4 h-4" />
-                        <span>{t.sortNameAsc}</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleSortChange('name-desc')}
-                      className={`sort-option ${sortType === 'name-desc' ? 'active' : ''}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ArrowDown className="w-4 h-4" />
-                        <span>{t.sortNameDesc}</span>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <SortDropdown
+                sortType={sortType}
+                isOpen={isSortDropdownOpen}
+                onToggle={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                onSortChange={handleSortChange}
+                translations={{
+                  sortDefault: t.sortDefault,
+                  sortNameAsc: t.sortNameAsc,
+                  sortNameDesc: t.sortNameDesc
+                }}
+              />
             
               {/* 언어 선택 드롭다운 */}
-              <div className="relative language-dropdown">
-                <button
-                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-                >
-                  {language === 'ko' ? (
-                    <>
-                      <span className="text-lg">🇰🇷</span>
-                      <span>한국어</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-lg">🇺🇸</span>
-                      <span>English</span>
-                    </>
-                  )}
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                
-                {isLanguageDropdownOpen && (
-                  <div className="sort-dropdown">
-                    <button
-                      onClick={() => {
-                        setLanguage('ko');
-                        setIsLanguageDropdownOpen(false);
-                      }}
-                      className={`sort-option ${language === 'ko' ? 'active' : ''}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">🇰🇷</span>
-                        <span>한국어</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLanguage('en');
-                        setIsLanguageDropdownOpen(false);
-                      }}
-                      className={`sort-option ${language === 'en' ? 'active' : ''}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">🇺🇸</span>
-                        <span>English</span>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <LanguageSelector
+                language={language}
+                isOpen={isLanguageDropdownOpen}
+                onToggle={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                onLanguageChange={setLanguage}
+              />
             </div>
           </div>
           
@@ -1397,6 +1316,16 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                           <div 
                             className="flex items-center gap-3 flex-1 cursor-pointer"
                             onClick={() => toggleFilterServiceExpansion(service.service_name)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                toggleFilterServiceExpansion(service.service_name);
+                              }
+                            }}
+                            tabIndex={0}
+                            role="button"
+                            aria-expanded={filterExpandedServices[service.service_name] || false}
+                            aria-label={`${service.display_name} 서비스 펼치기/접기`}
                           >
                             <ServiceIcon iconName={service.icon} size={24} />
                             <h3 className="filter-service-title">
@@ -1496,6 +1425,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                       <button
                         onClick={() => toggleFavorite(item.serviceName, item.componentName)}
                         className="btn-icon focus-ring flex-shrink-0"
+                        aria-label={`${item.serviceName} ${item.componentName} 즐겨찾기에서 제거`}
                       >
                         <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
                       </button>
@@ -1555,6 +1485,16 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                             key={service.service_name}
                             className={`service-card hover-lift ${expandedServices[service.service_name] ? 'expanded' : ''}`}
                             onClick={() => toggleServiceExpansion(service.service_name)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                toggleServiceExpansion(service.service_name);
+                              }
+                            }}
+                            tabIndex={0}
+                            role="button"
+                            aria-expanded={expandedServices[service.service_name] || false}
+                            aria-label={`${service.display_name} 서비스 상세 정보 보기`}
                           >
                             {/* 상단: 아이콘, 제목, 새로고침/확장 버튼 */}
                             <div className="flex items-center justify-between mb-1">
@@ -1660,6 +1600,16 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                     key={service.service_name}
                     className={`service-card hover-lift ${expandedServices[service.service_name] ? 'expanded' : ''}`}
                     onClick={() => toggleServiceExpansion(service.service_name)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleServiceExpansion(service.service_name);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedServices[service.service_name] || false}
+                    aria-label={`${service.display_name} 서비스 상세 정보 보기`}
                   >
                     {/* 상단: 아이콘, 제목, 새로고침/확장 버튼 */}
                     <div className="flex items-center justify-between mb-1">
