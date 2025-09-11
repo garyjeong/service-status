@@ -38,6 +38,7 @@ node_modules
 # PNPM
 /pnpm-lock.yaml
 
-# Taskmaster and Playwright MCP files
+# Taskmaster, Cursor, and Playwright MCP files
 .taskmaster/
+.cursor/
 .playwright-mcp/ 
