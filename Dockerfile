@@ -4,14 +4,15 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
-
-# Install specific pnpm version from package.json
+# Install specific pnpm version
 RUN npm install -g pnpm@8.10.0
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Copy package files
+COPY package.json ./
+COPY pnpm-lock.yaml* ./
+
+# Install dependencies (use --no-frozen-lockfile for CI environments)
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY . .
