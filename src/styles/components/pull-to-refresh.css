@@ -1,0 +1,126 @@
+/* Pull-to-Refresh 컴포넌트 스타일 */
+
+/* 메인 컨테이너 */
+.pull-to-refresh-container {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none; /* iOS에서 바운스 효과 제거 */
+}
+
+/* 인디케이터 컨테이너 */
+.pull-to-refresh-indicator {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.2s ease-out;
+}
+
+/* 인디케이터 내용 */
+.pull-to-refresh-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(var(--background), 0.95);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--border), 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 텍스트 스타일 */
+.pull-to-refresh-text {
+  font-size: 0.75rem;
+  color: rgba(var(--muted-foreground), 0.8);
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* 다크 모드 최적화 */
+@media (prefers-color-scheme: dark) {
+  .pull-to-refresh-content {
+    background: rgba(var(--background), 0.9);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* 모바일 전용 스타일 */
+@media (max-width: 768px) {
+  .pull-to-refresh-indicator {
+    top: -50px;
+    height: 50px;
+  }
+  
+  .pull-to-refresh-content {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+  
+  .pull-to-refresh-text {
+    font-size: 0.7rem;
+  }
+}
+
+/* 태블릿에서는 약간 더 크게 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .pull-to-refresh-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* 데스크톱에서는 숨김 (터치 기기가 아니므로) */
+@media (min-width: 1025px) {
+  .pull-to-refresh-indicator {
+    display: none;
+  }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  .pull-to-refresh-content {
+    border: 2px solid rgba(var(--border), 0.8);
+    background: rgba(var(--background), 1);
+  }
+  
+  .pull-to-refresh-text {
+    color: rgba(var(--foreground), 1);
+  }
+}
+
+/* 모션 감소 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .pull-to-refresh-indicator {
+    transition: none;
+  }
+  
+  .pull-to-refresh-content svg {
+    transition: none !important;
+  }
+}
+
+/* 터치 디바이스 감지 */
+@media (hover: none) and (pointer: coarse) {
+  /* 터치 디바이스에서만 표시 */
+  .pull-to-refresh-container {
+    /* 터치 스크롤 최적화 */
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+}
+
+/* 마우스/트랙패드 디바이스에서는 비활성화 */
+@media (hover: hover) and (pointer: fine) {
+  .pull-to-refresh-indicator {
+    display: none;
+  }
+}

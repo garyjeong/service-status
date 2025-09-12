@@ -1,0 +1,118 @@
+/* 가상화된 서비스 그리드 스타일 */
+
+.virtualized-service-grid-container {
+  width: 100%;
+}
+
+.virtualized-service-grid-viewport {
+  /* 스크롤 최적화 */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--primary), 0.3) transparent;
+}
+
+/* 웹킷 기반 브라우저 스크롤바 스타일 */
+.virtualized-service-grid-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtualized-service-grid-viewport::-webkit-scrollbar-track {
+  background: rgba(var(--muted), 0.1);
+  border-radius: 4px;
+}
+
+.virtualized-service-grid-viewport::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary), 0.3);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.virtualized-service-grid-viewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--primary), 0.5);
+}
+
+/* 가상화된 행 스타일 */
+.service-grid-row {
+  padding: 0;
+  margin: 0;
+}
+
+/* 가상화 정보 스타일 */
+.virtualized-info {
+  padding: 8px 12px;
+  background: rgba(var(--muted), 0.1);
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  border-left: 3px solid rgba(var(--primary), 0.5);
+}
+
+/* 반응형 최적화 */
+@media (max-width: 768px) {
+  .virtualized-service-grid-viewport {
+    /* 모바일에서 터치 스크롤 개선 */
+    touch-action: pan-y;
+  }
+  
+  .service-grid-row {
+    /* 모바일에서 단일 컬럼 */
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .service-grid-row {
+    /* 태블릿에서 2컬럼 */
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .service-grid-row {
+    /* 데스크톱에서 3컬럼 */
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* 고성능 렌더링 최적화 */
+.virtualized-service-grid-viewport {
+  /* GPU 가속 활성화 */
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+.service-grid-row {
+  /* 레이어 최적화 */
+  contain: layout style paint;
+}
+
+/* 다크 모드 최적화 */
+@media (prefers-color-scheme: dark) {
+  .virtualized-service-grid-viewport::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .virtualized-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: rgba(var(--primary), 0.7);
+  }
+}
+
+/* 모션 감소 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .virtualized-service-grid-viewport::-webkit-scrollbar-thumb {
+    transition: none;
+  }
+}
+
+/* 접근성 개선 */
+.virtualized-service-grid-viewport:focus {
+  outline: 2px solid rgba(var(--primary), 0.5);
+  outline-offset: 2px;
+}
+
+/* 로딩 상태 최적화 */
+.virtualized-service-grid-container .skeleton-container {
+  /* 가상화된 환경에서 스켈레톤 최적화 */
+  contain: layout style paint;
+}

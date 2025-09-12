@@ -83,6 +83,8 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
         <img 
           src={iconSrc} 
           alt={`${iconName} icon`} 
+          loading="lazy"
+          decoding="async"
           style={{ 
             width: `${size}px`, 
             height: `${size}px`,

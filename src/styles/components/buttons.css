@@ -1,13 +1,15 @@
 /* 🎨 버튼 시스템 - 세련되고 미니멀한 */
 /* 이제 getButtonStyles() 유틸리티 함수 사용 권장 */
 
-/* 기본 버튼 스타일 */
-.btn-base {
+/* 기본 버튼 스타일은 이제 각 버튼 클래스에 직접 정의됨 */
+
+/* 프라이머리 버튼 */
+.btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   line-height: 1.25rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -15,20 +17,14 @@
   cursor: pointer;
   outline: none;
   text-decoration: none;
-}
-
-.btn-base:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 프라이머리 버튼 */
-.btn-primary {
-  @apply btn-base;
   background: linear-gradient(135deg, var(--mint-primary) 0%, var(--green-success) 100%);
   color: var(--black-primary);
   padding: 0.75rem 1.5rem;
-  font-weight: 600;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -42,11 +38,27 @@
 
 /* 세컨더리 버튼 */
 .btn-secondary {
-  @apply btn-base;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
   background: rgba(var(--secondary), 0.8);
   color: rgb(var(--secondary-foreground));
   border: 1px solid rgba(var(--border), 0.5);
   padding: 0.5rem 1rem;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -56,13 +68,29 @@
 
 /* 아이콘 버튼 */
 .btn-icon {
-  @apply btn-base;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
   width: 2rem;
   height: 2rem;
   padding: 0;
   background: rgba(var(--muted), 0.6);
   color: rgb(var(--muted-foreground));
   border: 1px solid rgba(var(--border), 0.3);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-icon:hover:not(:disabled) {
@@ -73,10 +101,26 @@
 
 /* 고스트 버튼 */
 .btn-ghost {
-  @apply btn-base;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
   background: transparent;
   color: rgb(var(--muted-foreground));
   padding: 0.5rem 1rem;
+}
+
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-ghost:hover:not(:disabled) {
@@ -86,10 +130,26 @@
 
 /* 데인저 버튼 */
 .btn-destructive {
-  @apply btn-base;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
   background: rgb(var(--destructive));
   color: rgb(var(--destructive-foreground));
   padding: 0.75rem 1.5rem;
+}
+
+.btn-destructive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-destructive:hover:not(:disabled) {
@@ -122,13 +182,27 @@
 
 /* 필터 마스터 토글 버튼 스타일 */
 .filter-master-toggle {
-  @apply btn-secondary;
-  font-size: 0.75rem;
-  padding: 0.375rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  padding: 0.375rem 0.75rem;
   background: rgba(var(--primary), 0.1);
   color: rgb(var(--primary));
   border: 1px solid rgba(var(--primary), 0.2);
+}
+
+.filter-master-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .filter-master-toggle:hover {
@@ -138,11 +212,31 @@
 
 /* 모달 닫기 버튼 */
 .modal-close-button {
-  @apply btn-icon;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid rgba(var(--border), 0.3);
   position: absolute;
   top: 1rem;
   right: 1rem;
   background: rgba(var(--muted), 0.8);
+}
+
+.modal-close-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .modal-close-button:hover {

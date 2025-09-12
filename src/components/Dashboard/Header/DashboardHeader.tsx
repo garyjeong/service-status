@@ -25,6 +25,12 @@ interface DashboardHeaderProps {
   // 언어 드롭다운
   isLanguageDropdownOpen: boolean;
   
+  // 빠른 필터
+  quickFilters: {
+    showOnlyProblematic: boolean;
+    showOnlyFavorites: boolean;
+  };
+  
   // 번역
   translations: {
     title: string;
@@ -39,6 +45,8 @@ interface DashboardHeaderProps {
     sortDefault: string;
     sortNameAsc: string;
     sortNameDesc: string;
+    showOnlyProblematic: string;
+    showOnlyFavorites: string;
   };
   
   // 이벤트 핸들러
@@ -49,6 +57,7 @@ interface DashboardHeaderProps {
   onViewModeChange: (mode: ViewMode) => void;
   onSortChange: (sort: SortType) => void;
   onSortToggle: () => void;
+  onQuickFilterToggle: (filterType: 'showOnlyProblematic' | 'showOnlyFavorites') => void;
   onTitleClick: () => void;
 }
 
@@ -61,6 +70,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   sortType,
   isSortDropdownOpen,
   isLanguageDropdownOpen,
+  quickFilters,
   translations,
   onRefresh,
   onFilterOpen,
@@ -69,6 +79,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onViewModeChange,
   onSortChange,
   onSortToggle,
+  onQuickFilterToggle,
   onTitleClick,
 }) => {
   // 번역 훅 사용
@@ -132,6 +143,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 isSortDropdownOpen={isSortDropdownOpen}
                 isLanguageDropdownOpen={isLanguageDropdownOpen}
                 isLoading={isLoading}
+                quickFilters={quickFilters}
                 translations={translations}
                 onRefresh={onRefresh}
                 onFilterOpen={onFilterOpen}
@@ -140,6 +152,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 onViewModeChange={onViewModeChange}
                 onSortChange={onSortChange}
                 onSortToggle={onSortToggle}
+                onQuickFilterToggle={onQuickFilterToggle}
               />
             </div>
           </div>
@@ -230,6 +243,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 isSortDropdownOpen={isSortDropdownOpen}
                 isLanguageDropdownOpen={isLanguageDropdownOpen}
                 isLoading={isLoading}
+                quickFilters={quickFilters}
                 translations={translations}
                 onRefresh={onRefresh}
                 onFilterOpen={onFilterOpen}
@@ -238,6 +252,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 onViewModeChange={onViewModeChange}
                 onSortChange={onSortChange}
                 onSortToggle={onSortToggle}
+                onQuickFilterToggle={onQuickFilterToggle}
                 isMobile={true}
               />
             </div>

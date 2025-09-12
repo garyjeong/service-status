@@ -24,6 +24,20 @@ interface DashboardState {
   filters: ComponentFilter;
   favorites: Favorites;
 
+  // 빠른 필터
+  quickFilters: {
+    showOnlyProblematic: boolean;
+    showOnlyFavorites: boolean;
+  };
+
+  // 가상화 설정
+  virtualization: {
+    enabled: boolean;
+    threshold: number;
+    itemHeight: number;
+    maxHeight: number;
+  };
+
   // 서비스 데이터
   services: Service[];
   serviceLoadingStates: ServiceLoadingState;
@@ -37,6 +51,7 @@ interface DashboardState {
   isSortDropdownOpen: boolean;
   isAnimating: boolean;
   error: string | null;
+  serviceErrors: { [serviceName: string]: string | null };
   lastUpdate: Date;
 
   // 모바일 상태
@@ -58,9 +73,13 @@ interface DashboardState {
   // 즐겨찾기 관련
   toggleFavorite: (serviceName: string, componentName: string) => void;
 
+  // 빠른 필터 관련
+  toggleQuickFilter: (filterType: 'showOnlyProblematic' | 'showOnlyFavorites') => void;
+
   // 서비스 관련
   setServices: (services: Service[]) => void;
   setServiceLoading: (serviceName: string, isLoading: boolean) => void;
+  setServiceError: (serviceName: string, error: string | null) => void;
   toggleServiceExpansion: (serviceName: string) => void;
   toggleCategoryExpansion: (categoryName: string) => void;
 
@@ -116,6 +135,18 @@ export const useDashboardStore = create<DashboardState>()(
       filters: {},
       favorites: {},
 
+      quickFilters: {
+        showOnlyProblematic: false,
+        showOnlyFavorites: false,
+      },
+
+      virtualization: {
+        enabled: true, // 기본적으로 활성화
+        threshold: 20, // 20개 이상일 때 가상화
+        itemHeight: 200, // 서비스 카드 높이
+        maxHeight: 800, // 최대 컨테이너 높이
+      },
+
       services: [],
       serviceLoadingStates: {},
       expandedServices: {},
@@ -127,6 +158,7 @@ export const useDashboardStore = create<DashboardState>()(
       isSortDropdownOpen: false,
       isAnimating: false,
       error: null,
+      serviceErrors: {},
       lastUpdate: new Date(),
 
       isScrollingDown: false,
@@ -208,6 +240,15 @@ export const useDashboardStore = create<DashboardState>()(
           },
         })),
 
+      // 빠른 필터 관련
+      toggleQuickFilter: filterType =>
+        set(state => ({
+          quickFilters: {
+            ...state.quickFilters,
+            [filterType]: !state.quickFilters[filterType],
+          },
+        })),
+
       // 서비스 관련
       setServices: services => set({ services }),
 
@@ -216,6 +257,14 @@ export const useDashboardStore = create<DashboardState>()(
           serviceLoadingStates: {
             ...state.serviceLoadingStates,
             [serviceName]: isLoading,
+          },
+        })),
+
+      setServiceError: (serviceName, error) =>
+        set(state => ({
+          serviceErrors: {
+            ...state.serviceErrors,
+            [serviceName]: error,
           },
         })),
 
@@ -252,12 +301,33 @@ export const useDashboardStore = create<DashboardState>()(
       // 유틸리티 함수들
       getFilteredServices: () => {
         const state = get();
-        return state.services.filter(service => {
+        let filteredServices = state.services.filter(service => {
           const hasSelectedComponent = service.components.some(
             component => state.filters[service.service_name]?.[component.name]
           );
           return hasSelectedComponent;
         });
+
+        // 빠른 필터 적용
+        if (state.quickFilters.showOnlyProblematic) {
+          filteredServices = filteredServices.filter(
+            service =>
+              service.status === 'degraded' ||
+              service.status === 'outage' ||
+              service.status === 'major_outage'
+          );
+        }
+
+        if (state.quickFilters.showOnlyFavorites) {
+          filteredServices = filteredServices.filter(service => {
+            // 해당 서비스에 즐겨찾기된 컴포넌트가 있는지 확인
+            return service.components.some(
+              component => state.favorites[service.service_name]?.[component.name]
+            );
+          });
+        }
+
+        return filteredServices;
       },
 
       getServiceSelectionState: serviceName => {

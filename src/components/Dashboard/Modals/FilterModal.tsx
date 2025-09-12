@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { X, ChevronDown } from 'lucide-react';
 import { Service } from '../../../services/api';
 import { ComponentFilter } from '../../../types/ui';
@@ -89,6 +89,8 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
         <img 
           src={iconSrc} 
           alt={`${iconName} icon`} 
+          loading="lazy"
+          decoding="async"
           style={{ 
             width: `${size}px`, 
             height: `${size}px`,
@@ -142,6 +144,34 @@ const FilterModal: React.FC<FilterModalProps> = ({
   getMasterSelectionState,
   getServiceSelectionState,
 }) => {
+  // 스크롤 상태 관리
+  const modalBodyRef = useRef<HTMLDivElement>(null);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+
+  // 스크롤 상태 업데이트
+  const updateScrollState = () => {
+    const element = modalBodyRef.current;
+    if (!element) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = element;
+    setCanScrollUp(scrollTop > 10);
+    setCanScrollDown(scrollTop < scrollHeight - clientHeight - 10);
+  };
+
+  // 스크롤 이벤트 리스너 등록
+  useEffect(() => {
+    const element = modalBodyRef.current;
+    if (!element) return;
+
+    updateScrollState();
+    element.addEventListener('scroll', updateScrollState);
+    
+    return () => {
+      element.removeEventListener('scroll', updateScrollState);
+    };
+  }, [isOpen, services]);
+
   // 상태 색상 반환
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -190,10 +220,16 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </div>
         
         {/* 모달 바디 */}
-        <div className="modal-body">
-          <p className="text-sm text-muted-foreground mb-6">
-            {translations.filterDescription}
-          </p>
+        <div className="relative">
+          {/* 상단 스크롤 표시 그라데이션 */}
+          {canScrollUp && (
+            <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-[var(--bg-secondary)] to-transparent pointer-events-none z-10" />
+          )}
+          
+          <div ref={modalBodyRef} className="modal-body">
+            <p className="text-sm text-muted-foreground mb-6">
+              {translations.filterDescription}
+            </p>
           
           <div className="filter-grid">
             {services.map(service => (
@@ -270,6 +306,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
               </div>
             ))}
           </div>
+          </div>
+          
+          {/* 하단 스크롤 표시 그라데이션 */}
+          {canScrollDown && (
+            <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent pointer-events-none z-10" />
+          )}
         </div>
       </div>
     </div>

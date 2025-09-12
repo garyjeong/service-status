@@ -27,5 +27,11 @@
   "filterDescription": "Select service components to display",
   "close": "Close",
   "categoryView": "Category View",
-  "listView": "List View"
+  "listView": "List View",
+  "showOnlyProblematic": "Issues Only",
+  "showOnlyFavorites": "Favorites Only",
+  "keyboardShortcuts": "Keyboard Shortcuts: R(Refresh), F(Filter), Esc(Close)",
+  "pullToRefresh": "Pull down to refresh",
+  "releaseToRefresh": "Release to refresh",
+  "refreshing": "Refreshing..."
 }

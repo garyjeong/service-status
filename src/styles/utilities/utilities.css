@@ -101,7 +101,7 @@
     border-width: 2px;
   }
   
-  .btn-base {
+  .btn-primary, .btn-secondary, .btn-icon, .btn-ghost, .btn-destructive, .filter-master-toggle, .modal-close-button {
     border-width: 2px;
   }
 }

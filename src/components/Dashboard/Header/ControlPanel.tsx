@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Settings, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { RefreshCw, Settings, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, Heart } from 'lucide-react';
 import ViewModeToggle from '../../ViewModeToggle';
 import LanguageSelector from '../../LanguageSelector';
 import SortDropdown from '../../SortDropdown';
@@ -14,6 +14,12 @@ interface ControlPanelProps {
   isLoading: boolean;
   isMobile?: boolean;
   
+  // 빠른 필터 상태
+  quickFilters: {
+    showOnlyProblematic: boolean;
+    showOnlyFavorites: boolean;
+  };
+  
   translations: {
     refresh: string;
     filter: string;
@@ -22,6 +28,8 @@ interface ControlPanelProps {
     sortDefault: string;
     sortNameAsc: string;
     sortNameDesc: string;
+    showOnlyProblematic: string;
+    showOnlyFavorites: string;
   };
   
   onRefresh: () => void;
@@ -31,6 +39,7 @@ interface ControlPanelProps {
   onViewModeChange: (mode: ViewMode) => void;
   onSortChange: (sort: SortType) => void;
   onSortToggle: () => void;
+  onQuickFilterToggle: (filterType: 'showOnlyProblematic' | 'showOnlyFavorites') => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -41,6 +50,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   isLanguageDropdownOpen,
   isLoading,
   isMobile = false,
+  quickFilters,
   translations,
   onRefresh,
   onFilterOpen,
@@ -49,6 +59,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onViewModeChange,
   onSortChange,
   onSortToggle,
+  onQuickFilterToggle,
 }) => {
   const getSortIcon = () => {
     switch (sortType) {
@@ -151,6 +162,27 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           )}
         </div>
         
+        {/* 빠른 필터 버튼들 - 모바일 */}
+        <button
+          onClick={() => onQuickFilterToggle('showOnlyProblematic')}
+          className={`btn-icon focus-ring hover-lift ${
+            quickFilters.showOnlyProblematic ? 'bg-red-500/20 border-red-500/40 text-red-300' : ''
+          }`}
+          title={translations.showOnlyProblematic}
+        >
+          <AlertTriangle className="w-4 h-4" />
+        </button>
+
+        <button
+          onClick={() => onQuickFilterToggle('showOnlyFavorites')}
+          className={`btn-icon focus-ring hover-lift ${
+            quickFilters.showOnlyFavorites ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300' : ''
+          }`}
+          title={translations.showOnlyFavorites}
+        >
+          <Heart className="w-4 h-4" />
+        </button>
+        
         {/* 새로고침 버튼 */}
         <button
           onClick={onRefresh}
@@ -184,6 +216,29 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         disabled={isLoading}
       >
         <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+      </button>
+
+      {/* 빠른 필터 버튼들 */}
+      <button
+        onClick={() => onQuickFilterToggle('showOnlyProblematic')}
+        className={`btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift ${
+          quickFilters.showOnlyProblematic ? 'bg-red-500/20 border-red-500/40 text-red-300' : ''
+        }`}
+        title={translations.showOnlyProblematic}
+      >
+        <AlertTriangle className="w-4 h-4" />
+        <span className="hidden xl:inline">{translations.showOnlyProblematic}</span>
+      </button>
+
+      <button
+        onClick={() => onQuickFilterToggle('showOnlyFavorites')}
+        className={`btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift ${
+          quickFilters.showOnlyFavorites ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300' : ''
+        }`}
+        title={translations.showOnlyFavorites}
+      >
+        <Heart className="w-4 h-4" />
+        <span className="hidden xl:inline">{translations.showOnlyFavorites}</span>
       </button>
 
       {/* 필터 버튼 */}

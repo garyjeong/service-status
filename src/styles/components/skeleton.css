@@ -1,0 +1,142 @@
+/* 스켈레톤 로딩 애니메이션 시스템 */
+
+/* 기본 스켈레톤 컨테이너 */
+.skeleton-container {
+  position: relative;
+  overflow: hidden;
+  height: 200px; /* ServiceCard와 동일한 높이 */
+}
+
+.skeleton-wrapper {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Shimmer 애니메이션을 위한 키프레임 */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* 기본 스켈레톤 요소 스타일 */
+.skeleton-container [class*="skeleton-"] {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--muted), 0.1) 0%,
+    rgba(var(--muted), 0.3) 50%,
+    rgba(var(--muted), 0.1) 100%
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* 각 요소별 스타일 */
+.skeleton-icon {
+  background-color: rgba(var(--primary), 0.15);
+}
+
+.skeleton-text {
+  background-color: rgba(var(--foreground), 0.2);
+}
+
+.skeleton-button {
+  background-color: rgba(var(--muted), 0.12);
+}
+
+.skeleton-line {
+  background-color: rgba(var(--foreground), 0.1);
+}
+
+.skeleton-status {
+  background: linear-gradient(
+    90deg,
+    rgba(46, 255, 180, 0.3) 0%,
+    rgba(46, 255, 180, 0.5) 50%,
+    rgba(46, 255, 180, 0.3) 100%
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-badge {
+  background-color: rgba(var(--muted), 0.15);
+}
+
+.skeleton-footer-icon {
+  background-color: rgba(var(--muted-foreground), 0.3);
+}
+
+.skeleton-footer-text {
+  background-color: rgba(var(--muted-foreground), 0.2);
+}
+
+/* 다크 테마 최적화 */
+@media (prefers-color-scheme: dark) {
+  .skeleton-container [class*="skeleton-"] {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200px 100%;
+  }
+  
+  .skeleton-icon {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .skeleton-text {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+  
+  .skeleton-status {
+    background: linear-gradient(
+      90deg,
+      rgba(46, 255, 180, 0.2) 0%,
+      rgba(46, 255, 180, 0.4) 50%,
+      rgba(46, 255, 180, 0.2) 100%
+    );
+    background-size: 200px 100%;
+  }
+}
+
+/* 반응형 스켈레톤 */
+@media (max-width: 768px) {
+  .skeleton-container {
+    height: 180px; /* 모바일에서 약간 작게 */
+  }
+  
+  .skeleton-text {
+    width: 80%; /* 모바일에서 텍스트 영역 조정 */
+  }
+}
+
+/* 모션 감소 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-container [class*="skeleton-"] {
+    animation: none;
+    background: rgba(var(--muted), 0.2);
+  }
+  
+  .skeleton-status {
+    background: rgba(46, 255, 180, 0.3);
+  }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  .skeleton-container [class*="skeleton-"] {
+    background-color: rgba(var(--foreground), 0.3);
+  }
+  
+  .skeleton-status {
+    background-color: rgba(46, 255, 180, 0.5);
+  }
+}

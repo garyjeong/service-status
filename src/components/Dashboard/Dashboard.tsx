@@ -1,14 +1,18 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, Suspense } from 'react';
 import { useDashboardStore } from '../../store/dashboardStore';
-import { serviceFetchers, serviceNames } from '../../services/api';
+import { serviceFetchers, serviceNames, ErrorHandler } from '../../services/api';
 import { groupServicesByCategory } from '../../types/categories';
 import { useTranslation } from '../../hooks/useTranslation';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import DashboardHeader from './Header/DashboardHeader';
 import FavoriteSection from './Content/FavoriteSection';
 import CategoryView from './Content/CategoryView';
 import ServiceGrid from './Content/ServiceGrid';
-import FilterModal from './Modals/FilterModal';
+import PullToRefreshIndicator from '../ui/PullToRefreshIndicator';
 import AdFitBanner from '../AdFitBanner';
+
+// Lazy load FilterModal (only loaded when needed)
+const FilterModal = React.lazy(() => import('./Modals/FilterModal'));
 
 
 const Dashboard: React.FC = () => {
@@ -57,6 +61,10 @@ const Dashboard: React.FC = () => {
     // 즐겨찾기 관련
     toggleFavorite,
     
+    // 빠른 필터 관련
+    quickFilters,
+    toggleQuickFilter,
+    
     // 서비스 관련
     setServices,
     setServiceLoading,
@@ -83,12 +91,24 @@ const Dashboard: React.FC = () => {
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
 
+  // 중복 요청 방지를 위한 로컬 상태
+  const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set());
+
   // 개별 서비스 로딩 함수
   const loadServiceData = async (serviceName: keyof typeof serviceFetchers, isInitialLoad = false) => {
+    const serviceKey = serviceName as string;
+    
+    // 중복 요청 방지
+    if (pendingRequests.has(serviceKey)) {
+      console.warn(`${serviceKey} 서비스는 이미 로딩 중입니다.`);
+      return;
+    }
+
     try {
-      setServiceLoading(serviceName as string, true);
+      setPendingRequests(prev => new Set(prev).add(serviceKey));
+      setServiceLoading(serviceKey, true);
       
-      const serviceData = await serviceFetchers[serviceName]();
+      const serviceData = await serviceFetchers[serviceName](forceRefresh);
       
       // 서비스 데이터 업데이트
       const currentServices = useDashboardStore.getState().services;
@@ -109,16 +129,30 @@ const Dashboard: React.FC = () => {
       
       setServices(sortedServices);
       
+      // 성공시 에러 상태 클리어
+      useDashboardStore.getState().setServiceError(serviceKey, null);
+      
       // 초기 로드일 때 필터와 즐겨찾기 초기화
       if (isInitialLoad) {
         initializeServiceFiltersAndFavorites(serviceData);
       }
       
-    } catch (err) {
+    } catch (err: any) {
       console.error(`${String(serviceName)} 상태 데이터 로드 실패:`, err);
-      setError(`${String(serviceName)} 서비스 로드 실패`);
+      
+      // ErrorHandler를 사용해 사용자 친화적인 에러 메시지 생성
+      const errorMessage = ErrorHandler.getUserFriendlyMessage(err, String(serviceName));
+      
+      // 서비스별 에러 상태 저장
+      useDashboardStore.getState().setServiceError(serviceKey, errorMessage);
+      setError(null); // 전역 에러는 클리어하고 서비스별 에러만 표시
     } finally {
-      setServiceLoading(serviceName as string, false);
+      setServiceLoading(serviceKey, false);
+      setPendingRequests(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(serviceKey);
+        return newSet;
+      });
     }
   };
 
@@ -168,18 +202,88 @@ const Dashboard: React.FC = () => {
     await Promise.allSettled(loadPromises);
   };
 
+  // 전체 새로고침 상태 관리
+  const [isGlobalRefreshing, setIsGlobalRefreshing] = useState(false);
+
+  // 키보드 단축키 처리
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // input, textarea, contenteditable 요소에서는 단축키 비활성화
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.getAttribute('contenteditable') === 'true'
+      );
+
+      if (isInputFocused) return;
+
+      switch (event.key.toLowerCase()) {
+        case 'r':
+          // Ctrl+R이나 Cmd+R (브라우저 새로고침)은 기본 동작 유지
+          if (event.ctrlKey || event.metaKey) return;
+          
+          event.preventDefault();
+          if (!isGlobalRefreshing) {
+            refreshFilteredServices();
+          }
+          break;
+
+        case 'f':
+          event.preventDefault();
+          setFilterOpen(!isFilterOpen);
+          break;
+
+        case 'escape':
+          event.preventDefault();
+          // 모든 모달 닫기
+          setFilterOpen(false);
+          setLanguageDropdownOpen(false);
+          setSortDropdownOpen(false);
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterOpen, isGlobalRefreshing, refreshFilteredServices, setFilterOpen, setLanguageDropdownOpen, setSortDropdownOpen]);
+
   // 필터링된 서비스만 새로고침
   const refreshFilteredServices = async () => {
-    const filteredServices = getFilteredServices();
-    const serviceNamesToRefresh = filteredServices.map(s => s.service_name as keyof typeof serviceFetchers);
-    
-    setLastUpdate(new Date());
-    
-    const loadPromises = serviceNamesToRefresh.map((serviceName) => 
-      loadServiceData(serviceName, false)
-    );
-    await Promise.allSettled(loadPromises);
+    if (isGlobalRefreshing) {
+      console.warn('전체 새로고침이 이미 진행 중입니다.');
+      return;
+    }
+
+    try {
+      setIsGlobalRefreshing(true);
+      const filteredServices = getFilteredServices();
+      const serviceNamesToRefresh = filteredServices.map(s => s.service_name as keyof typeof serviceFetchers);
+      
+      setLastUpdate(new Date());
+      
+      const loadPromises = serviceNamesToRefresh.map((serviceName) => 
+        loadServiceData(serviceName, false)
+      );
+      await Promise.allSettled(loadPromises);
+    } finally {
+      setIsGlobalRefreshing(false);
+    }
   };
+
+  // Pull-to-Refresh 기능
+  const pullToRefresh = usePullToRefresh({
+    onRefresh: refreshFilteredServices,
+    enabled: true,
+    threshold: 80,
+    resistance: 0.5,
+  });
 
   // 정렬된 서비스 가져오기 (메모이제이션)
   const sortedServices = useMemo(() => {
@@ -338,7 +442,7 @@ const Dashboard: React.FC = () => {
   }, [isLanguageDropdownOpen, isSortDropdownOpen]);
 
   const stats = getOverallStats();
-  const isAnyLoading = loadingServicesCount > 0;
+  const isAnyLoading = loadingServicesCount > 0 || isGlobalRefreshing;
 
   // 로딩 중일 때 표시
   if (services.length === 0 && isAnyLoading) {
@@ -353,7 +457,18 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-background text-foreground layout-sticky-both min-h-dvh">
+    <div 
+      ref={pullToRefresh.containerRef}
+      className="bg-background text-foreground layout-sticky-both min-h-dvh pull-to-refresh-container"
+    >
+      {/* Pull-to-Refresh 인디케이터 */}
+      <PullToRefreshIndicator 
+        pullDistance={pullToRefresh.pullDistance}
+        canRefresh={pullToRefresh.canRefresh}
+        isRefreshing={pullToRefresh.isRefreshing}
+        isTouching={pullToRefresh.isTouching}
+        progress={pullToRefresh.progress}
+      />
       {/* 헤더 섹션 */}
       <DashboardHeader
         services={services}
@@ -364,6 +479,7 @@ const Dashboard: React.FC = () => {
         sortType={sortType}
         isSortDropdownOpen={isSortDropdownOpen}
         isLanguageDropdownOpen={isLanguageDropdownOpen}
+        quickFilters={quickFilters}
         translations={{
           title: t('title'),
           refresh: t('refresh'),
@@ -377,6 +493,8 @@ const Dashboard: React.FC = () => {
           sortDefault: t('sortDefault'),
           sortNameAsc: t('sortNameAsc'),
           sortNameDesc: t('sortNameDesc'),
+          showOnlyProblematic: t('showOnlyProblematic'),
+          showOnlyFavorites: t('showOnlyFavorites'),
         }}
         onRefresh={refreshFilteredServices}
         onFilterOpen={() => setFilterOpen(true)}
@@ -385,6 +503,7 @@ const Dashboard: React.FC = () => {
         onViewModeChange={setViewMode}
         onSortChange={handleSortChange}
         onSortToggle={() => setSortDropdownOpen(!isSortDropdownOpen)}
+        onQuickFilterToggle={toggleQuickFilter}
         onTitleClick={handleTitleClick}
       />
 
@@ -445,7 +564,12 @@ const Dashboard: React.FC = () => {
               }}
               onToggleCategoryExpansion={toggleCategoryExpansion}
               onToggleServiceExpansion={toggleServiceExpansion}
-              onRefreshService={(serviceName) => loadServiceData(serviceName as keyof typeof serviceFetchers, false)}
+              onRefreshService={(serviceName) => {
+                // 해당 서비스가 이미 로딩 중인지 확인
+                if (!pendingRequests.has(serviceName)) {
+                  loadServiceData(serviceName as keyof typeof serviceFetchers, false);
+                }
+              }}
             />
           ) : (
             /* 목록 뷰 */
@@ -460,7 +584,12 @@ const Dashboard: React.FC = () => {
                 refreshService: t('refreshService')
               }}
               onToggleExpansion={toggleServiceExpansion}
-              onRefreshService={(serviceName) => loadServiceData(serviceName as keyof typeof serviceFetchers, false)}
+              onRefreshService={(serviceName) => {
+                // 해당 서비스가 이미 로딩 중인지 확인
+                if (!pendingRequests.has(serviceName)) {
+                  loadServiceData(serviceName as keyof typeof serviceFetchers, false);
+                }
+              }}
             />
           )}
 
@@ -477,11 +606,13 @@ const Dashboard: React.FC = () => {
       <footer className="footer-section">
         <div className="container mx-auto px-4">
           <div className="text-center text-sm text-muted-foreground py-4">
-            <p className="flex items-center justify-center gap-2">
+            <p className="flex items-center justify-center gap-2 flex-wrap">
               <span>📊</span>
               <span>{t('monitoring')}: {getFilteredServices().length}{t('services')}</span>
               <span>•</span>
               <span>🔄 {t('autoUpdate')}</span>
+              <span className="hidden md:inline">•</span>
+              <span className="hidden md:inline text-xs text-muted-foreground">⌨️ {t('keyboardShortcuts')}</span>
             </p>
           </div>
         </div>

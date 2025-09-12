@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { serviceStatusCache, serviceComponentsCache, createCacheKey } from '../utils/apiCache';
 
 // 상태 타입 정의
 export type StatusType = 'operational' | 'degraded' | 'outage' | 'maintenance';
@@ -34,6 +35,19 @@ interface ServiceConfig {
 // CORS 프록시 설정 (개발 환경용)
 const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
+// 재시도 설정
+interface RetryConfig {
+  maxRetries: number;
+  retryDelay: number;
+  timeoutMultiplier: number;
+}
+
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+  maxRetries: 3,
+  retryDelay: 1000, // 1초
+  timeoutMultiplier: 1.5,
+};
+
 // API 클라이언트 설정
 const createApiClient = (timeout = 10000): AxiosInstance => {
   return axios.create({
@@ -45,6 +59,137 @@ const createApiClient = (timeout = 10000): AxiosInstance => {
 };
 
 const apiClient = createApiClient();
+
+// 재시도 로직이 포함된 API 호출 유틸리티
+async function apiCallWithRetry<T>(
+  apiCall: () => Promise<T>,
+  config: Partial<RetryConfig> = {}
+): Promise<T> {
+  const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= retryConfig.maxRetries; attempt++) {
+    try {
+      return await apiCall();
+    } catch (error: any) {
+      lastError = error;
+
+      // 마지막 시도인 경우 에러를 던짐
+      if (attempt === retryConfig.maxRetries) {
+        throw error;
+      }
+
+      // 재시도할 수 없는 에러 타입 확인
+      if (!ErrorHandler.shouldRetry(error)) {
+        throw error;
+      }
+
+      // 재시도 전 대기
+      const delay = retryConfig.retryDelay * Math.pow(retryConfig.timeoutMultiplier, attempt - 1);
+      console.warn(
+        `API 호출 실패 (시도 ${attempt}/${retryConfig.maxRetries}). ${delay}ms 후 재시도...`,
+        error.message
+      );
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
+// 캐시가 포함된 API 호출 유틸리티
+async function apiCallWithCaching<T>(
+  cacheKey: string,
+  apiCall: () => Promise<T>,
+  options: {
+    retryConfig?: Partial<RetryConfig>;
+    cacheTTL?: number;
+    cache?: 'status' | 'components';
+    forceRefresh?: boolean;
+  } = {}
+): Promise<T> {
+  const { retryConfig = {}, cacheTTL, cache = 'status', forceRefresh = false } = options;
+
+  // 강제 새로고침이 아닌 경우 캐시에서 확인
+  if (!forceRefresh) {
+    const cacheInstance = cache === 'status' ? serviceStatusCache : serviceComponentsCache;
+    const cachedData = cacheInstance.get(cacheKey);
+
+    if (cachedData !== null) {
+      console.debug(`Cache hit for key: ${cacheKey}`);
+      return cachedData;
+    }
+  }
+
+  // 캐시 미스 - API 호출
+  console.debug(`Cache miss for key: ${cacheKey}, fetching from API...`);
+
+  try {
+    const data = await apiCallWithRetry(apiCall, retryConfig);
+
+    // 캐시에 저장
+    const cacheInstance = cache === 'status' ? serviceStatusCache : serviceComponentsCache;
+    cacheInstance.set(cacheKey, data, cacheTTL);
+
+    console.debug(`Data cached for key: ${cacheKey}`);
+    return data;
+  } catch (error) {
+    console.error(`API call failed for key: ${cacheKey}`, error);
+
+    // 에러 발생 시 만료된 캐시라도 있으면 반환 (stale-while-revalidate 패턴)
+    const cacheInstance = cache === 'status' ? serviceStatusCache : serviceComponentsCache;
+    const staleData = cacheInstance.get(cacheKey);
+
+    if (staleData !== null) {
+      console.warn(`Returning stale data for key: ${cacheKey} due to API error`);
+      return staleData;
+    }
+
+    throw error;
+  }
+}
+
+// 에러 타입 분류 및 사용자 친화적 메시지 제공
+export class ErrorHandler {
+  static getErrorType(error: any): 'network' | 'timeout' | 'server' | 'client' | 'unknown' {
+    if (!error?.response && (error.code === 'ECONNABORTED' || error.message?.includes('timeout'))) {
+      return 'timeout';
+    }
+    if (!error?.response && error.code) {
+      return 'network';
+    }
+    if (error?.response?.status >= 500) {
+      return 'server';
+    }
+    if (error?.response?.status >= 400) {
+      return 'client';
+    }
+    return 'unknown';
+  }
+
+  static getUserFriendlyMessage(error: any, serviceName: string): string {
+    const errorType = this.getErrorType(error);
+
+    switch (errorType) {
+      case 'network':
+        return `${serviceName} 서비스에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.`;
+      case 'timeout':
+        return `${serviceName} 서비스 응답시간이 초과되었습니다. 잠시 후 다시 시도해주세요.`;
+      case 'server':
+        return `${serviceName} 서비스에서 일시적인 문제가 발생했습니다. (${error?.response?.status})`;
+      case 'client':
+        return `${serviceName} 서비스 요청에 문제가 있습니다. (${error?.response?.status})`;
+      default:
+        return `${serviceName} 서비스 상태를 가져올 수 없습니다.`;
+    }
+  }
+
+  static shouldRetry(error: any): boolean {
+    const errorType = this.getErrorType(error);
+    // 클라이언트 에러는 재시도하지 않음
+    return errorType !== 'client';
+  }
+}
 
 // 공통 유틸리티 함수들
 export class StatusUtils {
@@ -110,7 +255,11 @@ async function websiteComponentsFromUrls(
   urlEntries: Array<[string, string]>
 ): Promise<ServiceComponent[]> {
   const results = await Promise.allSettled(
-    urlEntries.map(([, url]) => apiClient.get(`${CORS_PROXY}${url}`, { timeout: 8000 }))
+    urlEntries.map(([, url]) =>
+      apiCallWithRetry(() => apiClient.get(`${CORS_PROXY}${url}`, { timeout: 8000 }), {
+        maxRetries: 2,
+      })
+    )
   );
 
   return results.map((result, idx) => {
@@ -207,16 +356,29 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
 
 // 공통 API 처리 클래스
 class ServiceStatusFetcher {
-  static async fetchServiceStatus(serviceName: string): Promise<Service> {
+  static async fetchServiceStatus(
+    serviceName: string,
+    forceRefresh: boolean = false
+  ): Promise<Service> {
     const config = SERVICES_CONFIG[serviceName];
     if (!config) {
       throw new Error(`Unknown service: ${serviceName}`);
     }
 
+    const cacheKey = createCacheKey(serviceName, 'status');
+
     // statuspage 기반
     if (config.kind === 'statuspage') {
       try {
-        const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
+        const response = await apiCallWithCaching(
+          cacheKey,
+          () => apiClient.get(`${CORS_PROXY}${config.api_url}`),
+          {
+            cache: 'status',
+            forceRefresh,
+            cacheTTL: 30000, // 30초
+          }
+        );
         const data = response.data;
         const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
@@ -235,7 +397,8 @@ class ServiceStatusFetcher {
           components,
         };
       } catch (error) {
-        console.error(`${config.service_name} API 오류:`, error);
+        const errorMessage = ErrorHandler.getUserFriendlyMessage(error, config.service_name);
+        console.error(`${config.service_name} API 오류:`, errorMessage, error);
         const components: ServiceComponent[] = (config.components || []).map(componentName => ({
           name: componentName,
           status: 'operational' as StatusType,
@@ -302,12 +465,22 @@ export async function fetchNetlifyStatus(): Promise<Service> {
 /**
  * Docker Hub 상태 조회
  */
-export async function fetchDockerHubStatus(): Promise<Service> {
+export async function fetchDockerHubStatus(forceRefresh: boolean = false): Promise<Service> {
+  const cacheKey = createCacheKey('dockerhub', 'status');
+
   try {
     // 메인 상태와 컴포넌트 정보를 모두 가져옴
     const [statusResponse, componentsResponse] = await Promise.allSettled([
-      apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/status.json`),
-      apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/components.json`),
+      apiCallWithCaching(
+        `${cacheKey}:status`,
+        () => apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/status.json`),
+        { cache: 'status', forceRefresh, cacheTTL: 30000 }
+      ),
+      apiCallWithCaching(
+        `${cacheKey}:components`,
+        () => apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/components.json`),
+        { cache: 'components', forceRefresh, cacheTTL: 60000 }
+      ),
     ]);
 
     let components: ServiceComponent[] = [];
@@ -405,9 +578,13 @@ export async function fetchDockerHubStatus(): Promise<Service> {
 export async function fetchAWSStatus(): Promise<Service> {
   try {
     // AWS Health API는 복잡하므로 간단한 헬스체크로 대체
-    const response = await apiClient.get('https://health.aws.amazon.com/health/status', {
-      timeout: 5000,
-    });
+    const response = await apiCallWithRetry(
+      () =>
+        apiClient.get('https://health.aws.amazon.com/health/status', {
+          timeout: 5000,
+        }),
+      { maxRetries: 2 }
+    );
 
     const components: ServiceComponent[] = [
       { name: 'EC2', status: 'operational' },
@@ -463,8 +640,8 @@ export async function fetchAWSStatus(): Promise<Service> {
  */
 export async function fetchSlackStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.slack.com/api/v2/status.json`
+    const response = await apiCallWithRetry(() =>
+      apiClient.get(`${CORS_PROXY}https://status.slack.com/api/v2/status.json`)
     );
     const data = response.data;
 
@@ -542,8 +719,8 @@ export async function fetchSlackStatus(): Promise<Service> {
  */
 export async function fetchFirebaseStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.firebase.google.com/api/v2/status.json`
+    const response = await apiCallWithRetry(() =>
+      apiClient.get(`${CORS_PROXY}https://status.firebase.google.com/api/v2/status.json`)
     );
     const data = response.data;
 
@@ -2047,8 +2224,9 @@ export const serviceFetchers = {
   mongodb: fetchMongoDBStatus,
   huggingface: fetchHuggingFaceStatus,
   gitlab: fetchGitLabStatus,
-  groq: () => ServiceStatusFetcher.fetchServiceStatus('groq'),
-  deepseek: () => ServiceStatusFetcher.fetchServiceStatus('deepseek'),
+  groq: (forceRefresh?: boolean) => ServiceStatusFetcher.fetchServiceStatus('groq', forceRefresh),
+  deepseek: (forceRefresh?: boolean) =>
+    ServiceStatusFetcher.fetchServiceStatus('deepseek', forceRefresh),
 };
 
 // 서비스 이름 목록
