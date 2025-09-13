@@ -6,17 +6,12 @@ interface AdFitBannerProps {
 
 // 데스크탑 광고 단위 ID 배열 (랜덤 선택용)
 const DESKTOP_AD_UNITS = [
-  "DAN-wiu4St0eJQqPsPgL",  // 기존 광고
-  "DAN-mRar8sTIb3L1gdaF",  // 새 광고
-  "DAN-LgLCtIohiUCMNr6C",  // 추가 광고
-  "DAN-i6g8kDkBxhkToY6h"   // 추가 광고 2
+  "DAN-By8Vld66HSdvGce9",  // 새로운 PC용 광고
 ];
 
 // 모바일 광고 단위 ID 배열 (랜덤 선택용)
 const MOBILE_AD_UNITS = [
-  "DAN-sNZd9e7TZodLtrDT",  // 기존 광고
-  "DAN-v6ChcTxUVi66S0di",  // 새 광고 1
-  "DAN-DEJz8fePItXddKYg"   // 새 광고 2
+  "DAN-D8eIi2s4ypXDbkH6",  // 새로운 모바일용 광고
 ];
 
 const AdFitBanner: React.FC<AdFitBannerProps> = ({ onNoAd }) => {
