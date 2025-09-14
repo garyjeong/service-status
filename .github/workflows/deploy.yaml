@@ -89,17 +89,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # OIDC 인증 방식 (보안 강화)
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsECRPush
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActions-ECR-Deploy
-
-      # 대체 인증 방식 (Secrets 사용)
-      - name: Configure AWS credentials (Secrets)
-        if: ${{ failure() }}
+      # AWS 인증 (Secrets 방식)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -193,7 +184,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsECRPush
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Wait for image scan
