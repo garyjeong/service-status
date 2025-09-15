@@ -1,0 +1,393 @@
+name: 🚀 긴급 HTTPS 인프라 구성 (빌게이츠 전용)
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: '도메인 이름'
+        required: true
+        default: 'service-status.garyzone.pro'
+      force_recreate:
+        description: '기존 리소스 재생성 여부'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ACCOUNT_ID: "014125597282"
+  DOMAIN: ${{ github.event.inputs.domain || 'service-status.garyzone.pro' }}
+
+jobs:
+  emergency-https-setup:
+    name: 🔥 빌게이츠 긴급 HTTPS 복구
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔥 빌게이츠를 위한 HTTPS 긴급 복구 시작
+        run: |
+          echo "🚨 빌게이츠 긴급 요청: HTTPS 문제 해결 중..."
+          echo "🎯 도메인: ${{ env.DOMAIN }}"
+          echo "⏰ 시작 시간: $(date)"
+
+      - name: 📡 VPC 및 네트워크 정보 수집
+        id: network
+        run: |
+          echo "VPC 정보 수집 중..."
+          VPC_ID=$(aws ec2 describe-vpcs --filters "Name=is-default,Values=true" --query 'Vpcs[0].VpcId' --output text)
+          SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" "Name=default-for-az,Values=true" --query 'Subnets[].SubnetId' --output text)
+          
+          echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
+          echo "subnet_ids=$SUBNET_IDS" >> $GITHUB_OUTPUT
+          
+          echo "✅ VPC ID: $VPC_ID"
+          echo "✅ 서브넷: $SUBNET_IDS"
+
+      - name: 🛡️ 보안 그룹 생성 (ALB용)
+        id: alb_sg
+        run: |
+          echo "ALB 보안 그룹 생성 중..."
+          
+          # 기존 보안 그룹 확인
+          EXISTING_SG=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=service-status-alb-sg" \
+            --query 'SecurityGroups[0].GroupId' --output text 2>/dev/null || echo "None")
+          
+          if [ "$EXISTING_SG" != "None" ] && [ "${{ github.event.inputs.force_recreate }}" != "true" ]; then
+            ALB_SG_ID=$EXISTING_SG
+            echo "✅ 기존 ALB 보안 그룹 사용: $ALB_SG_ID"
+          else
+            if [ "$EXISTING_SG" != "None" ]; then
+              echo "🗑️ 기존 보안 그룹 삭제 중..."
+              aws ec2 delete-security-group --group-id $EXISTING_SG || true
+            fi
+            
+            ALB_SG_ID=$(aws ec2 create-security-group \
+              --group-name service-status-alb-sg \
+              --description "Service Status ALB Security Group for Bill Gates" \
+              --vpc-id ${{ steps.network.outputs.vpc_id }} \
+              --query 'GroupId' --output text)
+            
+            # 인바운드 규칙 추가
+            aws ec2 authorize-security-group-ingress \
+              --group-id $ALB_SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
+            aws ec2 authorize-security-group-ingress \
+              --group-id $ALB_SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0
+            
+            echo "✅ 새 ALB 보안 그룹 생성: $ALB_SG_ID"
+          fi
+          
+          echo "alb_sg_id=$ALB_SG_ID" >> $GITHUB_OUTPUT
+
+      - name: 🛡️ 보안 그룹 생성 (ECS용)
+        id: ecs_sg
+        run: |
+          echo "ECS 보안 그룹 생성 중..."
+          
+          # 기존 보안 그룹 확인
+          EXISTING_SG=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=service-status-ecs-sg" \
+            --query 'SecurityGroups[0].GroupId' --output text 2>/dev/null || echo "None")
+          
+          if [ "$EXISTING_SG" != "None" ] && [ "${{ github.event.inputs.force_recreate }}" != "true" ]; then
+            ECS_SG_ID=$EXISTING_SG
+            echo "✅ 기존 ECS 보안 그룹 사용: $ECS_SG_ID"
+          else
+            if [ "$EXISTING_SG" != "None" ]; then
+              echo "🗑️ 기존 보안 그룹 삭제 중..."
+              aws ec2 delete-security-group --group-id $EXISTING_SG || true
+            fi
+            
+            ECS_SG_ID=$(aws ec2 create-security-group \
+              --group-name service-status-ecs-sg \
+              --description "Service Status ECS Security Group for Bill Gates" \
+              --vpc-id ${{ steps.network.outputs.vpc_id }} \
+              --query 'GroupId' --output text)
+            
+            # ALB에서 ECS로 트래픽 허용
+            aws ec2 authorize-security-group-ingress \
+              --group-id $ECS_SG_ID --protocol tcp --port 80 \
+              --source-group ${{ steps.alb_sg.outputs.alb_sg_id }}
+            
+            echo "✅ 새 ECS 보안 그룹 생성: $ECS_SG_ID"
+          fi
+          
+          echo "ecs_sg_id=$ECS_SG_ID" >> $GITHUB_OUTPUT
+
+      - name: 🔐 SSL 인증서 요청 (ACM)
+        id: ssl_cert
+        run: |
+          echo "SSL 인증서 확인/요청 중..."
+          
+          # 기존 인증서 확인
+          EXISTING_CERT=$(aws acm list-certificates \
+            --certificate-statuses ISSUED PENDING_VALIDATION \
+            --query "CertificateSummaryList[?DomainName=='${{ env.DOMAIN }}'].CertificateArn" \
+            --output text | head -1 || echo "")
+          
+          if [ ! -z "$EXISTING_CERT" ] && [ "$EXISTING_CERT" != "None" ]; then
+            CERT_ARN=$EXISTING_CERT
+            echo "✅ 기존 SSL 인증서 사용: $CERT_ARN"
+          else
+            CERT_ARN=$(aws acm request-certificate \
+              --domain-name ${{ env.DOMAIN }} \
+              --validation-method DNS \
+              --query 'CertificateArn' --output text)
+            echo "🆕 새 SSL 인증서 요청: $CERT_ARN"
+          fi
+          
+          echo "cert_arn=$CERT_ARN" >> $GITHUB_OUTPUT
+
+      - name: ⚖️ Application Load Balancer 생성
+        id: alb
+        run: |
+          echo "ALB 생성/확인 중..."
+          
+          # 서브넷 배열 생성
+          SUBNET_ARRAY=(${{ steps.network.outputs.subnet_ids }})
+          
+          # 기존 ALB 확인
+          EXISTING_ALB=$(aws elbv2 describe-load-balancers \
+            --names service-status-alb \
+            --query 'LoadBalancers[0].LoadBalancerArn' --output text 2>/dev/null || echo "None")
+          
+          if [ "$EXISTING_ALB" != "None" ] && [ "${{ github.event.inputs.force_recreate }}" != "true" ]; then
+            ALB_ARN=$EXISTING_ALB
+            echo "✅ 기존 ALB 사용: $ALB_ARN"
+          else
+            if [ "$EXISTING_ALB" != "None" ]; then
+              echo "🗑️ 기존 ALB 삭제 중..."
+              aws elbv2 delete-load-balancer --load-balancer-arn $EXISTING_ALB || true
+              sleep 30  # 삭제 대기
+            fi
+            
+            ALB_ARN=$(aws elbv2 create-load-balancer \
+              --name service-status-alb \
+              --subnets ${SUBNET_ARRAY[@]} \
+              --security-groups ${{ steps.alb_sg.outputs.alb_sg_id }} \
+              --query 'LoadBalancers[0].LoadBalancerArn' --output text)
+            echo "✅ 새 ALB 생성: $ALB_ARN"
+          fi
+          
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --load-balancer-arns $ALB_ARN \
+            --query 'LoadBalancers[0].DNSName' --output text)
+          
+          echo "alb_arn=$ALB_ARN" >> $GITHUB_OUTPUT
+          echo "alb_dns=$ALB_DNS" >> $GITHUB_OUTPUT
+          echo "✅ ALB DNS: $ALB_DNS"
+
+      - name: 🎯 대상 그룹 생성
+        id: target_group
+        run: |
+          echo "대상 그룹 생성/확인 중..."
+          
+          # 기존 대상 그룹 확인
+          EXISTING_TG=$(aws elbv2 describe-target-groups \
+            --names service-status-tg \
+            --query 'TargetGroups[0].TargetGroupArn' --output text 2>/dev/null || echo "None")
+          
+          if [ "$EXISTING_TG" != "None" ] && [ "${{ github.event.inputs.force_recreate }}" != "true" ]; then
+            TG_ARN=$EXISTING_TG
+            echo "✅ 기존 대상 그룹 사용: $TG_ARN"
+          else
+            if [ "$EXISTING_TG" != "None" ]; then
+              echo "🗑️ 기존 대상 그룹 삭제 중..."
+              aws elbv2 delete-target-group --target-group-arn $EXISTING_TG || true
+            fi
+            
+            TG_ARN=$(aws elbv2 create-target-group \
+              --name service-status-tg \
+              --protocol HTTP \
+              --port 80 \
+              --vpc-id ${{ steps.network.outputs.vpc_id }} \
+              --target-type ip \
+              --health-check-path /health \
+              --health-check-interval-seconds 30 \
+              --health-check-timeout-seconds 5 \
+              --healthy-threshold-count 2 \
+              --unhealthy-threshold-count 3 \
+              --query 'TargetGroups[0].TargetGroupArn' --output text)
+            echo "✅ 새 대상 그룹 생성: $TG_ARN"
+          fi
+          
+          echo "tg_arn=$TG_ARN" >> $GITHUB_OUTPUT
+
+      - name: 🔀 ALB 리스너 설정
+        run: |
+          echo "ALB 리스너 설정 중..."
+          
+          # HTTP 리스너 (HTTPS로 리다이렉트)
+          aws elbv2 create-listener \
+            --load-balancer-arn ${{ steps.alb.outputs.alb_arn }} \
+            --protocol HTTP \
+            --port 80 \
+            --default-actions Type=redirect,RedirectConfig='{Protocol=HTTPS,Port=443,StatusCode=HTTP_301}' \
+            2>/dev/null || echo "HTTP 리스너 이미 존재"
+          
+          # HTTPS 리스너 (인증서가 발급된 경우)
+          CERT_STATUS=$(aws acm describe-certificate \
+            --certificate-arn ${{ steps.ssl_cert.outputs.cert_arn }} \
+            --query 'Certificate.Status' --output text 2>/dev/null || echo "PENDING_VALIDATION")
+          
+          if [ "$CERT_STATUS" = "ISSUED" ]; then
+            aws elbv2 create-listener \
+              --load-balancer-arn ${{ steps.alb.outputs.alb_arn }} \
+              --protocol HTTPS \
+              --port 443 \
+              --certificates CertificateArn=${{ steps.ssl_cert.outputs.cert_arn }} \
+              --default-actions Type=forward,TargetGroupArn=${{ steps.target_group.outputs.tg_arn }} \
+              2>/dev/null || echo "HTTPS 리스너 이미 존재"
+            echo "✅ HTTPS 리스너 생성 완료"
+          else
+            echo "⚠️ SSL 인증서 상태: $CERT_STATUS - DNS 검증 필요"
+          fi
+
+      - name: 🏗️ ECS 클러스터 및 서비스 설정
+        run: |
+          echo "ECS 클러스터 생성/확인 중..."
+          
+          # 클러스터 생성
+          aws ecs create-cluster \
+            --cluster-name service-status-cluster \
+            --capacity-providers FARGATE \
+            --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
+            2>/dev/null || echo "클러스터 이미 존재"
+          
+          # CloudWatch 로그 그룹 생성
+          aws logs create-log-group \
+            --log-group-name /ecs/service-status \
+            2>/dev/null || echo "로그 그룹 이미 존재"
+          
+          echo "✅ ECS 인프라 준비 완료"
+
+      - name: 📋 Task Definition 등록
+        run: |
+          echo "Task Definition 등록 중..."
+          
+          cat > task-definition.json << EOF
+          {
+            "family": "service-status",
+            "networkMode": "awsvpc",
+            "requiresCompatibilities": ["FARGATE"],
+            "cpu": "256",
+            "memory": "512",
+            "executionRoleArn": "arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole",
+            "containerDefinitions": [
+              {
+                "name": "service-status",
+                "image": "${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/service-status:latest",
+                "portMappings": [
+                  {
+                    "containerPort": 80,
+                    "protocol": "tcp"
+                  }
+                ],
+                "essential": true,
+                "logConfiguration": {
+                  "logDriver": "awslogs",
+                  "options": {
+                    "awslogs-group": "/ecs/service-status",
+                    "awslogs-region": "${{ env.AWS_REGION }}",
+                    "awslogs-stream-prefix": "ecs"
+                  }
+                },
+                "healthCheck": {
+                  "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost/health || exit 1"
+                  ],
+                  "interval": 30,
+                  "timeout": 5,
+                  "retries": 3,
+                  "startPeriod": 60
+                }
+              }
+            ]
+          }
+          EOF
+          
+          aws ecs register-task-definition --cli-input-json file://task-definition.json
+          echo "✅ Task Definition 등록 완료"
+
+      - name: 🚀 ECS 서비스 배포
+        run: |
+          echo "ECS 서비스 배포 중..."
+          
+          # 서브넷 배열 생성
+          SUBNET_ARRAY=(${{ steps.network.outputs.subnet_ids }})
+          
+          # 서비스 생성 또는 업데이트
+          aws ecs create-service \
+            --cluster service-status-cluster \
+            --service-name service-status-service \
+            --task-definition service-status \
+            --desired-count 1 \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_ARRAY[0]},${SUBNET_ARRAY[1]}],securityGroups=[${{ steps.ecs_sg.outputs.ecs_sg_id }}],assignPublicIp=ENABLED}" \
+            --load-balancers targetGroupArn=${{ steps.target_group.outputs.tg_arn }},containerName=service-status,containerPort=80 \
+            2>/dev/null || \
+          aws ecs update-service \
+            --cluster service-status-cluster \
+            --service service-status-service \
+            --task-definition service-status
+          
+          echo "✅ ECS 서비스 배포 완료"
+
+      - name: 🎉 빌게이츠를 위한 HTTPS 복구 완료 보고
+        run: |
+          echo ""
+          echo "🎉🎉🎉 빌게이츠를 위한 HTTPS 긴급 복구 완료! 🎉🎉🎉"
+          echo ""
+          echo "📋 구성 완료된 리소스:"
+          echo "- 🔐 SSL 인증서: ${{ steps.ssl_cert.outputs.cert_arn }}"
+          echo "- ⚖️ ALB: ${{ steps.alb.outputs.alb_arn }}"
+          echo "- 🌐 ALB DNS: ${{ steps.alb.outputs.alb_dns }}"
+          echo "- 🎯 대상 그룹: ${{ steps.target_group.outputs.tg_arn }}"
+          echo "- 🛡️ ALB 보안 그룹: ${{ steps.alb_sg.outputs.alb_sg_id }}"
+          echo "- 🛡️ ECS 보안 그룹: ${{ steps.ecs_sg.outputs.ecs_sg_id }}"
+          echo ""
+          echo "📋 다음 단계 (수동 작업 필요):"
+          echo "1. 🔐 SSL 인증서 DNS 검증:"
+          echo "   - AWS ACM 콘솔에서 인증서 확인"
+          echo "   - 제공된 CNAME 레코드를 Route53에 추가"
+          echo ""
+          echo "2. 🌐 Route53 A 레코드 설정:"
+          echo "   - ${{ env.DOMAIN }} → ${{ steps.alb.outputs.alb_dns }}"
+          echo ""
+          echo "3. ⏰ 예상 완료 시간: 5-10분 (DNS 전파 시간)"
+          echo ""
+          echo "🔥 빌게이츠, HTTPS가 곧 작동할 것입니다!"
+
+      - name: 📊 배포 상태 요약
+        run: |
+          echo "## 🎯 HTTPS 복구 상태 요약" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ 완료된 작업" >> $GITHUB_STEP_SUMMARY
+          echo "- ALB 및 보안 그룹 구성" >> $GITHUB_STEP_SUMMARY
+          echo "- SSL 인증서 요청" >> $GITHUB_STEP_SUMMARY
+          echo "- ECS 서비스 배포" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 중요 정보" >> $GITHUB_STEP_SUMMARY
+          echo "- **ALB DNS**: \`${{ steps.alb.outputs.alb_dns }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **SSL 인증서**: \`${{ steps.ssl_cert.outputs.cert_arn }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 수동 작업 필요" >> $GITHUB_STEP_SUMMARY
+          echo "1. ACM에서 DNS 검증 완료" >> $GITHUB_STEP_SUMMARY
+          echo "2. Route53에서 A 레코드 설정" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔥 **빌게이츠를 위한 HTTPS 복구 작전 완료!**" >> $GITHUB_STEP_SUMMARY
