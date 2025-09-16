@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Settings } from 'lucide-react';
+import { RefreshCw, Settings, Sun, Moon } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import LanguageSelector from './LanguageSelector';
 import SortDropdown from './SortDropdown';
@@ -19,6 +19,8 @@ interface HeaderProps {
   sortType: SortType;
   isSortDropdownOpen: boolean;
   isLanguageDropdownOpen: boolean;
+  statusFilter: 'degraded_performance' | 'major_outage' | null;
+  theme: 'light' | 'dark';
   onRefresh: () => void;
   onFilterOpen: () => void;
   onSortChange: (sortType: SortType) => void;
@@ -26,6 +28,8 @@ interface HeaderProps {
   onLanguageChange: (language: Language) => void;
   onLanguageDropdownToggle: () => void;
   onTitleClick: () => void;
+  onStatusFilter: (status: 'degraded_performance' | 'major_outage') => void;
+  onThemeToggle: () => void;
   translations: {
     refresh: string;
     filter: string;
@@ -48,6 +52,8 @@ const Header: React.FC<HeaderProps> = ({
   sortType,
   isSortDropdownOpen,
   isLanguageDropdownOpen,
+  statusFilter,
+  theme,
   onRefresh,
   onFilterOpen,
   onSortChange,
@@ -55,139 +61,28 @@ const Header: React.FC<HeaderProps> = ({
   onLanguageChange,
   onLanguageDropdownToggle,
   onTitleClick,
+  onStatusFilter,
+  onThemeToggle,
   translations
 }) => {
-  // 진행률 계산
-  const totalServices = stats.operational + stats.degraded + stats.outage;
-  const operationalPercentage = totalServices > 0 ? (stats.operational / totalServices) * 100 : 100;
+  // 🔥 빌게이츠 요청: 진행률 계산 제거 (더 이상 사용하지 않음)
 
   return (
-    <header className="header-premium sticky top-0 z-50">
+    <header className="header-premium header-section sticky top-0 z-50">
       <div className="container mx-auto px-4">
         {/* 데스크톱 헤더 레이아웃 */}
         <div className="hidden md:flex justify-between items-center py-4">
           {/* 좌측: 서비스 제목 */}
           <h1 
-            className="desktop-title font-bold text-gradient cursor-pointer"
-            onClick={onTitleClick}
-            data-text={title}
-            title="클릭하여 특별한 효과 보기!"
+            className="desktop-title"
           >
             {title}
           </h1>
           
           {/* 우측: 상태 표시 + 버튼들 */}
           <div className="flex items-center gap-4">
-            {/* 프리미엄 상태 인디케이터 */}
+            {/* 🔥 빌게이츠 요청: 퍼센트 표기 영역 완전 삭제 */}
             <div className="flex items-center gap-4">
-              {/* 진행률 링 차트 */}
-              <motion.div 
-                className="progress-ring-container" 
-                title={`${operationalPercentage.toFixed(1)}% 정상 운영`}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ 
-                  scale: 1, 
-                  opacity: 1,
-                  transition: {
-                    duration: 0.6,
-                    ease: [0.25, 0.46, 0.45, 0.94]
-                  }
-                }}
-                whileHover={{
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-              >
-                <motion.svg 
-                  className="progress-ring" 
-                  width="48" 
-                  height="48"
-                  animate={isAnyLoading ? {
-                    rotate: 360,
-                    transition: {
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear"
-                    }
-                  } : {}}
-                >
-                  <circle
-                    className="progress-ring-background"
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    fill="transparent"
-                    stroke="rgba(255, 255, 255, 0.1)"
-                    strokeWidth="4"
-                  />
-                  <motion.circle
-                    className="progress-ring-progress"
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    fill="transparent"
-                    stroke="var(--mint-primary)"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    style={{
-                      strokeDasharray: `${2 * Math.PI * 20}`,
-                      transform: 'rotate(-90deg)',
-                      transformOrigin: '24px 24px'
-                    }}
-                    initial={{
-                      strokeDashoffset: `${2 * Math.PI * 20}`
-                    }}
-                    animate={{
-                      strokeDashoffset: `${2 * Math.PI * 20 * (1 - operationalPercentage / 100)}`,
-                      transition: {
-                        duration: 1.2,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                        delay: 0.3
-                      }
-                    }}
-                  />
-                  <motion.text
-                    x="24"
-                    y="28"
-                    textAnchor="middle"
-                    className="progress-ring-text"
-                    fill="var(--mint-primary)"
-                    fontSize="10"
-                    fontWeight="600"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ 
-                      opacity: 1, 
-                      scale: 1,
-                      transition: {
-                        duration: 0.6,
-                        delay: 0.8,
-                        ease: [0.25, 0.46, 0.45, 0.94]
-                      }
-                    }}
-                  >
-                    {Math.round(operationalPercentage)}%
-                  </motion.text>
-                </motion.svg>
-                <AnimatePresence>
-                  {isAnyLoading && (
-                    <motion.div 
-                      className="progress-ring-pulse"
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ 
-                        scale: [1, 1.2, 1], 
-                        opacity: [0.6, 0.2, 0.6],
-                        transition: {
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }
-                      }}
-                      exit={{ scale: 0, opacity: 0 }}
-                    />
-                  )}
-                </AnimatePresence>
-              </motion.div>
-
               {/* 상태 배지들 */}
               <div className="flex items-center gap-3 text-sm">
                 <StatusBadge
@@ -214,6 +109,8 @@ const Header: React.FC<HeaderProps> = ({
                 <StatusBadge
                   status="degraded_performance"
                   count={stats.degraded}
+                  onClick={() => onStatusFilter('degraded_performance')}
+                  isSelected={statusFilter === 'degraded_performance'}
                   translations={{
                     operational: translations.operational,
                     degraded: translations.degradedPerformance,
@@ -224,6 +121,8 @@ const Header: React.FC<HeaderProps> = ({
                 <StatusBadge
                   status="major_outage"
                   count={stats.outage}
+                  onClick={() => onStatusFilter('major_outage')}
+                  isSelected={statusFilter === 'major_outage'}
                   translations={{
                     operational: translations.operational,
                     degraded: translations.degradedPerformance,
@@ -293,6 +192,23 @@ const Header: React.FC<HeaderProps> = ({
               }}
             />
           
+            {/* 테마 토글 버튼 */}
+            <motion.button
+              onClick={onThemeToggle}
+              className="btn-icon focus-ring hover-lift"
+              aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              whileHover={{ 
+                scale: 1.05,
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ 
+                scale: 0.95,
+                transition: { duration: 0.1 }
+              }}
+            >
+              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </motion.button>
+
             {/* 언어 선택 드롭다운 */}
             <LanguageSelector
               language={language}
@@ -308,10 +224,7 @@ const Header: React.FC<HeaderProps> = ({
           {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
           <div className="flex justify-between items-center mb-3">
             <h1 
-              className="text-2xl font-bold text-gradient cursor-pointer"
-              onClick={onTitleClick}
-              data-text={title}
-              title="클릭하여 특별한 효과 보기!"
+              className="desktop-title"
             >
               {title}
             </h1>
@@ -329,16 +242,30 @@ const Header: React.FC<HeaderProps> = ({
                 <span className="text-green-400 font-medium text-xs">{stats.operational}</span>
               </div>
               {stats.degraded > 0 && (
-                <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20">
+                <button 
+                  className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20 cursor-pointer hover:scale-105 hover:bg-yellow-500/20 transition-all duration-200 active:scale-95"
+                  onClick={() => onStatusFilter('degraded_performance')}
+                  style={{
+                    backgroundColor: statusFilter === 'degraded_performance' ? 'rgba(234, 179, 8, 0.3)' : undefined,
+                    borderColor: statusFilter === 'degraded_performance' ? 'rgba(234, 179, 8, 0.5)' : undefined
+                  }}
+                >
                   <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                   <span className="text-yellow-400 font-medium text-xs">{stats.degraded}</span>
-                </div>
+                </button>
               )}
               {stats.outage > 0 && (
-                <div className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+                <button 
+                  className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20 cursor-pointer hover:scale-105 hover:bg-red-500/20 transition-all duration-200 active:scale-95"
+                  onClick={() => onStatusFilter('major_outage')}
+                  style={{
+                    backgroundColor: statusFilter === 'major_outage' ? 'rgba(239, 68, 68, 0.3)' : undefined,
+                    borderColor: statusFilter === 'major_outage' ? 'rgba(239, 68, 68, 0.5)' : undefined
+                  }}
+                >
                   <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
                   <span className="text-red-400 font-medium text-xs">{stats.outage}</span>
-                </div>
+                </button>
               )}
             </div>
           </div>
@@ -378,6 +305,15 @@ const Header: React.FC<HeaderProps> = ({
                 isMobile={true}
               />
               
+              {/* 테마 토글 버튼 - 모바일 */}
+              <button
+                onClick={onThemeToggle}
+                className="btn-icon focus-ring hover-lift"
+                aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              >
+                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              </button>
+
               {/* 새로고침 버튼 */}
               <button
                 onClick={onRefresh}

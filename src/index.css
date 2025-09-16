@@ -1,96 +1,174 @@
 @import "tailwindcss";
 
-/* ✨ Spoqa Han Sans Neo 폰트 적용 */
+/* ✨ 프리미엄 폰트 시스템 로드 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css);
 
-/* 🎨 프리미엄 그라디언트 & 글래스 컬러 팔레트 */
+/* 🎨 Clash Display 대안으로 Inter 사용 (더 안정적) */
+
+/* 🎨 대시보드 강조 색상 팔레트 - 테마별 시스템 */
 :root {
-  /* === 메인 컬러 팔레트 === */
-  --mint-primary: #2EFFB4;      /* 메인 민트 - 버튼, 강조요소 */
-  --black-primary: #030303;     /* 블랙 - 텍스트, 상단바 */
-  --gray-secondary: #EDECE8;    /* 그레이 - 서브텍스트, 구분선 */
-  --green-success: #00A86B;     /* 딥그린 - 정상상태 */
-  --mint-light: #D1F7E3;       /* 연민트 - 카드배경 */
-  
-  /* === 배경 시스템 === */
-  --bg-primary: #0A0A0A;        /* 메인 배경 */
-  --bg-secondary: #141414;      /* 카드 배경 */
-  --bg-tertiary: #1A1A1A;      /* 네비게이션, 헤더 배경 */
-  --bg-accent: #1F1F1F;        /* 액센트 배경 */
-  
-  /* === 프리미엄 그라디언트 시스템 === */
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  --gradient-danger: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  --gradient-mesh: radial-gradient(circle at 20% 80%, rgba(46, 255, 180, 0.05) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 20%, rgba(103, 126, 234, 0.04) 0%, transparent 50%),
-                   radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.03) 0%, transparent 50%);
-  
-  /* === 글래스모피즘 시스템 === */
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-bg-strong: rgba(255, 255, 255, 0.12);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-  --glass-shadow-lg: 0 25px 50px rgba(31, 38, 135, 0.25);
-  --glass-backdrop: blur(12px);
-  --glass-backdrop-strong: blur(20px);
-  
-  /* === 타이포그래피 시스템 === */
-  --font-display: 'Clash Display', 'Inter Variable', 'Spoqa Han Sans Neo', system-ui;
-  --font-body: 'Inter Variable', 'Spoqa Han Sans Neo', system-ui;
-  --font-code: 'JetBrains Mono', 'SF Mono', monospace;
-  
-  /* === 상태 컬러 === */
-  --status-operational: 0 168 107;    /* #00A86B - 딥그린 */
-  --status-degraded: 230 165 50;      /* #E6A532 - 고급스러운 골드 */
-  --status-partial-outage: 214 48 49; /* #D63031 - 절제된 레드 */
-  --status-major-outage: 214 48 49;   /* #D63031 - 절제된 레드 */
-  --status-maintenance: 46 255 180;   /* #2EFFB4 - 민트 */
-  --status-unknown: 237 236 232;      /* #EDECE8 - 그레이 */
-  
-  /* === 기존 Tailwind 호환 변수들 === */
-  --background: 10 10 10;         /* #0A0A0A */
-  --foreground: 237 236 232;      /* #EDECE8 */
-  --card: 20 20 20;              /* #141414 */
-  --card-foreground: 237 236 232;
-  --popover: 20 20 20;
-  --popover-foreground: 237 236 232;
-  --primary: 46 255 180;          /* #2EFFB4 */
-  --primary-foreground: 3 3 3;    /* #030303 */
-  --secondary: 26 26 26;          /* #1A1A1A */
-  --secondary-foreground: 237 236 232;
-  --muted: 31 31 31;             /* #1F1F1F */
-  --muted-foreground: 180 180 180;
-  --accent: 26 26 26;
-  --accent-foreground: 237 236 232;
-  --destructive: 214 48 49;       /* #D63031 */
-  --destructive-foreground: 237 236 232;
-  --border: 31 31 31;            /* #1F1F1F */
-  --input: 31 31 31;
-  --ring: 46 255 180;            /* #2EFFB4 */
-  --radius: 1rem;                /* 16px - 더 큰 border-radius */
+  /* === 공통 강조 색상 === */
+  --primary-accent: #8B5FFE;     /* 🎨 드롭다운 보라색 - 메인 강조 */
+  --success-accent: #10B981;     /* 그린 - 성공 상태만 */
+  --warning-accent: #F59E0B;     /* 옐로우 - 경고 상태만 */
+  --danger-accent: #EF4444;      /* 레드 - 위험 상태만 */
 }
 
-/* Base styles - 새로운 배경 시스템 */
+/* === 라이트 테마 === */
+:root,
+:root[data-theme="light"] {
+  --secondary-accent: #9CA3AF;   /* 라이트 그레이 - 보조 */
+  --tertiary-accent: #4B5563;    /* 다크 그레이 - 액센트 */
+  
+  /* === 라이트 테마 배경 시스템 === */
+  --bg-primary: #FFFFFF;         /* 화이트 베이스 */
+  --bg-secondary: #F8FAFC;       /* 라이트 그레이 */
+  --bg-tertiary: #F1F5F9;       /* 카드 배경 */
+  --bg-quaternary: #E2E8F0;      /* 구분선/보더 */
+  --bg-surface: #FFFFFF;        /* 카드 표면 */
+  
+  /* === 단순 그레이 시스템 (그라디언트 제거) === */
+  --gradient-disabled: none;
+  --gradient-mesh: none;
+  
+  /* === 🔥 라이트 테마 글래스모피즘 변수 === */
+  --glass-bg: rgba(248, 250, 252, 0.9);
+  --glass-bg-strong: rgba(241, 245, 249, 0.95);
+  --glass-backdrop: blur(12px);
+  --glass-backdrop-strong: blur(20px);
+  --glass-border: rgba(203, 213, 225, 0.4);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --glass-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* === 라이트 테마 카드 시스템 === */
+  --card-bg: #FFFFFF;
+  --card-bg-hover: #F8FAFC;
+  --card-border: #E2E8F0;
+  --card-border-hover: #CBD5E1;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --card-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --card-radius: 1rem;
+  --card-radius-lg: 1.5rem;
+  
+  /* === 타이포그래피 시스템 - 🎨 실제 로드된 폰트 사용 === */
+  --font-display: 'Inter', 'Spoqa Han Sans Neo', system-ui; /* 🎨 Inter로 세련된 디스플레이 */
+  --font-body: 'Inter', 'Spoqa Han Sans Neo', system-ui;    /* 🎨 Inter로 가독성 향상 */
+  --font-code: 'JetBrains Mono', 'SF Mono', monospace;      /* 🎨 코드용 폰트 */
+  
+  /* === 컬러풀 상태 컬러 === */
+  --status-operational: 16 185 129;   /* #10B981 - 그린 */
+  --status-degraded: 245 158 11;      /* #F59E0B - 옐로우 */
+  --status-partial-outage: 239 68 68; /* #EF4444 - 레드 */
+  --status-major-outage: 220 38 38;   /* #DC2626 - 딥 레드 */
+  --status-maintenance: 107 114 128;   /* #6B7280 - 그레이 */
+  --status-unknown: 156 163 175;      /* #9CA3AF - 그레이 */
+  
+  /* === 라이트 테마 Tailwind 호환 변수들 === */
+  --background: 255 255 255;      /* #FFFFFF */
+  --foreground: 31 41 55;         /* #1F2937 */
+  --card: 255 255 255;           /* #FFFFFF */
+  --card-foreground: 31 41 55;    /* #1F2937 */
+  --popover: 255 255 255;        /* #FFFFFF */
+  --popover-foreground: 31 41 55; /* #1F2937 */
+  --primary: 107 114 128;        /* #6B7280 */
+  --primary-foreground: 255 255 255; /* #FFFFFF */
+  --secondary: 249 250 251;      /* #F9FAFB */
+  --secondary-foreground: 31 41 55; /* #1F2937 */
+  --muted: 249 250 251;          /* #F9FAFB */
+  --muted-foreground: 107 114 128; /* #6B7280 */
+  --accent: 243 244 246;         /* #F3F4F6 */
+  --accent-foreground: 31 41 55;  /* #1F2937 */
+  --destructive: 239 68 68;      /* #EF4444 */
+  --destructive-foreground: 255 255 255; /* #FFFFFF */
+  --border: 229 231 235;         /* #E5E7EB */
+  --input: 229 231 235;          /* #E5E7EB */
+  --ring: 107 114 128;           /* #6B7280 */
+  --radius: 0.5rem;              /* 8px */
+}
+
+/* === 다크 테마 === */
+:root[data-theme="dark"] {
+  --secondary-accent: #6B7280;   /* 미드 그레이 - 보조 */
+  --tertiary-accent: #D1D5DB;    /* 라이트 그레이 - 액센트 */
+  
+  /* === 다크 테마 배경 시스템 === */
+  --bg-primary: #0F172A;         /* 다크 네이비 베이스 */
+  --bg-secondary: #1E293B;       /* 다크 그레이 */
+  --bg-tertiary: #334155;        /* 미드 그레이 카드 배경 */
+  --bg-quaternary: #475569;      /* 구분선/보더 */
+  --bg-surface: #1E293B;        /* 카드 표면 */
+  
+  /* === 다크 테마 글래스모피즘 변수 === */
+  --glass-bg: rgba(30, 41, 59, 0.9);
+  --glass-bg-strong: rgba(15, 23, 42, 0.95);
+  --glass-backdrop: blur(12px);
+  --glass-backdrop-strong: blur(20px);
+  --glass-border: rgba(71, 85, 105, 0.4);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --glass-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  
+  /* === 다크 테마 카드 시스템 === */
+  --card-bg: #1E293B;
+  --card-bg-hover: #334155;
+  --card-border: #475569;
+  --card-border-hover: #64748B;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --card-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --card-radius: 1rem;
+  --card-radius-lg: 1.5rem;
+  
+  /* === 다크 테마 Tailwind 호환 변수들 === */
+  --background: 15 23 42;        /* #0F172A */
+  --foreground: 226 232 240;     /* #E2E8F0 */
+  --card: 30 41 59;             /* #1E293B */
+  --card-foreground: 226 232 240; /* #E2E8F0 */
+  --popover: 30 41 59;          /* #1E293B */
+  --popover-foreground: 226 232 240; /* #E2E8F0 */
+  --primary: 139 95 254;        /* #8B5FFE - 보라색 유지 */
+  --primary-foreground: 255 255 255; /* #FFFFFF */
+  --secondary: 51 65 85;        /* #334155 */
+  --secondary-foreground: 226 232 240; /* #E2E8F0 */
+  --muted: 51 65 85;            /* #334155 */
+  --muted-foreground: 148 163 184; /* #94A3B8 */
+  --accent: 71 85 105;          /* #475569 */
+  --accent-foreground: 226 232 240; /* #E2E8F0 */
+  --destructive: 239 68 68;      /* #EF4444 */
+  --destructive-foreground: 255 255 255; /* #FFFFFF */
+  --border: 71 85 105;          /* #475569 */
+  --input: 71 85 105;           /* #475569 */
+  --ring: 139 95 254;           /* #8B5FFE */
+  --radius: 0.5rem;             /* 8px */
+}
+
+/* Base styles - 테마 적응형 시스템 */
 * {
   border-color: rgb(var(--border));
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+  color: rgb(var(--foreground));
+}
+
+/* 전역 텍스트 색상 테마 적응형 */
+h1, h2, h3, h4, h5, h6, p, span, div, button, a {
+  color: rgb(var(--foreground)) !important;
 }
 
   body {
   margin: 0;
   padding: 0;
   background: var(--bg-primary);
-  color: var(--gray-secondary);
-  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+  color: rgb(var(--foreground)) !important;
+  font-family: var(--font-body);
   font-feature-settings: 'cv11', 'ss01';
   font-variation-settings: 'opsz' 32;
   overflow-x: hidden;
   min-height: 100vh;
   min-height: 100dvh;
-  letter-spacing: -0.01em; /* 세련된 글자 간격 */
+  letter-spacing: -0.01em;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html {
@@ -162,7 +240,6 @@ body::after {
 }
 
 .card-base:hover {
-  transform: translateY(-4px) scale(1.01);
   background: var(--glass-bg-strong);
   border-color: rgba(46, 255, 180, 0.3);
   box-shadow: var(--glass-shadow-lg), 0 0 40px rgba(46, 255, 180, 0.1);
@@ -202,134 +279,86 @@ body::after {
 }
 
 .card-glass-pro:hover {
-  transform: translateY(-6px) scale(1.02);
   box-shadow: var(--glass-shadow-lg), 0 0 60px rgba(46, 255, 180, 0.15);
   border-color: rgba(46, 255, 180, 0.4);
 }
 
 /* 🎨 프리미엄 글래스모피즘 서비스 카드 */
 .service-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop);
-  -webkit-backdrop-filter: var(--glass-backdrop);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius-lg);
   padding: 1.5rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--card-shadow);
   width: 100%;
   overflow: hidden;
 }
 
-/* 🌟 Premium ServiceCard v2.0 - 상태별 네온 효과 */
+/* 🎯 미니멀 ServiceCard v4.0 - 🎨 미묘한 색상 포인트 추가 */
 .service-card-premium {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-strong);
-  -webkit-backdrop-filter: var(--glass-backdrop-strong);
-  border: 1px solid var(--status-border, var(--glass-border));
-  border-radius: calc(var(--radius) + 2px);
-  padding: 1.75rem;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: linear-gradient(135deg, #FFFFFF 0%, rgba(248,250,252,0.8) 100%); /* 🎨 미묘한 배경 그라디언트 */
+  border: 1px solid rgba(139, 92, 246, 0.06); /* 🎨 미묘한 보라 경계선 */
+  border-radius: var(--radius);  /* 더 작은 보더 */
+  padding: 1rem;                 /* 더 작은 패딩 */
+  transition: all 0.2s ease; /* 모든 변화에 대한 애니메이션 */
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--glass-shadow), var(--status-glow, 0);
+  box-shadow: var(--card-shadow);
   width: 100%;
   overflow: hidden;
-  transform-style: preserve-3d;
-}
-
-/* 3D 깊이감 효과 */
-.service-card-premium::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 30%,
-    transparent 70%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* 상태별 네온 탑 보더 */
-.service-card-premium::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--status-border, var(--mint-primary)) 50%,
-    transparent 100%
-  );
-  border-radius: calc(var(--radius) + 2px) calc(var(--radius) + 2px) 0 0;
-  transform: scaleX(0);
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  z-index: 2;
-}
-
-/* 호버 시 프리미엄 효과 */
-.service-card-premium:hover {
-  transform: translateY(-8px) scale(1.02) rotateX(2deg);
-  background: var(--glass-bg-strong);
-  border-color: var(--status-border, var(--mint-primary));
-  box-shadow: 
-    var(--glass-shadow-lg),
-    var(--status-glow, 0),
-    0 20px 40px rgba(0, 0, 0, 0.3),
-    0 0 60px var(--status-border, rgba(46, 255, 180, 0.2));
-}
-
-.service-card-premium:hover::after {
-  transform: scaleX(1);
-}
-
-/* 확장된 상태 */
-.service-card-premium.expanded {
+  min-height: 180px;
   height: auto;
-  min-height: 280px;
+}
+
+/* 단순 그레이 카드 스타일 (카테고리별 색상 제거) */
+.service-card-aiml,
+.service-card-cloud,
+.service-card-devtools,
+.service-card-business {
+  background: var(--card-bg);
+  color: #1F2937 !important; /* 🔥 빌게이츠를 위한 긴급 수정: 어두운 텍스트 */
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+/* 호버 시에도 단순하게 */
+.service-card-aiml:hover,
+.service-card-cloud:hover,
+.service-card-devtools:hover,
+.service-card-business:hover {
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+}
+
+/* 불필요한 효과 제거 - 미니멀 디자인 */
+
+/* 🎨 대시보드 카드 강조 호버 효과 */
+.service-card-premium:hover {
+  background: linear-gradient(135deg, rgba(248,250,252,0.9) 0%, rgba(238,242,255,1) 100%); /* 🎨 더 강한 보라 힌트 */
+  border-color: rgba(139, 95, 254, 0.2); /* 🎨 더 진한 보라 경계선 (드롭다운과 동일) */
+  box-shadow: 0 8px 25px rgba(139, 95, 254, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08); /* 🎨 더 강한 보라 그림자 */
+  transform: translateY(-2px); /* 🎨 카드 올라감 효과 */
+}
+
+/* 컴팩트한 확장 상태 */
+.service-card-premium.expanded {
+  min-height: 200px;  /* 더 작은 높이 */
 }
 
 .service-card-premium:not(.expanded) {
-  height: 220px;
-  min-width: 0;
+  min-height: 160px;  /* 더 작은 높이 */
 }
 
-/* 펄스 애니메이션 (장애 상태) */
-.service-card-premium[style*="rgba(214, 48, 49"] {
-  animation: statusPulsePremium 3s ease-in-out infinite;
-}
+/* 애니메이션 제거 - 미니멀 디자인 */
 
-@keyframes statusPulsePremium {
-  0%, 100% { 
-    box-shadow: 
-      var(--glass-shadow),
-      0 0 20px rgba(214, 48, 49, 0.2),
-      0 0 40px rgba(214, 48, 49, 0.1);
-  }
-  50% { 
-    box-shadow: 
-      var(--glass-shadow-lg),
-      0 0 30px rgba(214, 48, 49, 0.4),
-      0 0 60px rgba(214, 48, 49, 0.2);
-  }
-}
+/* statusPulsePremium 애니메이션 제거 */
 
 /* 🌟 Premium ServiceIcon System */
 .service-icon-premium {
@@ -346,10 +375,10 @@ body::after {
   width: var(--icon-size, 32px);
   height: var(--icon-size, 32px);
   border-radius: 12px;
-  background: var(--glass-bg);
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(238,242,255,0.9) 100%); /* 🎨 미묘한 보라 힌트 */
   backdrop-filter: var(--glass-backdrop);
   -webkit-backdrop-filter: var(--glass-backdrop);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(139, 92, 246, 0.08); /* 🎨 미묘한 보라 경계선 */
   box-shadow: var(--glass-shadow);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -397,16 +426,15 @@ body::after {
   transition: opacity 0.4s ease;
 }
 
-/* 호버 효과 */
+/* 호버 효과 - 움직임 제거 */
 .service-icon-premium:hover .service-icon-container {
-  transform: translateY(-2px) scale(1.1) rotateY(5deg);
   box-shadow: 
     var(--glass-shadow-lg),
     0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .service-icon-premium:hover .service-icon-image {
-  transform: scale(1.05);
+  /* 호버 시 크기 변화 제거 */
 }
 
 .service-icon-premium:hover .service-icon-glass {
@@ -433,14 +461,13 @@ body::after {
 }
 
 .service-icon-fallback:hover {
-  transform: translateY(-2px) scale(1.1) rotate(5deg);
   box-shadow: 
     var(--glass-shadow-lg),
     0 10px 30px rgba(0, 0, 0, 0.3),
     0 0 20px rgba(46, 255, 180, 0.2);
 }
 
-/* 🌟 Premium Header System */
+/* 🌟 Premium Header System - 🔥 빌게이츠 긴급 수정: overflow 제거 */
 .header-premium {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop-strong);
@@ -449,7 +476,7 @@ body::after {
   box-shadow: var(--glass-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; 🔥 드롭다운 메뉴가 잘리는 문제로 제거 */
 }
 
 /* 헤더 글래스 오버레이 */
@@ -501,7 +528,6 @@ body::after {
 }
 
 .progress-ring-container:hover .progress-ring {
-  transform: scale(1.05);
   filter: drop-shadow(0 4px 12px rgba(46, 255, 180, 0.3));
 }
 
@@ -621,7 +647,7 @@ body::after {
   );
   transition: left 0.6s ease;
   z-index: 1;
-}
+  }
 
 .service-card:hover::after {
   transform: scaleX(1);
@@ -632,10 +658,9 @@ body::after {
 }
 
 .service-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  background: var(--glass-bg-strong);
-  border-color: rgba(46, 255, 180, 0.3);
-  box-shadow: var(--glass-shadow-lg), 0 0 40px rgba(46, 255, 180, 0.12);
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* 컴포넌트 카드 */
@@ -651,7 +676,6 @@ body::after {
 .component-card:hover {
   background: rgba(46, 255, 180, 0.05);
   border-color: rgba(46, 255, 180, 0.15);
-  transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -667,7 +691,6 @@ body::after {
 }
 
 .favorite-card:hover {
-  transform: scale(1.02);
   border-color: rgba(46, 255, 180, 0.3);
   box-shadow: 0 8px 20px rgba(46, 255, 180, 0.1);
 }
@@ -679,24 +702,24 @@ body::after {
 
 /* 🎨 버튼 시스템 - 세련되고 미니멀한 */
 .btn-primary {
-  background: var(--mint-primary);
-  color: var(--black-primary);
+  background: var(--primary-accent);
+  color: #FFFFFF;
   padding: 0.875rem 1.75rem;
   border-radius: 12px;
-  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+  font-family: var(--font-body); /* 🎨 Inter 폰트 사용 */
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   cursor: pointer;
   font-size: 0.875rem;
   letter-spacing: -0.01em;
-  box-shadow: 0 2px 8px rgba(46, 255, 180, 0.2);
+  box-shadow: 0 4px 12px rgba(139, 95, 254, 0.25); /* 🎨 보라색 그림자 */
 }
 
 .btn-primary:hover {
-  background: #26e09f;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(46, 255, 180, 0.3);
+  background: #7C3AED; /* 🎨 더 진한 보라색 */
+  box-shadow: 0 6px 20px rgba(139, 95, 254, 0.4); /* 🎨 더 강한 보라색 그림자 */
+  transform: translateY(-2px); /* 🎨 더 명확한 올라감 효과 */
 }
 
 .btn-secondary {
@@ -714,10 +737,9 @@ body::after {
 }
 
 .btn-secondary:hover {
-  background: rgba(46, 255, 180, 0.08);
-  border-color: rgba(46, 255, 180, 0.3);
-  color: var(--mint-primary);
-  transform: translateY(-1px);
+  background: rgba(139, 95, 254, 0.08);
+  border-color: rgba(139, 95, 254, 0.3);
+  color: var(--primary-accent);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -758,13 +780,12 @@ body::after {
 
 .btn-icon:hover {
   background: var(--glass-bg-strong);
-  border-color: rgba(46, 255, 180, 0.3);
-  color: var(--mint-primary);
-  transform: translateY(-2px) scale(1.08);
+  border-color: rgba(139, 95, 254, 0.3);
+  color: var(--primary-accent);
   box-shadow: 
     var(--glass-shadow),
     0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px rgba(46, 255, 180, 0.15);
+    0 0 20px rgba(139, 95, 254, 0.15);
 }
 
 .btn-icon:hover::before {
@@ -772,7 +793,6 @@ body::after {
 }
 
 .btn-icon:active {
-  transform: translateY(-1px) scale(1.05);
   transition: all 0.1s ease;
 }
 
@@ -830,56 +850,66 @@ body::after {
   transition: opacity 0.3s ease;
 }
 
-/* 상태별 색상 정의 - 새로운 팔레트 */
+/* 상태별 색상 정의 - 🎨 대시보드 강조 색상 적용 */
 .status-operational {
-  background-color: var(--green-success) !important;
-  box-shadow: 0 1px 3px rgba(0, 168, 107, 0.3) !important;
+  background-color: var(--success-accent) !important; /* 🎨 생생한 그린 */
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important; /* 🎨 더 강한 그림자 */
 }
 
 .status-operational:hover {
-  box-shadow: 0 2px 6px rgba(0, 168, 107, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important; /* 🎨 호버 시 더 강한 효과 */
+  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
 }
 
 .status-degraded {
-  background-color: rgb(var(--status-degraded)) !important;
-  box-shadow: 0 1px 3px rgba(230, 165, 50, 0.3) !important;
+  background-color: var(--warning-accent) !important; /* 🎨 생생한 옐로우 */
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4) !important; /* 🎨 더 강한 그림자 */
 }
 
 .status-degraded:hover {
-  box-shadow: 0 2px 6px rgba(230, 165, 50, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5) !important; /* 🎨 호버 시 더 강한 효과 */
+  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
 }
 
 .status-partial-outage {
-  background-color: rgb(var(--status-partial-outage)) !important;
-  box-shadow: 0 1px 3px rgba(214, 48, 49, 0.3) !important;
+  background-color: var(--danger-accent) !important; /* 🎨 생생한 레드 */
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4) !important; /* 🎨 더 강한 그림자 */
 }
 
 .status-partial-outage:hover {
-  box-shadow: 0 2px 6px rgba(214, 48, 49, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5) !important; /* 🎨 호버 시 더 강한 효과 */
+  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
 }
 
 .status-major-outage {
-  background-color: rgb(var(--status-major-outage)) !important;
-  box-shadow: 0 1px 3px rgba(214, 48, 49, 0.3) !important;
-  animation: statusPulse 2s infinite;
+  background-color: var(--danger-accent) !important; /* 🎨 생생한 레드 */
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.5) !important; /* 🎨 더 강한 그림자 */
+  animation: statusPulse 2s infinite; /* 🎨 펄스 애니메이션 유지 */
 }
 
 .status-major-outage:hover {
-  box-shadow: 0 2px 6px rgba(214, 48, 49, 0.4) !important;
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.6) !important; /* 🎨 호버 시 매우 강한 효과 */
+  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
 }
 
 .status-maintenance {
-  background-color: var(--mint-primary) !important;
-  box-shadow: 0 1px 3px rgba(46, 255, 180, 0.3) !important;
+  background-color: var(--primary-accent) !important; /* 🎨 드롭다운과 동일한 보라색! */
+  box-shadow: 0 2px 8px rgba(139, 95, 254, 0.4) !important; /* 🎨 더 강한 그림자 */
 }
 
 .status-maintenance:hover {
-  box-shadow: 0 2px 6px rgba(46, 255, 180, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(139, 95, 254, 0.5) !important; /* 🎨 호버 시 더 강한 효과 */
+  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
 }
 
 .status-unknown {
-  background-color: rgb(var(--status-unknown)) !important;
-  box-shadow: 0 1px 3px rgba(237, 236, 232, 0.2) !important;
+  background-color: var(--secondary-accent) !important; /* 🎨 라이트 그레이 */
+  box-shadow: 0 2px 6px rgba(156, 163, 175, 0.3) !important; /* 🎨 더 명확한 그림자 */
+}
+
+.status-unknown:hover {
+  box-shadow: 0 3px 8px rgba(156, 163, 175, 0.4) !important; /* 🎨 호버 효과 */
+  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
 }
 
 /* 애니메이션 - 더 절제된 버전 */
@@ -920,14 +950,14 @@ body::after {
   100% { transform: translateX(100%); }
 }
 
-/* 🎨 Fixed Layout System - 새로운 컬러 팔레트 적용 */
+/* 🎨 Fixed Layout System - 🔥 라이트 테마 적용 */
 .layout-sticky-header .header-section {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(237, 236, 232, 0.08);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-backdrop-strong);
+  border-bottom: 1px solid var(--glass-border);
   }
   
 .layout-sticky-footer {
@@ -944,9 +974,9 @@ body::after {
   position: sticky;
   bottom: 0;
   z-index: 50;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(237, 236, 232, 0.08);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-backdrop-strong);
+  border-top: 1px solid var(--glass-border);
 }
 
 /* 헤더와 푸터 모두 고정 */
@@ -960,10 +990,10 @@ body::after {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(237, 236, 232, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: var(--glass-bg-strong); /* 🔥 라이트 테마 배경 */
+  backdrop-filter: var(--glass-backdrop-strong);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -977,10 +1007,10 @@ body::after {
   position: sticky;
   bottom: 0;
   z-index: 50;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(237, 236, 232, 0.08);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  background: var(--glass-bg-strong); /* 🔥 라이트 테마 배경 */
+  backdrop-filter: var(--glass-backdrop-strong);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1022,11 +1052,141 @@ body::after {
   background: rgba(46, 255, 180, 0.5);
 }
 
+/* 🌟 프리미엄 카테고리 시스템 */
+.category-section-premium {
+  position: relative;
+  margin-bottom: 1rem;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.category-header-premium {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius); /* 더 작은 보더 */
+  padding: 0.75rem 1rem; /* 컴팩트한 패딩 */
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease; /* 간소화된 transition */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  box-shadow: var(--card-shadow);
+  
+  /* 🎨 강조된 좌측 보더 - 드롭다운과 동일한 보라색 */
+  border-left: 4px solid var(--primary-accent); /* 🎨 더 두꺼운 보더 */
+}
+
+/* 불필요한 효과 제거 - 미니멀 디자인 */
+
+/* 단순한 호버 효과 */
+.category-header-premium:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--primary-accent);
+}
+
+/* 단순한 활성화/비활성화 상태 */
+.category-header-premium.visible {
+  border-left-color: var(--primary-accent);
+}
+
+.category-header-premium.hidden {
+  opacity: 0.7;
+  border-left-color: rgb(var(--muted-foreground));
+}
+
+/* 카테고리 아이콘 컨테이너 - 🎨 미묘한 색상 포인트 추가 */
+.category-icon-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;  /* 더 작은 크기 */
+  height: 32px;
+  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%); /* 🎨 미묘한 보라 그라디언트 */
+  border: 1px solid rgba(139, 92, 246, 0.1); /* 🎨 미묘한 보라 경계선 */
+  border-radius: 6px;  /* 더 작은 보더 */
+  font-size: 1.125rem; /* 더 작은 폰트 */
+  color: #8B5CF6; /* 🎨 보라색 아이콘 */
+  transition: all 0.2s ease;
+}
+
+.category-header-premium:hover .category-icon-premium {
+  background: linear-gradient(135deg, #EEF2FF 0%, #DDD6FE 100%); /* 🎨 호버 시 더 진한 보라 */
+  border-color: rgba(139, 92, 246, 0.2);
+  color: #7C3AED; /* 조금 더 진한 보라 */
+}
+
+/* 카테고리 제목 */
+.category-title-premium {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgb(var(--foreground)) !important;
+  margin: 0;
+  transition: color 0.2s ease;
+}
+
+.category-header-premium:hover .category-title-premium {
+  color: var(--primary-accent);
+}
+
+/* 컴팩트한 카테고리 카운터 - 🎨 미묘한 색상 포인트 추가 */
+.category-count-premium {
+  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%); /* 🎨 미묘한 보라 그라디언트 */
+  color: #8B5CF6; /* 🎨 보라색 텍스트 */
+  font-size: 0.75rem;
+  font-weight: 600; /* 조금 더 굵게 */
+  padding: 0.125rem 0.5rem;  /* 더 작은 패딩 */
+  border-radius: 12px;       /* 더 작은 보더 */
+  border: 1px solid rgba(139, 92, 246, 0.15); /* 🎨 미묘한 보라 경계선 */
+  transition: all 0.2s ease;
+  /* 박스 쉐도우 제거 - 미니멀 디자인 */
+}
+
+.category-header-premium:hover .category-count-premium {
+  background: linear-gradient(135deg, #EEF2FF 0%, #DDD6FE 100%); /* 🎨 호버 시 더 진한 보라 */
+  color: #7C3AED; /* 조금 더 진한 보라 */
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+/* 컴팩트한 토글 아이콘 */
+.category-toggle-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;  /* 더 작은 크기 */
+  height: 28px;
+  color: rgb(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+
+.category-header-premium:hover .category-toggle-premium {
+  /* 호버 시 움직임 효과 제거 */
+}
+
+/* 토글 아이콘 - 표시 상태 */
+.category-toggle-premium.visible {
+  color: var(--primary-accent);
+}
+
+/* 토글 아이콘 - 숨김 상태 */
+.category-toggle-premium.hidden {
+  color: rgb(var(--muted-foreground));
+}
+
+/* 단순한 포커스 상태 */
+.category-header-premium:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--ring));
+  border-color: var(--primary-accent);
+}
+
+/* 애니메이션 제거 - 미니멀 디자인 */
+
 /* 포커스 링 개선 */
 .focus-ring:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(46, 255, 180, 0.5);
-  border-color: var(--mint-primary);
+  box-shadow: 0 0 0 2px rgba(139, 95, 254, 0.5);
+  border-color: var(--primary-accent);
 }
 
 /* 컨테이너 */
@@ -1039,27 +1199,27 @@ body::after {
   max-width: 1200px;
 }
 
-/* 🎨 유틸리티 클래스들 - 새로운 컬러 팔레트 */
+/* 🎨 라이트 테마 유틸리티 클래스들 */
 .bg-background { background-color: var(--bg-primary); }
-.bg-card { background-color: var(--bg-secondary); }
-.bg-primary { background-color: var(--mint-primary); }
-.bg-secondary { background-color: var(--bg-tertiary); }
-.bg-muted { background-color: var(--bg-accent); }
-.bg-accent { background-color: var(--bg-accent); }
+.bg-card { background-color: var(--card-bg); }
+.bg-primary { background-color: var(--primary-accent); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-muted { background-color: var(--bg-tertiary); }
+.bg-accent { background-color: var(--secondary-accent); }
 
-.text-foreground { color: var(--gray-secondary); }
-.text-card-foreground { color: var(--gray-secondary); }
-.text-primary { color: var(--mint-primary); }
-.text-primary-foreground { color: var(--black-primary); }
-.text-secondary-foreground { color: var(--gray-secondary); }
-.text-muted-foreground { color: rgba(237, 236, 232, 0.6); }
+.text-foreground { color: rgb(var(--foreground)); }
+.text-card-foreground { color: rgb(var(--card-foreground)); }
+.text-primary { color: var(--primary-accent); }
+.text-primary-foreground { color: rgb(var(--primary-foreground)); }
+.text-secondary-foreground { color: rgb(var(--secondary-foreground)); }
+.text-muted-foreground { color: rgb(var(--muted-foreground)); }
 
-.border-border { border-color: rgba(237, 236, 232, 0.1); }
-.border-input { border-color: rgba(237, 236, 232, 0.15); }
+.border-border { border-color: rgb(var(--border)); }
+.border-input { border-color: rgb(var(--input)); }
 
-.hover\:bg-accent:hover { background-color: var(--bg-accent); }  
-.hover\:text-accent-foreground:hover { color: var(--gray-secondary); }
-.hover\:bg-primary\/90:hover { background-color: rgba(46, 255, 180, 0.9); }
+.hover\:bg-accent:hover { background-color: rgb(var(--accent)); }  
+.hover\:text-accent-foreground:hover { color: rgb(var(--accent-foreground)); }
+.hover\:bg-primary\/90:hover { background-color: rgba(139, 92, 246, 0.9); }
 
 /* 반응형 */
 @media (min-width: 475px) {
@@ -1086,51 +1246,46 @@ body::after {
 }
 
 .hover-lift:hover {
-  transform: translateY(-2px);
+  /* 호버 시 움직임 효과 제거 */
 }
 
 /* 🎨 타이포그래피 시스템 - 세련되고 읽기 쉬운 */
 /* (이미 위에서 정의됨) */
 
-/* 서비스 카드 애니메이션 */
+/* 컴팩트한 서비스 그리드 */
 .service-grid {
   display: grid;
-  gap: 1rem;
-  /* 화면 크기별로 명시적인 컬럼 수를 지정하여 너비 불일치 문제 해결 */
+  gap: 0.5rem;  /* 더 작은 간격 */
   grid-template-columns: repeat(1, 1fr);
-  /* 모든 그리드 아이템이 동일한 높이를 갖도록 */
   grid-auto-rows: 1fr;
 }
 
-/* 태블릿 (sm) */
+/* 컴팩트한 반응형 그리드 */
 @media (min-width: 640px) {
   .service-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0.625rem;  /* 더 작은 간격 */
   }
 }
 
-/* 노트북 (md) */
 @media (min-width: 768px) {
   .service-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+    gap: 0.75rem;   /* 더 작은 간격 */
   }
 }
 
-/* 데스크탑 (lg) */
 @media (min-width: 1024px) {
   .service-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.875rem;  /* 더 작은 간격 */
   }
 }
 
-/* 대형 데스크탑 (xl) */
 @media (min-width: 1280px) {
   .service-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);  /* 더 많은 컬럼 */
+    gap: 1rem;      /* 적당한 간격 */
   }
 }
 
@@ -1144,26 +1299,31 @@ body::after {
 
 .service-card-wrapper.moving {
   z-index: 10;
-  transform: scale(1.02);
 }
 
 
 
-/* 드롭다운 메뉴 - 새로운 컬러 팔레트 */
+/* 드롭다운 컨테이너 - 🔥 빌게이츠 긴급 수정 */
+.sort-dropdown-container {
+  position: relative;
+  /* overflow: visible; 🔥 드롭다운이 잘리지 않게 */
+}
+
+/* 드롭다운 메뉴 - 🔥 빌게이츠 긴급 수정: z-index 추가 */
 .sort-dropdown {
   position: absolute;
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
   width: 10rem;
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(237, 236, 232, 0.1);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
+  z-index: 100; /* 🔥 헤더보다 높은 z-index로 드롭다운 메뉴 보이게 함 */
+  box-shadow: var(--card-shadow-lg);
   padding: 0.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  z-index: 50;
 }
 
 /* 모바일에서 정렬 드롭다운 위치 조정 */
@@ -1189,13 +1349,13 @@ body::after {
 }
 
 .sort-option:hover {
-  background: rgba(46, 255, 180, 0.08);
-  color: var(--mint-primary);
+  background: rgba(139, 95, 254, 0.08);
+  color: var(--primary-accent);
 }
 
 .sort-option.active {
-  background: rgba(46, 255, 180, 0.15);
-  color: var(--mint-primary);
+  background: rgba(139, 95, 254, 0.15);
+  color: var(--primary-accent);
 }
 
 .border-gradient {
@@ -1293,7 +1453,7 @@ body::after {
 
 /* 🎨 타이포그래피 시스템 - 세련되고 읽기 쉬운 */
 .text-gradient {
-  color: var(--mint-primary);
+  color: var(--primary-accent);
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -1305,57 +1465,45 @@ body::after {
 
 .text-gradient:hover {
   color: #26e09f;
-  transform: translateY(-1px);
 }
 
-/* 데스크탑 타이틀 - 더 큰 임팩트 */
+/* 🎯 실용적인 서비스 타이틀 디자인 - 테마 적응형 */
 .desktop-title {
-  font-size: 2.75rem; /* 44px */
-  font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-  font-weight: 800;
-  color: var(--mint-primary);
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 1.875rem; /* 30px */
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: rgb(var(--foreground));
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin: 0;
+  transition: color 0.3s ease;
 }
 
-.desktop-title:hover {
-  color: #26e09f;
-  transform: translateY(-2px);
-}
-
-/* 모바일 반응형 조정 */
+/* 🎯 실용적인 서비스 타이틀 - 모바일 반응형 */
 @media (max-width: 767px) {
+  .desktop-title {
+    font-size: 1.5rem; /* 24px - 모바일 적절한 크기 */
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  
   .text-gradient {
-    font-size: 2rem; /* 32px */
-    font-weight: 700;
+    font-size: 1.5rem; /* 24px */
+    font-weight: 600;
   }
 }
 
-/* 클릭 효과 - 매우 절제된 */
-.text-gradient.clicked,
-.desktop-title.clicked {
-  animation: subtleClick 0.3s ease-out;
-}
-
-@keyframes subtleClick {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
+/* 🚫 클릭 효과 제거 - 실용적 대시보드에 불필요 */
 
 /* 텍스트 유틸리티 클래스 개선 */
-.text-primary { color: var(--mint-primary); }
+.text-primary { color: var(--primary-accent); }
 .text-secondary { color: var(--gray-secondary); }
 .text-muted { color: rgba(237, 236, 232, 0.6); }
 .text-black { color: var(--black-primary); }
 
 /* 링크 스타일 */
 a {
-  color: var(--mint-primary);
+  color: var(--primary-accent);
   text-decoration: none;
   transition: color 0.3s ease;
 }
@@ -1366,7 +1514,7 @@ a:hover {
 
 /* 헤딩 계층 구조 */
 h1 { 
-  color: var(--mint-primary); 
+  color: var(--primary-accent); 
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 800; 
   letter-spacing: -0.03em; 
@@ -1406,7 +1554,7 @@ p {
 
 /* 상태 페이지 링크 스타일 */
 .link-status-page {
-  color: var(--mint-primary);
+  color: var(--primary-accent);
   transition: color 0.3s ease, background-color 0.3s ease;
 }
 
@@ -1462,7 +1610,7 @@ p {
   font-size: 1.25rem;
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   font-weight: 700;
-  color: var(--mint-primary);
+  color: var(--primary-accent);
   margin: 0;
   flex: 1;
   letter-spacing: -0.01em;
@@ -1487,8 +1635,7 @@ p {
 
 .modal-close-button:hover {
   background: rgba(237, 236, 232, 0.1);
-  color: var(--mint-primary);
-  transform: scale(1.1);
+  color: var(--primary-accent);
 }
 
 /* 모달 바디 */
@@ -1628,8 +1775,8 @@ p {
 }
 
 .filter-checkbox:checked {
-  background: var(--mint-primary);
-  border-color: var(--mint-primary);
+  background: var(--primary-accent);
+  border-color: var(--primary-accent);
 }
 
 .filter-component-label {
@@ -1708,8 +1855,8 @@ p {
 
 /* 마스터 토글 버튼 스타일 */
 .filter-master-toggle {
-  background: var(--mint-primary);
-  color: var(--black-primary);
+  background: var(--primary-accent);
+  color: #FFFFFF;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   border: none;
@@ -1722,7 +1869,6 @@ p {
 
 .filter-master-toggle:hover {
   background: #26e09f;
-  transform: translateY(-1px);
 }
 
 /* 서비스별 전체 선택 체크박스 */
@@ -1738,13 +1884,13 @@ p {
 }
 
 .filter-service-checkbox:checked {
-  background: var(--mint-primary);
-  border-color: var(--mint-primary);
+  background: var(--primary-accent);
+  border-color: var(--primary-accent);
 }
 
 .filter-service-checkbox:indeterminate {
-  background: rgba(46, 255, 180, 0.3);
-  border-color: var(--mint-primary);
+  background: rgba(139, 95, 254, 0.3);
+  border-color: var(--primary-accent);
 }
 
 .filter-service-checkbox:indeterminate::after {
@@ -1829,7 +1975,7 @@ p {
 
 .mobile-footer-toggle-icon {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--mint-primary);
+  color: var(--primary-accent);
   font-size: 0.875rem;
   display: inline-block;
   transform-origin: center center;
@@ -1875,9 +2021,8 @@ p {
   color: var(--gray-secondary);
 }
 
-/* 터치 피드백 */
+/* 터치 피드백 - 크기 변화 제거 */
 .mobile-footer-compact:active {
-  transform: scale(0.995);
   background: rgba(46, 255, 180, 0.05);
 }
 
@@ -1936,6 +2081,12 @@ p {
     bottom: 0.5rem;
     z-index: 40;
   }
+}
+
+/* 언어 드롭다운 컨테이너 - 🔥 빌게이츠 긴급 수정 */
+.language-dropdown {
+  position: relative;
+  /* overflow: visible; 🔥 드롭다운이 잘리지 않게 */
 }
 
 /* 언어 드롭다운 특별 스타일 - 정렬 드롭다운과 동일 */

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, ChevronUp, ChevronDown, Globe, Activity, TrendingUp, Zap, Clock } from 'lucide-react';
 import type { Service, ServiceComponent } from '../services/api';
+import { getCategoryForService } from '../types/categories';
 
 // 이미지 import
 import openaiIcon from '@/assets/gpt.png';
@@ -26,6 +27,14 @@ import auth0Icon from '@/assets/auth0.png';
 import sendgridIcon from '@/assets/sendgrid.png';
 import cloudflareIcon from '@/assets/cloudflare.png';
 import datadogIcon from '@/assets/datadog.png';
+// Newly added service icons
+import groqIcon from '@/assets/groq.png';
+import zetaglobalIcon from '@/assets/zetaglobal.png';
+import vercelIcon from '@/assets/vercel.png';
+import stripeIcon from '@/assets/stripe.png';
+import mongodbIcon from '@/assets/mongodb.png';
+import huggingfaceIcon from '@/assets/huggingface.png';
+import gitlabIcon from '@/assets/gitlab.svg';
 
 interface ServiceCardProps {
   service: Service & { status: string };
@@ -69,6 +78,14 @@ const getServiceIcon = (iconName: string): string => {
     sendgrid: sendgridIcon,
     cloudflare: cloudflareIcon,
     datadog: datadogIcon,
+    // Newly added mappings
+    groq: groqIcon,
+    zetaglobal: zetaglobalIcon,
+    vercel: vercelIcon,
+    stripe: stripeIcon,
+    mongodb: mongodbIcon,
+    huggingface: huggingfaceIcon,
+    gitlab: gitlabIcon,
   };
   return iconMap[iconName] || '';
 };
@@ -225,9 +242,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     }
   };
 
+  // 카테고리별 스타일 클래스 결정
+  const category = getCategoryForService(service.service_name);
+  const categoryClass = category ? `service-card-${category.id.replace('-', '')}` : '';
+
   return (
     <motion.div
-      className={`service-card-premium ${isExpanded ? 'expanded' : ''} group cursor-pointer`}
+      className={`service-card-premium ${categoryClass} ${isExpanded ? 'expanded' : ''} group cursor-pointer`}
       onClick={onToggleExpansion}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -250,40 +271,40 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       whileTap="tap"
     >
       {/* 상단: 아이콘, 제목, 새로고침/확장 버튼 */}
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <ServiceIcon iconName={service.icon} size={28} />
-          <div className="flex-1 min-w-0 self-center">
-            <h2 className="text-lg font-semibold text-foreground truncate">{service.display_name}</h2>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <ServiceIcon iconName={service.icon} size={24} />
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-semibold text-foreground truncate">{service.display_name}</h2>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onRefresh();
             }}
             disabled={isLoading}
-            className="btn-icon"
+            className="btn-icon p-1.5"
             aria-label={translations.refreshService}
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleExpansion();
             }}
-            className="btn-icon md:hidden"
+            className="btn-icon p-1.5 md:hidden"
             aria-label={isExpanded ? "접기" : "펼치기"}
           >
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
       {/* 중앙: 설명, 상태 */}
-      <div className="flex-1 flex flex-col min-h-0 mb-3">
+      <div className="flex flex-col flex-1 min-h-0 mb-2">
         <AnimatePresence mode="wait">
           {isExpanded ? (
             <motion.div
@@ -409,12 +430,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       </div>
 
       {/* 하단: 상태 페이지 링크 */}
-      <div className="pt-3 border-t border-border/50 mt-auto">
+      <div className="pt-2 border-t border-border/50 mt-auto">
         <a
           href={service.page_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-xs link-status-page focus-ring rounded px-2 py-1"
+          className="inline-flex items-center gap-1.5 text-xs link-status-page focus-ring rounded px-2 py-1"
           onClick={(e) => e.stopPropagation()}
         >
           <Globe className="w-3 h-3 flex-shrink-0" />

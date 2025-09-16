@@ -42,31 +42,29 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-50 min-w-32">
-          <div className="py-1" role="listbox">
-            <button
-              onClick={() => handleLanguageSelect('ko')}
-              className={`w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2 ${
-                language === 'ko' ? 'bg-accent' : ''
-              }`}
-              role="option"
-              aria-selected={language === 'ko'}
-            >
+        <div className="sort-dropdown">
+          <button
+            onClick={() => handleLanguageSelect('ko')}
+            className={`sort-option ${language === 'ko' ? 'active' : ''}`}
+            role="option"
+            aria-selected={language === 'ko'}
+          >
+            <div className="flex items-center gap-2">
               <span>🇰🇷</span>
               <span>한국어</span>
-            </button>
-            <button
-              onClick={() => handleLanguageSelect('en')}
-              className={`w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2 ${
-                language === 'en' ? 'bg-accent' : ''
-              }`}
-              role="option"
-              aria-selected={language === 'en'}
-            >
+            </div>
+          </button>
+          <button
+            onClick={() => handleLanguageSelect('en')}
+            className={`sort-option ${language === 'en' ? 'active' : ''}`}
+            role="option"
+            aria-selected={language === 'en'}
+          >
+            <div className="flex items-center gap-2">
               <span>🇺🇸</span>
               <span>English</span>
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
       )}
     </div>

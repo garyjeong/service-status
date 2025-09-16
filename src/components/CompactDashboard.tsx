@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, Wifi, Clock, Settings, Star, ChevronDown, ChevronUp, X, Activity, TrendingUp, Zap, ArrowUpDown, ArrowUp, ArrowDown, Globe } from 'lucide-react';
+import { RefreshCw, Wifi, Clock, Settings, Star, Eye, EyeOff, X, Activity, TrendingUp, Zap, ArrowUpDown, ArrowUp, ArrowDown, Globe } from 'lucide-react';
 import { serviceFetchers, serviceNames, StatusUtils } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import { SERVICE_CATEGORIES, groupServicesByCategory } from '../types/categories';
@@ -56,7 +56,9 @@ const translations = {
     filterDescription: '표시할 서비스 구성 요소를 선택하세요',
     close: '닫기',
     categoryView: '카테고리 보기',
-    listView: '목록 보기'
+    listView: '목록 보기',
+    hideCategory: '카테고리 숨기기',
+    showCategory: '카테고리 표시하기'
   },
   en: {
     title: 'Service Status Dashboard',
@@ -87,7 +89,9 @@ const translations = {
     filterDescription: 'Select service components to display',
     close: 'Close',
     categoryView: 'Category View',
-    listView: 'List View'
+    listView: 'List View',
+    hideCategory: 'Hide Category',
+    showCategory: 'Show Category'
   }
 };
 
@@ -114,12 +118,21 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   
+  // 테마 상태 관리
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('ui-theme') as 'light' | 'dark' | null;
+      return savedTheme || 'light';
+    }
+    return 'light';
+  });
+  
   // 뷰 모드 상태 - 카테고리 뷰로 고정
   const [viewMode] = useState<ViewMode>('category');
   
-  // 카테고리 확장 상태 - 기본적으로 모두 열어둠
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['ai', 'cloud', 'development', 'business'])
+  // 카테고리 표시 상태 - 🔥 빌게이츠 긴급 수정: 최소한 AI/ML은 표시
+  const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
+    new Set(['ai-ml', 'cloud']) // 🔥 최소한 AI/ML과 Cloud는 표시해서 정보 확인 가능하게!
   );
   
   // 모바일 스크롤 숨김 상태
@@ -129,6 +142,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   
   // 모바일 푸터 확장 상태
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
+
+  // 상태별 필터링 - 문제 서비스만 표시
+  const [statusFilter, setStatusFilter] = useState<'degraded_performance' | 'major_outage' | null>(null);
 
   // 현재 언어의 번역 가져오기
   const t = translations[language];
@@ -316,6 +332,10 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     localStorage.setItem('service-status-language', language);
   }, [language]);
 
+  useEffect(() => {
+    localStorage.setItem('service-status-visible-categories', JSON.stringify(Array.from(visibleCategories)));
+  }, [visibleCategories]);
+
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -345,6 +365,25 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         setFilters(parsedFilters);
       } catch (error) {
         console.error('Failed to parse saved filters:', error);
+      }
+    }
+
+    // 카테고리 표시 상태 로드 - 🔥 빌게이츠 긴급 수정: 최소한 하나는 표시!
+    const savedVisibleCategories = localStorage.getItem('service-status-visible-categories');
+    if (savedVisibleCategories) {
+      try {
+        const parsedVisibleCategories = JSON.parse(savedVisibleCategories);
+        const savedSet = new Set(parsedVisibleCategories);
+        
+        // 🔥 긴급 수정: 모든 카테고리가 숨겨져 있으면 강제로 AI/ML과 Cloud 표시
+        if (savedSet.size === 0) {
+          savedSet.add('ai-ml');
+          savedSet.add('cloud');
+        }
+        
+        setVisibleCategories(savedSet);
+      } catch (error) {
+        console.error('Failed to parse saved visible categories:', error);
       }
     }
 
@@ -472,6 +511,12 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     };
   }, [isLanguageDropdownOpen, isSortDropdownOpen]);
 
+  // 테마 적용 useEffect
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+  }, [theme]);
+
   const toggleComponentFilter = (serviceName: string, componentName: string) => {
     setFilters(prev => ({
       ...prev,
@@ -480,6 +525,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         [componentName]: !prev[serviceName]?.[componentName]
       }
     }));
+    
+    // 컴포넌트 필터가 변경되면 상태 필터도 리셋
+    setStatusFilter(null);
   };
 
   const toggleFavorite = (serviceName: string, componentName: string) => {
@@ -506,9 +554,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     }));
   };
 
-  // 카테고리 토글 함수
-  const toggleCategoryExpansion = (categoryName: string) => {
-    setExpandedCategories(prev => {
+  // 카테고리 표시/숨김 토글 함수
+  const toggleCategoryVisibility = (categoryName: string) => {
+    setVisibleCategories(prev => {
       const newSet = new Set(prev);
       if (newSet.has(categoryName)) {
         newSet.delete(categoryName);
@@ -565,6 +613,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         [serviceName]: updatedServiceFilters
       };
     });
+    
+    // 컴포넌트 필터가 변경되면 상태 필터도 리셋
+    setStatusFilter(null);
   };
 
   // 전체 선택 상태 계산
@@ -595,15 +646,38 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       });
       return newFilters;
     });
+    
+    // 컴포넌트 필터가 변경되면 상태 필터도 리셋
+    setStatusFilter(null);
   };
 
   // 필터링된 서비스 반환
   const getFilteredServices = () => {
     return services.filter(service => {
+      // 컴포넌트 필터링
       const hasSelectedComponent = service.components.some(component => 
         filters[service.service_name]?.[component.name]
       );
-      return hasSelectedComponent;
+      
+      if (!hasSelectedComponent) return false;
+      
+      // 상태 필터링 - 특정 상태만 표시하도록 필터링
+      if (statusFilter) {
+        const serviceStatus = StatusUtils.calculateServiceStatus(service.components);
+        const isProblemService = serviceStatus === 'degraded' || serviceStatus === 'outage' || serviceStatus === 'maintenance';
+        
+        // degraded_performance 필터가 활성화된 경우: degraded, maintenance 상태 서비스만 표시
+        if (statusFilter === 'degraded_performance') {
+          return serviceStatus === 'degraded' || serviceStatus === 'maintenance';
+        }
+        
+        // major_outage 필터가 활성화된 경우: outage 상태 서비스만 표시
+        if (statusFilter === 'major_outage') {
+          return serviceStatus === 'outage';
+        }
+      }
+      
+      return true;
     });
   };
 
@@ -799,10 +873,49 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     }
   };
 
+  // 상태 필터 핸들러 - 문제 서비스만 표시/해제
+  const handleStatusFilter = (status: 'degraded_performance' | 'major_outage') => {
+    setStatusFilter(prevFilter => prevFilter === status ? null : status);
+  };
+
+  // 테마 토글 핸들러
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('ui-theme', newTheme);
+  };
+
   // 카테고리별로 그룹화된 서비스 가져오기
   const getCategorizedServices = () => {
     const sortedServices = getSortedServices();
     return groupServicesByCategory(sortedServices);
+  };
+
+  // 필터링된 카테고리별 서비스 카운트 계산
+  const getFilteredCategoryCount = (categoryServices: Service[]) => {
+    const filteredServices = categoryServices.filter(service => {
+      // 컴포넌트 필터링
+      const hasSelectedComponent = service.components.some(component => 
+        filters[service.service_name]?.[component.name]
+      );
+      
+      if (!hasSelectedComponent) return false;
+      
+      // 상태 필터링 적용
+      if (statusFilter) {
+        const serviceStatus = StatusUtils.calculateServiceStatus(service.components);
+        if (statusFilter === 'degraded_performance') {
+          return serviceStatus === 'degraded' || serviceStatus === 'maintenance';
+        }
+        if (statusFilter === 'major_outage') {
+          return serviceStatus === 'outage';
+        }
+      }
+      
+      return true;
+    });
+    
+    return filteredServices.length;
   };
 
   // 로딩 중일 때 표시
@@ -842,6 +955,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                 sortType={sortType}
         isSortDropdownOpen={isSortDropdownOpen}
         isLanguageDropdownOpen={isLanguageDropdownOpen}
+        statusFilter={statusFilter}
+        theme={theme}
         onRefresh={refreshData}
         onFilterOpen={() => setIsFilterOpen(!isFilterOpen)}
                 onSortChange={handleSortChange}
@@ -849,6 +964,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         onLanguageChange={setLanguage}
         onLanguageDropdownToggle={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
         onTitleClick={handleTitleClick}
+        onStatusFilter={handleStatusFilter}
+        onThemeToggle={handleThemeToggle}
                 translations={{
           refresh: t.refresh,
           filter: t.filter,
@@ -861,10 +978,41 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                   sortNameDesc: t.sortNameDesc
                 }}
               />
-
+            
       {/* 메인 컨텐츠 */}
       <main className="main-content">
         <div className="container mx-auto px-4 py-6">
+          
+          {/* 활성 필터 표시 바 */}
+          {statusFilter && (
+            <motion.div 
+              className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              style={{
+                backgroundColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgb(239, 246, 255)',
+                borderColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.3)' : 'rgb(191, 219, 254)',
+                color: theme === 'dark' ? 'rgb(147, 197, 253)' : 'rgb(30, 58, 138)'
+              }}
+                      >
+                        <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-current animate-pulse"></div>
+                <span className="font-medium">
+                  {statusFilter === 'degraded_performance' 
+                    ? (language === 'ko' ? '성능 저하 서비스만 표시 중' : 'Showing degraded services only')
+                    : (language === 'ko' ? '장애 서비스만 표시 중' : 'Showing outage services only')
+                  }
+                </span>
+                        </div>
+                      <button
+                onClick={() => setStatusFilter(null)}
+                className="px-3 py-1 text-sm bg-current/10 hover:bg-current/20 rounded-md transition-colors"
+              >
+                {language === 'ko' ? '필터 해제' : 'Clear Filter'}
+                      </button>
+            </motion.div>
+          )}
 
           {/* 상단 광고 배너 */}
           <div className="mb-6 flex justify-center">
@@ -970,51 +1118,120 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
           )}
 
           {/* 서비스 표시 영역 - 카테고리 뷰 */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {Object.entries(getCategorizedServices()).map(([categoryName, categoryServices]) => (
-                <div key={categoryName} className="category-section">
+                <motion.div 
+                  key={categoryName} 
+                  className="category-section-premium"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                    delay: 0.1
+                  }}
+                >
                   {/* 카테고리 헤더 */}
-                  <div 
-                    className="category-header cursor-pointer"
-                    onClick={() => toggleCategoryExpansion(categoryName)}
+                  <motion.div 
+                    className={`category-header-premium ${visibleCategories.has(categoryName) ? 'visible' : 'hidden'}`}
+                    onClick={() => toggleCategoryVisibility(categoryName)}
+                    title={visibleCategories.has(categoryName) ? t.hideCategory : t.showCategory}
+                    role="button"
+                    tabIndex={0}
+                    whileHover={{
+                      scale: 1.01,
+                      transition: { duration: 0.2 }
+                    }}
+                    whileTap={{
+                      scale: 0.99,
+                      transition: { duration: 0.1 }
+                    }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                        toggleCategoryVisibility(categoryName);
+                      }
+                    }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="category-icon">
+                    <div className="flex items-center gap-4">
+                      <motion.div 
+                        className="category-icon-premium"
+                        whileHover={{
+                          scale: 1.1,
+                          rotate: 5,
+                          transition: { duration: 0.2 }
+                        }}
+                      >
                         {SERVICE_CATEGORIES.find(cat => cat.id === categoryName)?.icon || '📁'}
-                      </div>
-                      <h3 className="category-title">
+                      </motion.div>
+                      <motion.h3 
+                        className="category-title-premium"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                      >
                         {SERVICE_CATEGORIES.find(cat => cat.id === categoryName)?.name || categoryName}
-                      </h3>
-                      <div className="category-count">
-                        {categoryServices.length}개
-                      </div>
-                    </div>
-                    <ChevronDown 
-                      className={`w-5 h-5 transition-transform duration-300 ${
-                        expandedCategories.has(categoryName) ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
+                      </motion.h3>
+                      <motion.div 
+                        className="category-count-premium"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3, duration: 0.3 }}
+                        whileHover={{
+                          scale: 1.1,
+                          transition: { duration: 0.2 }
+                        }}
+                      >
+                        {getFilteredCategoryCount(categoryServices)}
+                      </motion.div>
+                              </div>
+                    <motion.div 
+                      className={`category-toggle-premium ${visibleCategories.has(categoryName) ? 'visible' : 'hidden'}`}
+                      whileHover={{
+                        scale: 1.1,
+                        rotate: visibleCategories.has(categoryName) ? 0 : 180,
+                        transition: { duration: 0.3 }
+                      }}
+                      whileTap={{
+                        scale: 0.9,
+                        transition: { duration: 0.1 }
+                      }}
+                    >
+                      <motion.div
+                        initial={false}
+                        animate={{
+                          rotate: visibleCategories.has(categoryName) ? 0 : 180,
+                          transition: { duration: 0.3 }
+                        }}
+                      >
+                        {visibleCategories.has(categoryName) ? (
+                          <Eye className="w-5 h-5" />
+                        ) : (
+                          <EyeOff className="w-5 h-5" />
+                        )}
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
 
                   {/* 카테고리 서비스 목록 */}
-                  {expandedCategories.has(categoryName) && (
+                  {visibleCategories.has(categoryName) && (
                     <Stagger
-                      className={`service-grid ${isAnimating ? 'moving' : ''} mt-4`}
+                      className={`service-grid ${isAnimating ? 'moving' : ''} mt-3`}
                       delay={0.1}
                       staggerDelay={0.08}
                       direction="up"
                       distance={30}
                     >
                       {categoryServices.map((service) => {
-                        const isLoading = serviceLoadingStates[service.service_name];
-                        
-                        if (isLoading) {
-                          return <ServiceCardSkeleton key={service.service_name} />;
-                        }
+                const isLoading = serviceLoadingStates[service.service_name];
+                
+                if (isLoading) {
+                  return <ServiceCardSkeleton key={service.service_name} />;
+                }
 
-                        return (
+                return (
                         <ServiceCard
-                            key={service.service_name}
+                    key={service.service_name}
                           service={service}
                           isExpanded={expandedServices[service.service_name] || false}
                           isLoading={serviceLoadingStates[service.service_name] || false}
@@ -1030,11 +1247,11 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                             statusPage: t.statusPage
                           }}
                         />
-                        );
-                      })}
+                );
+              })}
                     </Stagger>
-                  )}
-                </div>
+          )}
+                </motion.div>
               ))}
             </div>
 
@@ -1122,30 +1339,30 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               </span>
             </div>
 
-            {/* 메인 통계 정보 */}
+            {/* 메인 통계 정보 - 🔥 HTML 구조 수정: p 태그를 div로 변경 */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-              <p className="flex items-center gap-2">
-                <div className="relative">
+              <div className="flex items-center gap-2">
+                <span className="relative">
                   <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
-                  {isAnyLoading && <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></div>}
-                </div>
+                  {isAnyLoading && <span className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></span>}
+                </span>
                 <span>{language === 'ko' ? '자동 업데이트: 30초마다' : 'Auto Update: Every 30s'}</span>
-              </p>
+              </div>
               <span className="hidden sm:inline text-gray-600">•</span>
-              <p className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
                 <span>{t.monitoring}: {getServicesWithCalculatedStatus().length}{t.services}</span>
-              </p>
+              </div>
               <span className="hidden sm:inline text-gray-600">•</span>
-              <p className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-green-400" />
                 <span>
                   {getOverallStats().operational}/{getServicesWithCalculatedStatus().length} {language === 'ko' ? '정상 운영' : 'Operational'}
                 </span>
-              </p>
             </div>
           </div>
         </div>
+    </div>
       </footer>
     </PageTransition>
   );
