@@ -36,7 +36,16 @@ node_modules
 *.sw?
 
 # PNPM
-/pnpm-lock.yaml
+# Track lockfile for reproducible CI builds
+#! intentionally keep pnpm-lock.yaml tracked
+
+# Build/Test artifacts
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.eslintcache
+bundle-analysis.html
 
 # Taskmaster, Cursor, and Playwright MCP files
 .taskmaster/
