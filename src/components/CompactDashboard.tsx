@@ -31,7 +31,7 @@ const translations = {
     title: '서비스 상태 대시보드',
     refresh: '새로고침',
     filter: '필터',
-    autoUpdate: '자동 업데이트: 30초마다',
+    autoUpdate: '자동 업데이트: 1분마다',
     monitoring: '모니터링 중인 서비스',
     services: '개',
     subtitle: 'AI 서비스와 외부 서비스의 실시간 상태를 모니터링합니다.',
@@ -64,7 +64,7 @@ const translations = {
     title: 'Service Status Dashboard',
     refresh: 'Refresh',
     filter: 'Filter',
-    autoUpdate: 'Auto Update: Every 30 seconds',
+    autoUpdate: 'Auto Update: Every 1 minute',
     monitoring: 'Monitoring Services',
     services: 'services',
     subtitle: 'Real-time monitoring of AI services and external services.',
@@ -398,11 +398,11 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     loadAllServicesData(true);
   }, []);
 
-  // 30초마다 자동 업데이트
+  // 60초마다 자동 업데이트
   useEffect(() => {
     const interval = setInterval(() => {
       loadFilteredServicesData();
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [filters, services]);
@@ -1346,7 +1346,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                   <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
                   {isAnyLoading && <span className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></span>}
                 </span>
-                <span>{language === 'ko' ? '자동 업데이트: 30초마다' : 'Auto Update: Every 30s'}</span>
+                <span>{language === 'ko' ? '자동 업데이트: 1분마다' : 'Auto Update: Every 1 minute'}</span>
               </div>
               <span className="hidden sm:inline text-gray-600">•</span>
               <div className="flex items-center gap-2">

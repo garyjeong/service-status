@@ -356,6 +356,25 @@ body::after {
   min-height: 160px;  /* 더 작은 높이 */
 }
 
+/* === Dark mode overrides for cards to avoid white focus/hover === */
+:root[data-theme="dark"] .service-card-premium {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+:root[data-theme="dark"] .service-card-premium:hover {
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+:root[data-theme="dark"] .service-card-premium:focus,
+:root[data-theme="dark"] .service-card-premium:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(139, 95, 254, 0.6), var(--card-shadow);
+}
+
 /* 애니메이션 제거 - 미니멀 디자인 */
 
 /* statusPulsePremium 애니메이션 제거 */
@@ -1148,6 +1167,19 @@ body::after {
   border-color: rgba(139, 92, 246, 0.25);
 }
 
+/* Dark mode overrides: ensure contrast for count badge */
+:root[data-theme="dark"] .category-count-premium {
+  background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+  color: rgb(var(--foreground)) !important;
+  border: 1px solid var(--card-border);
+}
+
+:root[data-theme="dark"] .category-header-premium:hover .category-count-premium {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  color: rgb(var(--foreground)) !important;
+  border-color: var(--card-border-hover);
+}
+
 /* 컴팩트한 토글 아이콘 */
 .category-toggle-premium {
   display: flex;
@@ -1187,6 +1219,55 @@ body::after {
   outline: none;
   box-shadow: 0 0 0 2px rgba(139, 95, 254, 0.5);
   border-color: var(--primary-accent);
+}
+
+/* Dark mode focus/selection contrast fixes */
+:root[data-theme="dark"] button:focus,
+:root[data-theme="dark"] button:focus-visible,
+:root[data-theme="dark"] a:focus,
+:root[data-theme="dark"] a:focus-visible,
+:root[data-theme="dark"] [role="button"]:focus,
+:root[data-theme="dark"] [role="button"]:focus-visible,
+:root[data-theme="dark"] .btn-icon:focus,
+:root[data-theme="dark"] .btn-secondary:focus,
+:root[data-theme="dark"] .sort-option:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(139, 95, 254, 0.6);
+}
+
+:root[data-theme="dark"] ::selection {
+  background: rgba(139, 95, 254, 0.35);
+  color: #fff;
+}
+
+/* Replace white shimmer overlays in dark mode for better contrast */
+:root[data-theme="dark"] .service-card::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(139, 95, 254, 0.12),
+    transparent
+  );
+}
+
+:root[data-theme="dark"] .header-premium::before {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 95, 254, 0.08) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(139, 95, 254, 0.04) 100%
+  );
+}
+
+:root[data-theme="dark"] .btn-icon::before,
+:root[data-theme="dark"] .card-base::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(139, 95, 254, 0.2),
+    transparent
+  );
 }
 
 /* 컨테이너 */

@@ -33,11 +33,6 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         aria-haspopup="listbox"
       >
         {!isMobile && <Globe className="w-4 h-4" />}
-        {language === 'ko' ? (
-          <span className="text-sm">🇰🇷</span>
-        ) : (
-          <span className="text-sm">🇺🇸</span>
-        )}
         <ChevronDown className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
@@ -50,7 +45,6 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             aria-selected={language === 'ko'}
           >
             <div className="flex items-center gap-2">
-              <span>🇰🇷</span>
               <span>한국어</span>
             </div>
           </button>
@@ -61,7 +55,6 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             aria-selected={language === 'en'}
           >
             <div className="flex items-center gap-2">
-              <span>🇺🇸</span>
               <span>English</span>
             </div>
           </button>

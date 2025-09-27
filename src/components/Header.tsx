@@ -133,6 +133,53 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
             
+            {/* 필터 버튼 */}
+            <button
+              onClick={onFilterOpen}
+              className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
+            >
+              <Settings className="w-4 h-4" />
+              <span>{translations.filter}</span>
+            </button>
+            
+            {/* 정렬 버튼 */}
+            <SortDropdown
+              sortType={sortType}
+              isOpen={isSortDropdownOpen}
+              onToggle={onSortDropdownToggle}
+              onSortChange={onSortChange}
+              translations={{
+                sortDefault: translations.sortDefault,
+                sortNameAsc: translations.sortNameAsc,
+                sortNameDesc: translations.sortNameDesc
+              }}
+            />
+
+            {/* 언어 선택 드롭다운 */}
+            <LanguageSelector
+              language={language}
+              isOpen={isLanguageDropdownOpen}
+              onToggle={onLanguageDropdownToggle}
+              onLanguageChange={onLanguageChange}
+            />
+
+            {/* 테마 토글 버튼 */}
+            <motion.button
+              onClick={onThemeToggle}
+              className="btn-icon focus-ring hover-lift"
+              aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              whileHover={{ 
+                scale: 1.05,
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ 
+                scale: 0.95,
+                transition: { duration: 0.1 }
+              }}
+            >
+              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </motion.button>
+
             {/* 새로고침 버튼 */}
             <motion.button
               onClick={onRefresh}
@@ -169,53 +216,6 @@ const Header: React.FC<HeaderProps> = ({
                 <RefreshCw className="w-5 h-5" />
               </motion.div>
             </motion.button>
-        
-            {/* 필터 버튼 */}
-            <button
-              onClick={onFilterOpen}
-              className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-            >
-              <Settings className="w-4 h-4" />
-              <span>{translations.filter}</span>
-            </button>
-            
-            {/* 정렬 버튼 */}
-            <SortDropdown
-              sortType={sortType}
-              isOpen={isSortDropdownOpen}
-              onToggle={onSortDropdownToggle}
-              onSortChange={onSortChange}
-              translations={{
-                sortDefault: translations.sortDefault,
-                sortNameAsc: translations.sortNameAsc,
-                sortNameDesc: translations.sortNameDesc
-              }}
-            />
-          
-            {/* 테마 토글 버튼 */}
-            <motion.button
-              onClick={onThemeToggle}
-              className="btn-icon focus-ring hover-lift"
-              aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-              whileHover={{ 
-                scale: 1.05,
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ 
-                scale: 0.95,
-                transition: { duration: 0.1 }
-              }}
-            >
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-            </motion.button>
-
-            {/* 언어 선택 드롭다운 */}
-            <LanguageSelector
-              language={language}
-              isOpen={isLanguageDropdownOpen}
-              onToggle={onLanguageDropdownToggle}
-              onLanguageChange={onLanguageChange}
-            />
           </div>
         </div>
         
