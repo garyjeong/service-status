@@ -4,8 +4,9 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files (ensure lockfile is present in build context)
+COPY package.json ./
+COPY pnpm-lock.yaml ./
 
 # Install specific pnpm version from package.json
 RUN npm install -g pnpm@8.10.0
