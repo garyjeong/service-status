@@ -1,6 +1,19 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="6" fill="#3B82F6"/>
-  <circle cx="16" cy="11" r="3" fill="white"/>
-  <circle cx="16" cy="21" r="3" fill="#10B981"/>
-  <rect x="12" y="15" width="8" height="2" fill="white"/>
-</svg> 
+  <!-- 배경 그라데이션 -->
+  <defs>
+    <linearGradient id="statusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 둥근 배경 -->
+  <rect width="32" height="32" rx="8" fill="url(#statusGrad)"/>
+  
+  <!-- 체크마크 (서비스 정상) -->
+  <path d="M9 16L14 21L23 11" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- 작은 상태 표시등 -->
+  <circle cx="26" cy="6" r="2.5" fill="#34D399"/>
+  <circle cx="26" cy="6" r="1.5" fill="white" opacity="0.8"/>
+</svg>
