@@ -1,5 +1,7 @@
 # 🌐 외부 서비스 상태 모니터링 대시보드
 
+> 마지막 업데이트: 2025-09-30
+
 🐳 **ECR 자동 배포 준비 완료** - main 브랜치 푸시 시 자동으로 ECR에 Docker 이미지가 빌드됩니다.
 
 실시간으로 개발자가 자주 사용하는 외부 서비스들의 상태를 모니터링하는 **프리미엄 글래스모피즘 대시보드**입니다. Framer Motion 기반 3D 애니메이션과 고급 마이크로 인터랙션으로 업계 최고 수준의 사용자 경험을 제공합니다.
@@ -56,7 +58,7 @@
 
 ### 설치
 
-```bash
+````bash
 # 의존성 설치
 pnpm install
 
@@ -69,7 +71,7 @@ pnpm build
 
 # 빌드 결과 미리보기
 pnpm preview
-```
+```text
 
 ### HTML 데모 실행
 
@@ -79,7 +81,7 @@ pnpm preview
 # 간단한 HTTP 서버로 HTML 데모 실행
 python3 -m http.server 8001
 # HTML 데모: http://localhost:8001/test.html
-```
+  ```text
 
 ### 테스트 실행
 
@@ -92,7 +94,7 @@ pnpm test:ui
 
 # 테스트 커버리지
 pnpm test:coverage
-```
+```bash
 
 ### 코드 품질
 
@@ -108,7 +110,7 @@ pnpm format
 
 # TypeScript 타입 검사
 pnpm type-check
-```
+```bash
 
 ### VS Code 디버깅
 
@@ -123,11 +125,11 @@ pnpm type-check
 # - "Run Tests" - 테스트 실행
 # - "Run Tests (Watch)" - 테스트 감시 모드
 # - "Launch Dev Server + Chrome" - 복합 설정
-```
+````
 
 ## 🏗️ 프로젝트 구조
 
-```
+```text
 src/
 ├── assets/             # 정적 리소스 (서비스 로고)
 │   ├── aws.png         # AWS 로고
@@ -353,10 +355,11 @@ GitHub Actions를 통한 AWS ECR 자동 배포를 지원합니다.
    - Pull Request 생성 시 빌드 테스트
 
 3. **생성되는 이미지**:
-   ```
-   014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:latest
-   014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:<commit-sha>
-   ```
+
+```text
+014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:latest
+014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:<commit-sha>
+```
 
 자세한 설정 가이드는 [GitHub Actions 설정 가이드](docs/GITHUB_ACTIONS_SETUP.md)를 참조하세요.
 
