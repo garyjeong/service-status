@@ -168,8 +168,13 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'operational': return <Activity className="w-4 h-4 text-green-400" />;
-    case 'degraded': return <TrendingUp className="w-4 h-4 text-yellow-400" />;
-    case 'outage': return <Zap className="w-4 h-4 text-red-400" />;
+    case 'degraded':
+    case 'degraded_performance': return <TrendingUp className="w-4 h-4 text-yellow-400" />;
+    case 'outage':
+    case 'partial_outage':
+    case 'major_outage': return <Zap className="w-4 h-4 text-red-400" />;
+    case 'maintenance':
+    case 'under_maintenance': return <Clock className="w-4 h-4 text-blue-400" />;
     default: return <Clock className="w-4 h-4 text-gray-400" />;
   }
 };
@@ -187,13 +192,21 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   getStatusColor,
   translations
 }) => {
+  console.log('ServiceCard rendered for:', service.service_name);
+  console.log('isExpanded:', isExpanded);
+  console.log('service.components:', service.components);
+  console.log('service.components.length:', service.components?.length);
   // 상태별 네온 보더 색상
   const getStatusBorderColor = (status: string) => {
     switch (status) {
       case 'operational': return 'rgba(46, 255, 180, 0.4)';
-      case 'degraded': return 'rgba(230, 165, 50, 0.4)';
-      case 'outage': return 'rgba(214, 48, 49, 0.6)';
-      case 'partial-outage': return 'rgba(214, 48, 49, 0.5)';
+      case 'degraded':
+      case 'degraded_performance': return 'rgba(230, 165, 50, 0.4)';
+      case 'outage':
+      case 'partial_outage':
+      case 'major_outage': return 'rgba(214, 48, 49, 0.6)';
+      case 'maintenance':
+      case 'under_maintenance': return 'rgba(59, 130, 246, 0.4)';
       default: return 'rgba(237, 236, 232, 0.2)';
     }
   };
@@ -202,9 +215,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   const getStatusGlow = (status: string) => {
     switch (status) {
       case 'operational': return '0 0 20px rgba(46, 255, 180, 0.15)';
-      case 'degraded': return '0 0 20px rgba(230, 165, 50, 0.15)';
-      case 'outage': return '0 0 20px rgba(214, 48, 49, 0.2)';
-      case 'partial-outage': return '0 0 20px rgba(214, 48, 49, 0.18)';
+      case 'degraded':
+      case 'degraded_performance': return '0 0 20px rgba(230, 165, 50, 0.15)';
+      case 'outage':
+      case 'partial_outage':
+      case 'major_outage': return '0 0 20px rgba(214, 48, 49, 0.2)';
+      case 'maintenance':
+      case 'under_maintenance': return '0 0 20px rgba(59, 130, 246, 0.15)';
       default: return '0 0 10px rgba(237, 236, 232, 0.1)';
     }
   };
@@ -249,10 +266,17 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   return (
     <motion.div
       className={`service-card-premium ${categoryClass} ${isExpanded ? 'expanded' : ''} group cursor-pointer`}
-      onClick={onToggleExpansion}
+      onClick={(e) => {
+        console.log('ServiceCard clicked for:', service.service_name);
+        console.log('Current isExpanded:', isExpanded);
+        console.log('Event target:', e.target);
+        console.log('Event currentTarget:', e.currentTarget);
+        onToggleExpansion();
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
+          console.log('ServiceCard key pressed for:', service.service_name);
           onToggleExpansion();
         }
       }}

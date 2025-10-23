@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8888,
+    port: 4444,
     host: true,
     proxy: {
       // API 프록시 설정 (CORS 우회)

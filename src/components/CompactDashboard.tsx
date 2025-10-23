@@ -541,10 +541,16 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   };
 
   const toggleServiceExpansion = (serviceName: string) => {
-    setExpandedServices(prev => ({
-      ...prev,
-      [serviceName]: !prev[serviceName]
-    }));
+    console.log('toggleServiceExpansion called for:', serviceName);
+    console.log('Current expandedServices:', expandedServices);
+    setExpandedServices(prev => {
+      const newState = {
+        ...prev,
+        [serviceName]: !prev[serviceName]
+      };
+      console.log('New expandedServices:', newState);
+      return newState;
+    });
   };
 
   const toggleFilterServiceExpansion = (serviceName: string) => {
@@ -761,9 +767,13 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   const getStatusText = (status: string) => {
     switch (status) {
       case 'operational': return t.operational;
-      case 'degraded': return t.degraded;
-      case 'outage': return t.outage;
-      case 'maintenance': return t.maintenance;
+      case 'degraded':
+      case 'degraded_performance': return t.degraded;
+      case 'outage':
+      case 'partial_outage':
+      case 'major_outage': return t.outage;
+      case 'maintenance':
+      case 'under_maintenance': return t.maintenance;
       default: return status;
     }
   };
@@ -773,9 +783,15 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       case 'operational':
         return 'border-green-500/50 hover:border-green-500/80';
       case 'degraded':
+      case 'degraded_performance':
         return 'border-yellow-500/50 hover:border-yellow-500/80';
       case 'outage':
+      case 'partial_outage':
+      case 'major_outage':
         return 'border-red-500/50 hover:border-red-500/80';
+      case 'maintenance':
+      case 'under_maintenance':
+        return 'border-blue-500/50 hover:border-blue-500/80';
       default:
         return 'border-gray-600/50 hover:border-gray-500/80';
     }
@@ -786,9 +802,15 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       case 'operational':
         return 'status-operational';
       case 'degraded':
+      case 'degraded_performance':
         return 'status-degraded';
       case 'outage':
+      case 'partial_outage':
+      case 'major_outage':
         return 'status-major-outage';
+      case 'maintenance':
+      case 'under_maintenance':
+        return 'status-maintenance';
       default:
         return 'status-unknown';
     }

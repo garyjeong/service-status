@@ -1,7 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-
-// 상태 타입 정의
-export type StatusType = 'operational' | 'degraded' | 'outage' | 'maintenance';
+import { WebScrapingService } from './scraping';
+import { StatusType, ComponentStatus } from '../types/status';
 
 export interface ServiceComponent {
   name: string;
@@ -59,49 +58,49 @@ export class StatusUtils {
       normalizedStatus.includes('none') ||
       normalizedStatus === 'good'
     ) {
-      return 'operational';
+      return StatusType.OPERATIONAL;
     }
     if (
       normalizedStatus.includes('degraded') ||
       normalizedStatus.includes('minor') ||
       normalizedStatus.includes('partial')
     ) {
-      return 'degraded';
+      return StatusType.DEGRADED_PERFORMANCE;
     }
     if (
       normalizedStatus.includes('outage') ||
       normalizedStatus.includes('major') ||
       normalizedStatus.includes('critical')
     ) {
-      return 'outage';
+      return StatusType.MAJOR_OUTAGE;
     }
     if (normalizedStatus.includes('maintenance') || normalizedStatus.includes('scheduled')) {
-      return 'maintenance';
+      return StatusType.UNDER_MAINTENANCE;
     }
 
-    return 'operational'; // 기본값
+    return StatusType.OPERATIONAL; // 기본값
   }
 
   /**
    * 하위 컴포넌트들의 상태에 따라 상위 서비스 상태를 계산
    */
   static calculateServiceStatus(components: ServiceComponent[]): StatusType {
-    if (components.some(c => c.status === 'outage')) {
-      const outageCount = components.filter(c => c.status === 'outage').length;
+    if (components.some(c => c.status === StatusType.MAJOR_OUTAGE)) {
+      const outageCount = components.filter(c => c.status === StatusType.MAJOR_OUTAGE).length;
       const totalCount = components.length;
 
       if (outageCount === totalCount) {
-        return 'outage';
+        return StatusType.MAJOR_OUTAGE;
       }
-      return 'degraded';
+      return StatusType.DEGRADED_PERFORMANCE;
     }
-    if (components.some(c => c.status === 'degraded')) {
-      return 'degraded';
+    if (components.some(c => c.status === StatusType.DEGRADED_PERFORMANCE)) {
+      return StatusType.DEGRADED_PERFORMANCE;
     }
-    if (components.some(c => c.status === 'maintenance')) {
-      return 'maintenance';
+    if (components.some(c => c.status === StatusType.UNDER_MAINTENANCE)) {
+      return StatusType.UNDER_MAINTENANCE;
     }
-    return 'operational';
+    return StatusType.OPERATIONAL;
   }
 }
 
@@ -238,7 +237,7 @@ class ServiceStatusFetcher {
         console.error(`${config.service_name} API 오류:`, error);
         const components: ServiceComponent[] = (config.components || []).map(componentName => ({
           name: componentName,
-          status: 'operational' as StatusType,
+          status: StatusType.OPERATIONAL,
         }));
         return {
           service_name: config.service_name,
@@ -300,91 +299,58 @@ export async function fetchNetlifyStatus(): Promise<Service> {
 }
 
 /**
- * Docker Hub 상태 조회
+ * Docker Hub 상태 조회 (웹 스크래핑 기반)
  */
 export async function fetchDockerHubStatus(): Promise<Service> {
   try {
-    // 메인 상태와 컴포넌트 정보를 모두 가져옴
-    const [statusResponse, componentsResponse] = await Promise.allSettled([
-      apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/status.json`),
-      apiClient.get(`${CORS_PROXY}https://status.docker.com/api/v2/components.json`),
-    ]);
+    console.log('Docker Hub 웹 스크래핑 시작...');
+    // 웹 스크래핑을 통해 Docker 상태 정보 가져오기
+    const scrapedStatus = await WebScrapingService.fetchDockerStatus();
+    console.log('Docker Hub 스크래핑 결과:', scrapedStatus);
+    console.log('Docker Hub 컴포넌트 개수:', scrapedStatus.components.length);
+    console.log('Docker Hub 첫 번째 컴포넌트:', scrapedStatus.components[0]);
+    
+    // ServiceStatus를 Service 인터페이스로 변환
+    const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
+      name: comp.name,
+      status: comp.status,
+    }));
 
-    let components: ServiceComponent[] = [];
-    let overallStatus = 'operational';
-
-    // 전체 상태 확인
-    if (statusResponse.status === 'fulfilled') {
-      overallStatus = StatusUtils.normalizeStatus(
-        statusResponse.value.data.status?.indicator || 'operational'
-      );
-    }
-
-    // 컴포넌트 상태 확인
-    if (componentsResponse.status === 'fulfilled') {
-      const componentsData = componentsResponse.value.data.components || [];
-
-      // Docker 관련 주요 컴포넌트들 필터링
-      const dockerComponents = componentsData
-        .filter(
-          (component: any) =>
-            (component.name &&
-              !component.group_id &&
-              component.name !== 'Operational' &&
-              component.status !== 'operational') ||
-            true // 모든 컴포넌트 포함
-        )
-        .map((component: any) => ({
-          name: component.name,
-          status: StatusUtils.normalizeStatus(component.status || 'operational'),
-        }));
-
-      if (dockerComponents.length > 0) {
-        components = dockerComponents;
-      } else {
-        // API에서 컴포넌트를 찾지 못한 경우 표준 Docker 컴포넌트 사용
-        components = [
-          { name: 'Docker Hub Registry', status: StatusUtils.normalizeStatus(overallStatus) },
-          { name: 'Docker Hub Web Interface', status: StatusUtils.normalizeStatus(overallStatus) },
-          { name: 'Docker Desktop', status: StatusUtils.normalizeStatus(overallStatus) },
-          { name: 'Docker Build Cloud', status: StatusUtils.normalizeStatus(overallStatus) },
-          { name: 'Docker Scout', status: StatusUtils.normalizeStatus(overallStatus) },
-          { name: 'Docker Extensions', status: StatusUtils.normalizeStatus(overallStatus) },
-        ];
-      }
-    } else {
-      // 컴포넌트 API 호출 실패 시 기본 컴포넌트 사용
-      console.warn('Docker Hub components API 호출 실패, 기본 컴포넌트 사용');
-      components = [
-        { name: 'Docker Hub Registry', status: StatusUtils.normalizeStatus(overallStatus) },
-        { name: 'Docker Hub Web Interface', status: StatusUtils.normalizeStatus(overallStatus) },
-        { name: 'Docker Desktop', status: StatusUtils.normalizeStatus(overallStatus) },
-        { name: 'Docker Build Cloud', status: StatusUtils.normalizeStatus(overallStatus) },
-        { name: 'Docker Scout', status: StatusUtils.normalizeStatus(overallStatus) },
-        { name: 'Docker Extensions', status: StatusUtils.normalizeStatus(overallStatus) },
-      ];
-    }
-
-    return {
+    const result = {
       service_name: 'dockerhub',
       display_name: 'Docker Hub',
       description: '컨테이너 이미지 레지스트리 및 저장소',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.docker.com',
+      status: scrapedStatus.overall_status,
+      page_url: 'https://www.dockerstatus.com',
       icon: 'docker',
       components,
     };
+    
+    console.log('Docker Hub 최종 결과:', result);
+    console.log('Docker Hub 최종 컴포넌트 개수:', result.components.length);
+    return result;
   } catch (error) {
-    console.error('Docker Hub API 오류:', error);
+    console.error('Docker Hub 웹 스크래핑 오류:', error);
 
-    // 완전한 API 실패 시 기본 컴포넌트 반환
+    // 웹 스크래핑 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
-      { name: 'Docker Hub Registry', status: 'operational' },
-      { name: 'Docker Hub Web Interface', status: 'operational' },
-      { name: 'Docker Desktop', status: 'operational' },
-      { name: 'Docker Build Cloud', status: 'operational' },
-      { name: 'Docker Scout', status: 'operational' },
-      { name: 'Docker Extensions', status: 'operational' },
+      { name: 'Docker Hub Registry', status: StatusType.OPERATIONAL },
+      { name: 'Docker Authentication', status: StatusType.OPERATIONAL },
+      { name: 'Docker Hub Web Services', status: StatusType.OPERATIONAL },
+      { name: 'Docker Desktop', status: StatusType.OPERATIONAL },
+      { name: 'Docker Billing', status: StatusType.OPERATIONAL },
+      { name: 'Docker Package Repositories', status: StatusType.OPERATIONAL },
+      { name: 'Docker Hub Automated Builds', status: StatusType.OPERATIONAL },
+      { name: 'Docker Hub Security Scanning', status: StatusType.OPERATIONAL },
+      { name: 'Docker Docs', status: StatusType.OPERATIONAL },
+      { name: 'Docker Community Forums', status: StatusType.OPERATIONAL },
+      { name: 'Docker Support', status: StatusType.OPERATIONAL },
+      { name: 'Docker.com Website', status: StatusType.OPERATIONAL },
+      { name: 'Docker Scout', status: StatusType.OPERATIONAL },
+      { name: 'Docker Build Cloud', status: StatusType.OPERATIONAL },
+      { name: 'Testcontainers Cloud', status: StatusType.OPERATIONAL },
+      { name: 'Docker Cloud', status: StatusType.OPERATIONAL },
+      { name: 'Docker Hardened Images', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -392,7 +358,7 @@ export async function fetchDockerHubStatus(): Promise<Service> {
       display_name: 'Docker Hub',
       description: '컨테이너 이미지 레지스트리 및 저장소',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.docker.com',
+      page_url: 'https://www.dockerstatus.com',
       icon: 'docker',
       components,
     };
@@ -459,70 +425,52 @@ export async function fetchAWSStatus(): Promise<Service> {
 }
 
 /**
- * Slack 상태 조회
+ * Slack 상태 조회 (웹 스크래핑 기반)
  */
 export async function fetchSlackStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.slack.com/api/v2/status.json`
-    );
-    const data = response.data;
+    console.log('Slack 웹 스크래핑 시작...');
+    // 웹 스크래핑을 통해 Slack 상태 정보 가져오기
+    const scrapedStatus = await WebScrapingService.fetchSlackStatus();
+    console.log('Slack 스크래핑 결과:', scrapedStatus);
+    console.log('Slack 컴포넌트 개수:', scrapedStatus.components.length);
+    console.log('Slack 첫 번째 컴포넌트:', scrapedStatus.components[0]);
+    
+    // ServiceStatus를 Service 인터페이스로 변환
+    const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
+      name: comp.name,
+      status: comp.status,
+    }));
 
-    const components: ServiceComponent[] = [
-      {
-        name: 'Messaging',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Calls',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'File Sharing',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Apps & Integrations',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Notifications',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Search',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Workspace Admin',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Enterprise Grid',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
-
-    return {
+    const result = {
       service_name: 'slack',
       display_name: 'Slack',
       description: '팀 커뮤니케이션 및 협업 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.slack.com',
+      status: scrapedStatus.overall_status,
+      page_url: 'https://slack-status.com',
       icon: 'slack',
       components,
     };
+    
+    console.log('Slack 최종 결과:', result);
+    console.log('Slack 최종 컴포넌트 개수:', result.components.length);
+    return result;
   } catch (error) {
-    console.error('Slack API 오류:', error);
+    console.error('Slack 웹 스크래핑 오류:', error);
+
+    // 웹 스크래핑 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
-      { name: 'Messaging', status: 'operational' },
-      { name: 'Calls', status: 'operational' },
-      { name: 'File Sharing', status: 'operational' },
-      { name: 'Apps & Integrations', status: 'operational' },
-      { name: 'Notifications', status: 'operational' },
-      { name: 'Search', status: 'operational' },
-      { name: 'Workspace Admin', status: 'operational' },
-      { name: 'Enterprise Grid', status: 'operational' },
+      { name: 'Login/SSO', status: StatusType.OPERATIONAL },
+      { name: 'Connectivity', status: StatusType.OPERATIONAL },
+      { name: 'Messaging', status: StatusType.OPERATIONAL },
+      { name: 'Files', status: StatusType.OPERATIONAL },
+      { name: 'Notifications', status: StatusType.OPERATIONAL },
+      { name: 'Huddles', status: StatusType.OPERATIONAL },
+      { name: 'Search', status: StatusType.OPERATIONAL },
+      { name: 'Apps/Integrations/APIs', status: StatusType.OPERATIONAL },
+      { name: 'Workspace/Org Administration', status: StatusType.OPERATIONAL },
+      { name: 'Workflows', status: StatusType.OPERATIONAL },
+      { name: 'Canvases', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -530,7 +478,7 @@ export async function fetchSlackStatus(): Promise<Service> {
       display_name: 'Slack',
       description: '팀 커뮤니케이션 및 협업 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.slack.com',
+      page_url: 'https://slack-status.com',
       icon: 'slack',
       components,
     };
@@ -538,80 +486,55 @@ export async function fetchSlackStatus(): Promise<Service> {
 }
 
 /**
- * Firebase 상태 조회
+ * Firebase 상태 조회 (웹 스크래핑 기반)
  */
 export async function fetchFirebaseStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.firebase.google.com/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      {
-        name: 'Realtime Database',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Firestore',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Authentication',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Hosting',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Functions',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Storage',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Cloud Messaging',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Remote Config',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Crashlytics',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Performance',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+    // 웹 스크래핑을 통해 Firebase 상태 정보 가져오기
+    const scrapedStatus = await WebScrapingService.fetchFirebaseStatus();
+    
+    // ServiceStatus를 Service 인터페이스로 변환
+    const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
+      name: comp.name,
+      status: comp.status,
+    }));
 
     return {
       service_name: 'firebase',
       display_name: 'Firebase',
       description: 'Google 백엔드 서비스 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
+      status: scrapedStatus.overall_status,
       page_url: 'https://status.firebase.google.com',
       icon: 'firebase',
       components,
     };
   } catch (error) {
-    console.error('Firebase API 오류:', error);
+    console.error('Firebase 웹 스크래핑 오류:', error);
+
+    // 웹 스크래핑 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
-      { name: 'Realtime Database', status: 'operational' },
-      { name: 'Firestore', status: 'operational' },
-      { name: 'Authentication', status: 'operational' },
-      { name: 'Hosting', status: 'operational' },
-      { name: 'Functions', status: 'operational' },
-      { name: 'Storage', status: 'operational' },
-      { name: 'Cloud Messaging', status: 'operational' },
-      { name: 'Remote Config', status: 'operational' },
-      { name: 'Crashlytics', status: 'operational' },
-      { name: 'Performance', status: 'operational' },
+      { name: 'AB Testing (BETA)', status: StatusType.OPERATIONAL },
+      { name: 'App Check', status: StatusType.OPERATIONAL },
+      { name: 'App Distribution', status: StatusType.OPERATIONAL },
+      { name: 'App Hosting', status: StatusType.OPERATIONAL },
+      { name: 'App Indexing', status: StatusType.OPERATIONAL },
+      { name: 'Authentication', status: StatusType.OPERATIONAL },
+      { name: 'Cloud Messaging', status: StatusType.OPERATIONAL },
+      { name: 'Console', status: StatusType.OPERATIONAL },
+      { name: 'Crashlytics', status: StatusType.OPERATIONAL },
+      { name: 'Data Connect', status: StatusType.OPERATIONAL },
+      { name: 'Dynamic Links', status: StatusType.OPERATIONAL },
+      { name: 'Extensions', status: StatusType.OPERATIONAL },
+      { name: 'Firebase AI Logic', status: StatusType.OPERATIONAL },
+      { name: 'Firebase Studio', status: StatusType.OPERATIONAL },
+      { name: 'Gemini in Firebase', status: StatusType.OPERATIONAL },
+      { name: 'Genkit', status: StatusType.OPERATIONAL },
+      { name: 'Hosting', status: StatusType.OPERATIONAL },
+      { name: 'Machine Learning (BETA)', status: StatusType.OPERATIONAL },
+      { name: 'Performance Monitoring', status: StatusType.OPERATIONAL },
+      { name: 'Realtime Database', status: StatusType.OPERATIONAL },
+      { name: 'Remote Config', status: StatusType.OPERATIONAL },
+      { name: 'Test Lab', status: StatusType.OPERATIONAL },
     ];
 
     return {
