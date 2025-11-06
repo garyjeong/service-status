@@ -90,7 +90,7 @@ const getServiceIcon = (iconName: string): string => {
   return iconMap[iconName] || '';
 };
 
-const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number }) => {
+export const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number }) => {
   const iconSrc = getServiceIcon(iconName);
   
   if (iconSrc) {
@@ -165,7 +165,7 @@ const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number 
 };
 
 // 상태에 따른 아이콘 반환
-const getStatusIcon = (status: string) => {
+export const getStatusIcon = (status: string) => {
   switch (status) {
     case 'operational': return <Activity className="w-4 h-4 text-green-400" />;
     case 'degraded':
@@ -179,7 +179,7 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const ServiceCard: React.FC<ServiceCardProps> = ({
+const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
   service,
   isExpanded,
   isLoading,
@@ -192,10 +192,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   getStatusColor,
   translations
 }) => {
-  console.log('ServiceCard rendered for:', service.service_name);
-  console.log('isExpanded:', isExpanded);
-  console.log('service.components:', service.components);
-  console.log('service.components.length:', service.components?.length);
   // 상태별 네온 보더 색상
   const getStatusBorderColor = (status: string) => {
     switch (status) {
@@ -263,20 +259,37 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   const category = getCategoryForService(service.service_name);
   const categoryClass = category ? `service-card-${category.id.replace('-', '')}` : '';
 
+  // 상태별 시각적 강조 클래스 결정
+  const getStatusPriorityClass = (status: string) => {
+    switch (status) {
+      case 'major_outage':
+      case 'outage':
+        return 'status-critical';
+      case 'partial_outage':
+      case 'degraded_performance':
+      case 'degraded':
+        return 'status-warning';
+      case 'operational':
+        return 'status-normal';
+      case 'under_maintenance':
+      case 'maintenance':
+        return 'status-maintenance';
+      default:
+        return 'status-normal';
+    }
+  };
+
+  const statusPriorityClass = getStatusPriorityClass(service.status);
+
   return (
     <motion.div
-      className={`service-card-premium ${categoryClass} ${isExpanded ? 'expanded' : ''} group cursor-pointer`}
+      className={`service-card-premium ${categoryClass} ${statusPriorityClass} ${isExpanded ? 'expanded' : ''} group cursor-pointer`}
       onClick={(e) => {
-        console.log('ServiceCard clicked for:', service.service_name);
-        console.log('Current isExpanded:', isExpanded);
-        console.log('Event target:', e.target);
-        console.log('Event currentTarget:', e.currentTarget);
         onToggleExpansion();
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          console.log('ServiceCard key pressed for:', service.service_name);
           onToggleExpansion();
         }
       }}
@@ -468,6 +481,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});
+
+ServiceCard.displayName = 'ServiceCard';
 
 export default ServiceCard;

@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, Wifi, Clock, Settings, Star, Eye, EyeOff, X, Activity, TrendingUp, Zap, ArrowUpDown, ArrowUp, ArrowDown, Globe } from 'lucide-react';
 import { serviceFetchers, serviceNames, StatusUtils } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import { SERVICE_CATEGORIES, groupServicesByCategory } from '../types/categories';
+import { StatusType } from '../types/status';
 import type { ComponentFilter, Favorites, ServiceExpansion, ViewMode, SortType, Language } from '../types/ui';
 import AdFitBanner from './AdFitBanner';
 import StatusBadge from './StatusBadge';
 import LanguageSelector from './LanguageSelector';
 import SortDropdown from './SortDropdown';
 import Header from './Header';
-import ServiceCard from './ServiceCard';
+import ServiceCard, { ServiceIcon, getStatusIcon } from './ServiceCard';
 import SidebarFilter from './SidebarFilter';
 import BottomSheetFilter from './BottomSheetFilter';
 import KeyboardNavigation from './KeyboardNavigation';
+import StatusSummaryPanel from './StatusSummaryPanel';
+import LoadingProgressBar from './LoadingProgressBar';
+import { useNotification } from '../hooks/useNotification';
+import { useStatusHistory } from '../hooks/useStatusHistory';
 import { Stagger, PageTransition, ServiceCardSkeleton } from './animations';
 
 
@@ -145,6 +150,15 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
 
   // 상태별 필터링 - 문제 서비스만 표시
   const [statusFilter, setStatusFilter] = useState<'degraded_performance' | 'major_outage' | null>(null);
+  
+  // 알림 설정
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('notifications-enabled');
+      return saved === 'true';
+    }
+    return false;
+  });
 
   // 현재 언어의 번역 가져오기
   const t = translations[language];
@@ -195,8 +209,16 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       : `Monitoring ${serviceName.toUpperCase()} service status.`;
   };
 
-  // 기본 필터 및 즐겨찾기 설정 생성
-  const getDefaultFilters = (serviceList: Service[]): ComponentFilter => {
+  // 서비스 정렬 순서 메모이제이션
+  const serviceOrder = useMemo(() => [
+    'openai', 'anthropic', 'cursor', 'googleai', 'github', 'netlify', 'dockerhub', 
+    'aws', 'slack', 'firebase', 'supabase', 'perplexity', 'v0', 'replit', 'xai', 
+    'heroku', 'atlassian', 'circleci', 'auth0', 'sendgrid', 'cloudflare', 'datadog', 
+    'groq', 'leonardo', 'hailuo', 'consensus', 'deepseek', 'mage', 'vooster'
+  ], []);
+
+  // 기본 필터 및 즐겨찾기 설정 생성 (메모이제이션)
+  const getDefaultFilters = useCallback((serviceList: Service[]): ComponentFilter => {
     const filters: ComponentFilter = {};
     serviceList.forEach(service => {
       filters[service.service_name] = {};
@@ -205,9 +227,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       });
     });
     return filters;
-  };
+  }, []);
 
-  const getDefaultFavorites = (serviceList: Service[]): Favorites => {
+  const getDefaultFavorites = useCallback((serviceList: Service[]): Favorites => {
     const favorites: Favorites = {};
     serviceList.forEach(service => {
       favorites[service.service_name] = {};
@@ -216,22 +238,90 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       });
     });
     return favorites;
-  };
+  }, []);
 
-  const getDefaultExpansion = (serviceList: Service[]): ServiceExpansion => {
+  const getDefaultExpansion = useCallback((serviceList: Service[]): ServiceExpansion => {
     const expansion: ServiceExpansion = {};
     serviceList.forEach(service => {
       expansion[service.service_name] = false; // 기본적으로 모두 접힌 상태
     });
     return expansion;
-  };
+  }, []);
 
-  // 개별 서비스 로딩 함수
-  const loadServiceData = async (serviceName: keyof typeof serviceFetchers, isInitialLoad = false) => {
+  // 캐시 키 생성
+  const getCacheKey = useCallback((serviceName: string) => {
+    return `service-status-cache-${serviceName}`;
+  }, []);
+
+  // 캐시에서 서비스 데이터 가져오기 (5분 TTL)
+  const getCachedServiceData = useCallback((serviceName: string): Service | null => {
+    try {
+      const cacheKey = getCacheKey(serviceName);
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        const now = Date.now();
+        const cacheAge = now - timestamp;
+        const cacheTTL = 5 * 60 * 1000; // 5분
+        
+        if (cacheAge < cacheTTL) {
+          return data;
+        }
+        // 캐시 만료 시 삭제
+        localStorage.removeItem(cacheKey);
+      }
+    } catch (error) {
+      // 캐시 파싱 실패 시 무시
+    }
+    return null;
+  }, [getCacheKey]);
+
+  // 서비스 데이터를 캐시에 저장
+  const setCachedServiceData = useCallback((serviceName: string, data: Service) => {
+    try {
+      const cacheKey = getCacheKey(serviceName);
+      const cacheData = {
+        data,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+    } catch (error) {
+      // localStorage 저장 실패 시 무시 (용량 초과 등)
+    }
+  }, [getCacheKey]);
+
+  // 개별 서비스 로딩 함수 (캐싱 적용, useCallback으로 메모이제이션)
+  const loadServiceData = useCallback(async (serviceName: keyof typeof serviceFetchers, isInitialLoad = false) => {
     try {
       setServiceLoadingStates(prev => ({ ...prev, [serviceName]: true }));
       
+      // 캐시에서 먼저 확인
+      const cachedData = getCachedServiceData(serviceName as string);
+      if (cachedData && !isInitialLoad) {
+        // 캐시된 데이터가 있고 초기 로드가 아니면 캐시 사용
+        setServices(prev => {
+          const newServices = [...prev];
+          const existingIndex = newServices.findIndex(s => s.service_name === serviceName);
+          
+          if (existingIndex >= 0) {
+            newServices[existingIndex] = cachedData;
+          } else {
+            newServices.push(cachedData);
+          }
+          
+          return newServices.sort((a, b) => {
+            return serviceOrder.indexOf(a.service_name) - serviceOrder.indexOf(b.service_name);
+          });
+        });
+        setServiceLoadingStates(prev => ({ ...prev, [serviceName]: false }));
+        return;
+      }
+      
+      // 캐시에 없거나 초기 로드면 API 호출
       const serviceData = await serviceFetchers[serviceName]();
+      
+      // 캐시에 저장
+      setCachedServiceData(serviceName as string, serviceData);
       
       setServices(prev => {
         const newServices = [...prev];
@@ -244,8 +334,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         }
         
         return newServices.sort((a, b) => {
-          const order = ['openai', 'anthropic', 'cursor', 'googleai', 'github', 'netlify', 'dockerhub', 'aws', 'slack', 'firebase', 'supabase', 'perplexity', 'v0', 'replit', 'xai', 'heroku', 'atlassian', 'circleci', 'auth0', 'sendgrid', 'cloudflare', 'datadog', 'groq', 'leonardo', 'hailuo', 'consensus', 'deepseek', 'mage', 'vooster'];
-          return order.indexOf(a.service_name) - order.indexOf(b.service_name);
+          return serviceOrder.indexOf(a.service_name) - serviceOrder.indexOf(b.service_name);
         });
       });
       
@@ -303,17 +392,33 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     } finally {
       setServiceLoadingStates(prev => ({ ...prev, [serviceName]: false }));
     }
-  };
+  }, [serviceOrder, getCachedServiceData, setCachedServiceData]);
 
-  // 모든 서비스 로딩 함수
-  const loadAllServicesData = async (isInitialLoad = false) => {
+  // 우선순위 서비스 목록 (중요한 서비스 먼저 로딩)
+  const priorityServices = useMemo(() => [
+    'openai', 'anthropic', 'cursor', 'github', 'googleai'
+  ] as (keyof typeof serviceFetchers)[], []);
+
+  // 모든 서비스 로딩 함수 (우선순위 기반 로딩, useCallback으로 메모이제이션)
+  const loadAllServicesData = useCallback(async (isInitialLoad = false) => {
     setLastUpdate(new Date());
     
-    const loadPromises = serviceNames.map((serviceName: keyof typeof serviceFetchers) => 
+    // 1단계: 우선순위 서비스 먼저 로딩
+    const priorityPromises = priorityServices.map((serviceName) => 
       loadServiceData(serviceName, isInitialLoad)
     );
-    await Promise.allSettled(loadPromises);
-  };
+    await Promise.allSettled(priorityPromises);
+    
+    // 2단계: 나머지 서비스 점진적 로딩
+    const remainingServices = serviceNames.filter(
+      (name) => !priorityServices.includes(name as keyof typeof serviceFetchers)
+    ) as (keyof typeof serviceFetchers)[];
+    
+    const remainingPromises = remainingServices.map((serviceName) => 
+      loadServiceData(serviceName, isInitialLoad)
+    );
+    await Promise.allSettled(remainingPromises);
+  }, [loadServiceData, priorityServices]);
 
   // localStorage 저장 및 로드
   useEffect(() => {
@@ -372,8 +477,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     const savedVisibleCategories = localStorage.getItem('service-status-visible-categories');
     if (savedVisibleCategories) {
       try {
-        const parsedVisibleCategories = JSON.parse(savedVisibleCategories);
-        const savedSet = new Set(parsedVisibleCategories);
+        const parsedVisibleCategories = JSON.parse(savedVisibleCategories) as string[];
+        const savedSet = new Set<string>(parsedVisibleCategories);
         
         // 🔥 긴급 수정: 모든 카테고리가 숨겨져 있으면 강제로 AI/ML과 Cloud 표시
         if (savedSet.size === 0) {
@@ -530,7 +635,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     setStatusFilter(null);
   };
 
-  const toggleFavorite = (serviceName: string, componentName: string) => {
+  const toggleFavorite = useCallback((serviceName: string, componentName: string) => {
     setFavorites(prev => ({
       ...prev,
       [serviceName]: {
@@ -538,27 +643,21 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         [componentName]: !prev[serviceName]?.[componentName]
       }
     }));
-  };
+  }, []);
 
-  const toggleServiceExpansion = (serviceName: string) => {
-    console.log('toggleServiceExpansion called for:', serviceName);
-    console.log('Current expandedServices:', expandedServices);
-    setExpandedServices(prev => {
-      const newState = {
-        ...prev,
-        [serviceName]: !prev[serviceName]
-      };
-      console.log('New expandedServices:', newState);
-      return newState;
-    });
-  };
+  const toggleServiceExpansion = useCallback((serviceName: string) => {
+    setExpandedServices(prev => ({
+      ...prev,
+      [serviceName]: !prev[serviceName]
+    }));
+  }, []);
 
-  const toggleFilterServiceExpansion = (serviceName: string) => {
+  const toggleFilterServiceExpansion = useCallback((serviceName: string) => {
     setFilterExpandedServices(prev => ({
       ...prev,
       [serviceName]: !prev[serviceName]
     }));
-  };
+  }, []);
 
   // 카테고리 표시/숨김 토글 함수
   const toggleCategoryVisibility = (categoryName: string) => {
@@ -657,8 +756,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     setStatusFilter(null);
   };
 
-  // 필터링된 서비스 반환
-  const getFilteredServices = () => {
+  // 필터링된 서비스 반환 (useMemo로 메모이제이션)
+  const filteredServices = useMemo(() => {
     return services.filter(service => {
       // 컴포넌트 필터링
       const hasSelectedComponent = service.components.some(component => 
@@ -670,43 +769,40 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       // 상태 필터링 - 특정 상태만 표시하도록 필터링
       if (statusFilter) {
         const serviceStatus = StatusUtils.calculateServiceStatus(service.components);
-        const isProblemService = serviceStatus === 'degraded' || serviceStatus === 'outage' || serviceStatus === 'maintenance';
         
         // degraded_performance 필터가 활성화된 경우: degraded, maintenance 상태 서비스만 표시
         if (statusFilter === 'degraded_performance') {
-          return serviceStatus === 'degraded' || serviceStatus === 'maintenance';
+          return serviceStatus === StatusType.DEGRADED_PERFORMANCE || serviceStatus === StatusType.UNDER_MAINTENANCE;
         }
         
         // major_outage 필터가 활성화된 경우: outage 상태 서비스만 표시
         if (statusFilter === 'major_outage') {
-          return serviceStatus === 'outage';
+          return serviceStatus === StatusType.MAJOR_OUTAGE || serviceStatus === StatusType.PARTIAL_OUTAGE;
         }
       }
       
       return true;
     });
-  };
+  }, [services, filters, statusFilter]);
 
-  // 필터링된 서비스만 새로고침
-  const loadFilteredServicesData = async () => {
-    const filteredServices = getFilteredServices();
-    const serviceNames = filteredServices.map(s => s.service_name as keyof typeof serviceFetchers);
+  // 필터링된 서비스만 새로고침 (useCallback으로 메모이제이션)
+  const loadFilteredServicesData = useCallback(async () => {
+    const serviceNamesToLoad = filteredServices.map(s => s.service_name as keyof typeof serviceFetchers);
     
     setLastUpdate(new Date());
     
-    const loadPromises = serviceNames.map((serviceName) => 
+    const loadPromises = serviceNamesToLoad.map((serviceName) => 
       loadServiceData(serviceName, false)
     );
     await Promise.allSettled(loadPromises);
-  };
+  }, [filteredServices, loadServiceData]);
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     await loadFilteredServicesData();
-  };
+  }, [loadFilteredServicesData]);
 
-  // 정렬 함수
-  const getSortedServices = () => {
-    const filteredServices = getFilteredServices();
+  // 정렬된 서비스 반환 (useMemo로 메모이제이션)
+  const sortedServices = useMemo(() => {
     const servicesWithStatus = filteredServices.map(service => ({
       ...service,
       status: StatusUtils.calculateServiceStatus(service.components)
@@ -720,12 +816,12 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       case 'default':
       default:
         return servicesWithStatus.sort((a, b) => {
-          const aIndex = serviceNames.indexOf(a.service_name as keyof typeof serviceFetchers);
-          const bIndex = serviceNames.indexOf(b.service_name as keyof typeof serviceFetchers);
+          const aIndex = serviceOrder.indexOf(a.service_name);
+          const bIndex = serviceOrder.indexOf(b.service_name);
           return aIndex - bIndex;
         });
     }
-  };
+  }, [filteredServices, sortType, serviceOrder]);
 
   // 정렬 변경 핸들러
   const handleSortChange = async (newSortType: SortType) => {
@@ -816,17 +912,17 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     }
   };
 
-  // 계산된 상태를 포함한 서비스 데이터를 가져오는 함수
-  const getServicesWithCalculatedStatus = () => {
+  // 계산된 상태를 포함한 서비스 데이터 (useMemo로 메모이제이션)
+  const servicesWithCalculatedStatus = useMemo(() => {
     return services.map(service => ({
       ...service,
       status: StatusUtils.calculateServiceStatus(service.components)
     }));
-  };
+  }, [services]);
 
-  // 즐겨찾기 항목들을 가져오는 함수
-  const getFavoriteComponents = () => {
-    const favoriteItems: Array<{
+  // 즐겨찾기 항목들을 가져오는 함수 (useMemo로 메모이제이션)
+  const favoriteComponents = useMemo(() => {
+    const items: Array<{
       serviceName: string;
       serviceDisplayName: string;
       componentName: string;
@@ -834,12 +930,11 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       icon: string;
     }> = [];
 
-    const filteredServices = getFilteredServices();
     filteredServices.forEach(service => {
       service.components.forEach(component => {
         if (favorites[service.service_name]?.[component.name] && 
             filters[service.service_name]?.[component.name]) {
-          favoriteItems.push({
+          items.push({
             serviceName: service.service_name,
             serviceDisplayName: service.display_name,
             componentName: component.name,
@@ -850,33 +945,92 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       });
     });
 
-    return favoriteItems;
-  };
+    return items;
+  }, [filteredServices, favorites, filters]);
 
-  // 전체 상태 요약 계산
-  const getOverallStats = () => {
-    const filteredServices = getFilteredServices();
+  // 전체 상태 요약 계산 (useMemo로 메모이제이션)
+  const overallStats = useMemo(() => {
     const servicesWithStatus = filteredServices.map(service => ({
       ...service,
       status: StatusUtils.calculateServiceStatus(service.components)
     }));
     
     const totalServices = servicesWithStatus.length;
-    const operational = servicesWithStatus.filter(s => s.status === 'operational').length;
-    const degraded = servicesWithStatus.filter(s => s.status === 'degraded').length;
-    const outage = servicesWithStatus.filter(s => s.status === 'outage').length;
+    const operational = servicesWithStatus.filter(s => s.status === StatusType.OPERATIONAL).length;
+    const degraded = servicesWithStatus.filter(s => s.status === StatusType.DEGRADED_PERFORMANCE).length;
+    const outage = servicesWithStatus.filter(s => s.status === StatusType.MAJOR_OUTAGE || s.status === StatusType.PARTIAL_OUTAGE).length;
     
     return { totalServices, operational, degraded, outage };
-  };
+  }, [filteredServices]);
 
-  // 로딩 중인 서비스 수 계산
-  const getLoadingServicesCount = () => {
-    return Object.values(serviceLoadingStates).filter(Boolean).length;
-  };
 
-  const stats = getOverallStats();
-  const loadingCount = getLoadingServicesCount();
+  const stats = overallStats;
+  const loadingCount = useMemo(() => Object.values(serviceLoadingStates).filter(Boolean).length, [serviceLoadingStates]);
   const isAnyLoading = loadingCount > 0;
+  
+  // 로딩 진행률 계산
+  const loadingProgress = useMemo(() => {
+    const totalServices = serviceNames.length;
+    const loadedServices = services.length;
+    const loadingServices = loadingCount;
+    return {
+      loaded: loadedServices,
+      total: totalServices,
+      loading: loadingServices
+    };
+  }, [services.length, loadingCount]);
+
+  // 알림 시스템
+  const { requestPermission, permission, isSupported } = useNotification(services, {
+    enabled: notificationsEnabled,
+    language,
+    onPermissionGranted: () => {
+      if (import.meta.env.DEV) {
+        console.log('Notification permission granted');
+      }
+    },
+    onPermissionDenied: () => {
+      if (import.meta.env.DEV) {
+        console.log('Notification permission denied');
+      }
+      setNotificationsEnabled(false);
+      localStorage.setItem('notifications-enabled', 'false');
+    }
+  });
+
+  // 알림 설정 토글
+  const toggleNotifications = useCallback(async () => {
+    if (!isSupported) {
+      if (import.meta.env.DEV) {
+        console.warn('Notifications are not supported in this browser');
+      }
+      return;
+    }
+
+    if (!notificationsEnabled) {
+      const granted = await requestPermission();
+      if (granted) {
+        setNotificationsEnabled(true);
+        localStorage.setItem('notifications-enabled', 'true');
+      }
+    } else {
+      setNotificationsEnabled(false);
+      localStorage.setItem('notifications-enabled', 'false');
+    }
+  }, [notificationsEnabled, isSupported, requestPermission]);
+
+  // 상태 히스토리
+  const { recordStatus, getPeriodStats } = useStatusHistory(services, {
+    maxEntries: 1000,
+    retentionDays: 30
+  });
+
+  // 서비스 상태 변경 시 히스토리 기록
+  useEffect(() => {
+    if (services.length > 0 && !isAnyLoading) {
+      recordStatus(services);
+    }
+  }, [services, isAnyLoading, recordStatus]);
 
   // 모바일 스크롤 숨김 클래스 계산
   const getMobileScrollClass = () => {
@@ -896,8 +1050,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   };
 
   // 상태 필터 핸들러 - 문제 서비스만 표시/해제
-  const handleStatusFilter = (status: 'degraded_performance' | 'major_outage') => {
-    setStatusFilter(prevFilter => prevFilter === status ? null : status);
+  const handleStatusFilter = (status: 'degraded_performance' | 'major_outage' | null) => {
+    setStatusFilter(status);
   };
 
   // 테마 토글 핸들러
@@ -907,11 +1061,33 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     localStorage.setItem('ui-theme', newTheme);
   };
 
-  // 카테고리별로 그룹화된 서비스 가져오기
-  const getCategorizedServices = () => {
-    const sortedServices = getSortedServices();
+  // 카테고리별로 그룹화된 서비스 가져오기 (useMemo로 메모이제이션)
+  const categorizedServices = useMemo(() => {
     return groupServicesByCategory(sortedServices);
-  };
+  }, [sortedServices]);
+
+  // 상태별로 그룹화된 서비스 가져오기 (useMemo로 메모이제이션)
+  const servicesByStatus = useMemo(() => {
+    const grouped: Record<string, Service[]> = {
+      critical: [], // major_outage, partial_outage
+      warning: [], // degraded_performance, under_maintenance
+      normal: [], // operational
+    };
+
+    sortedServices.forEach(service => {
+      const status = StatusUtils.calculateServiceStatus(service.components);
+      
+      if (status === StatusType.MAJOR_OUTAGE || status === StatusType.PARTIAL_OUTAGE) {
+        grouped.critical.push(service);
+      } else if (status === StatusType.DEGRADED_PERFORMANCE || status === StatusType.UNDER_MAINTENANCE) {
+        grouped.warning.push(service);
+      } else {
+        grouped.normal.push(service);
+      }
+    });
+
+    return grouped;
+  }, [sortedServices]);
 
   // 필터링된 카테고리별 서비스 카운트 계산
   const getFilteredCategoryCount = (categoryServices: Service[]) => {
@@ -927,10 +1103,10 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       if (statusFilter) {
         const serviceStatus = StatusUtils.calculateServiceStatus(service.components);
         if (statusFilter === 'degraded_performance') {
-          return serviceStatus === 'degraded' || serviceStatus === 'maintenance';
+          return serviceStatus === StatusType.DEGRADED_PERFORMANCE || serviceStatus === StatusType.UNDER_MAINTENANCE;
         }
         if (statusFilter === 'major_outage') {
-          return serviceStatus === 'outage';
+          return serviceStatus === StatusType.MAJOR_OUTAGE || serviceStatus === StatusType.PARTIAL_OUTAGE;
         }
       }
       
@@ -959,6 +1135,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         onRefresh={refreshData}
         onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
         onToggleLanguage={() => setLanguage(language === 'ko' ? 'en' : 'ko')}
+        onStatusFilter={handleStatusFilter}
         onEscape={() => {
           if (isFilterOpen) setIsFilterOpen(false);
           if (isFooterExpanded) setIsFooterExpanded(false);
@@ -988,6 +1165,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         onTitleClick={handleTitleClick}
         onStatusFilter={handleStatusFilter}
         onThemeToggle={handleThemeToggle}
+        notificationsEnabled={notificationsEnabled}
+        onToggleNotifications={toggleNotifications}
                 translations={{
           refresh: t.refresh,
           filter: t.filter,
@@ -1004,6 +1183,29 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       {/* 메인 컨텐츠 */}
       <main className="main-content">
         <div className="container mx-auto px-4 py-6">
+          
+          {/* 상태 요약 대시보드 */}
+          <StatusSummaryPanel
+            stats={stats}
+            totalServices={filteredServices.length}
+            language={language}
+            theme={theme}
+            onStatusFilter={handleStatusFilter}
+            statusFilter={statusFilter}
+          />
+          
+          {/* 로딩 진행률 표시 */}
+          {isAnyLoading && (
+            <LoadingProgressBar
+              loaded={loadingProgress.loaded}
+              total={loadingProgress.total}
+              loading={loadingProgress.loading}
+              language={language}
+              theme={theme}
+              onRetry={refreshData}
+              error={error}
+            />
+          )}
           
           {/* 활성 필터 표시 바 */}
           {statusFilter && (
@@ -1088,7 +1290,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                           </div>
 
           {/* 즐겨찾기 섹션 */}
-          {getFavoriteComponents().length > 0 && (
+          {favoriteComponents.length > 0 && (
             <div className="mb-6 md:mb-8">
               <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                 <div className="relative">
@@ -1100,12 +1302,12 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                 </h2>
                 <div className="flex items-center gap-1 md:gap-2 bg-yellow-500/10 px-2 md:px-3 py-1 rounded-full border border-yellow-500/20">
                   <span className="text-yellow-400 font-medium text-xs md:text-sm">
-                    {getFavoriteComponents().length}
+                    {favoriteComponents.length}
                   </span>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-                {getFavoriteComponents().map((item, index) => (
+                {favoriteComponents.map((item, index) => (
                   <div key={`${item.serviceName}-${item.componentName}-${index}`} className="favorite-card hover-lift">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
@@ -1141,7 +1343,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
 
           {/* 서비스 표시 영역 - 카테고리 뷰 */}
             <div className="space-y-4">
-              {Object.entries(getCategorizedServices()).map(([categoryName, categoryServices]) => (
+              {Object.entries(categorizedServices).map(([categoryName, categoryServices]) => (
                 <motion.div 
                   key={categoryName} 
                   className="category-section-premium"
@@ -1244,7 +1446,18 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                       direction="up"
                       distance={30}
                     >
-                      {categoryServices.map((service) => {
+                      {categoryServices
+                        .sort((a, b) => {
+                          // 상태별 우선순위 정렬: Critical → Warning → Normal
+                          const getStatusPriority = (service: Service) => {
+                            const status = StatusUtils.calculateServiceStatus(service.components);
+                            if (status === StatusType.MAJOR_OUTAGE || status === StatusType.PARTIAL_OUTAGE) return 0; // Critical
+                            if (status === StatusType.DEGRADED_PERFORMANCE || status === StatusType.UNDER_MAINTENANCE) return 1; // Warning
+                            return 2; // Normal
+                          };
+                          return getStatusPriority(a) - getStatusPriority(b);
+                        })
+                        .map((service) => {
                 const isLoading = serviceLoadingStates[service.service_name];
                 
                 if (isLoading) {
@@ -1280,7 +1493,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
           {/* 하단 광고 배너 */}
           <div className="mt-4 mb-3 md:mt-8 md:mb-6 flex justify-center">
             <AdFitBanner 
-              onNoAd={() => console.log('하단 광고 로드 실패')}
+              onNoAd={() => {
+                // 광고 로드 실패 시 무시 (사용자 경험에 영향 없음)
+              }}
             />
           </div>
 
@@ -1302,8 +1517,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                   <Activity className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">
                     {language === 'ko' 
-                      ? `${getFilteredServices().length}개 서비스 모니터링`
-                      : `Monitoring ${getFilteredServices().length} Services`
+                      ? `${filteredServices.length}개 서비스 모니터링`
+                      : `Monitoring ${filteredServices.length} Services`
                     }
                   </span>
                 </div>
@@ -1335,7 +1550,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                   <div className="mobile-footer-stat-item">
                     <Globe className="w-3 h-3 text-green-400" />
                     <span>
-                      {getOverallStats().operational}/{getFilteredServices().length} {language === 'ko' ? '정상 운영' : 'Operational'}
+                      {overallStats.operational}/{filteredServices.length} {language === 'ko' ? '정상 운영' : 'Operational'}
                     </span>
                   </div>
                 </div>
@@ -1373,13 +1588,13 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               <span className="hidden sm:inline text-gray-600">•</span>
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
-                <span>{t.monitoring}: {getServicesWithCalculatedStatus().length}{t.services}</span>
+                <span>{t.monitoring}: {servicesWithCalculatedStatus.length}{t.services}</span>
               </div>
               <span className="hidden sm:inline text-gray-600">•</span>
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-green-400" />
                 <span>
-                  {getOverallStats().operational}/{getServicesWithCalculatedStatus().length} {language === 'ko' ? '정상 운영' : 'Operational'}
+                  {overallStats.operational}/{servicesWithCalculatedStatus.length} {language === 'ko' ? '정상 운영' : 'Operational'}
                 </span>
             </div>
           </div>

@@ -37,7 +37,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     shimmer: {
       x: ['-100%', '100%'],
       transition: {
-        duration: 2,
+        duration: 1.5,
         repeat: Infinity,
         ease: "easeInOut"
       }
@@ -46,7 +46,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 
   return (
     <motion.div
-      className={`bg-gray-700 relative overflow-hidden ${className}`}
+      className={`skeleton-loader relative overflow-hidden ${className}`}
       style={{
         width,
         height,
@@ -57,7 +57,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     >
       {animate && (
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-500/20 to-transparent"
+          className="skeleton-shimmer absolute inset-0"
           variants={shimmerVariants}
           animate="shimmer"
         />

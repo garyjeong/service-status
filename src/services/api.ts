@@ -215,14 +215,54 @@ class ServiceStatusFetcher {
     // statuspage 기반
     if (config.kind === 'statuspage') {
       try {
+        // StatusPage API v2를 통해 실제 컴포넌트 상태 조회
         const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
         const data = response.data;
         const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
-        const components: ServiceComponent[] = (config.components || []).map(componentName => ({
-          name: componentName,
-          status: baseStatus,
-        }));
+        // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
+        let componentsData;
+        try {
+          // api_url에서 /status.json을 /components.json으로 교체
+          const componentsUrl = config.api_url?.replace('/status.json', '/components.json');
+          if (componentsUrl) {
+            const componentsResponse = await apiClient.get(`${CORS_PROXY}${componentsUrl}`);
+            componentsData = componentsResponse.data.components;
+          }
+        } catch (error) {
+          // components API 호출 실패 시 status.json의 components 사용 또는 기본 상태 사용
+          if (import.meta.env.DEV) {
+            console.warn(`${config.service_name} components API 호출 실패, status.json의 components 사용:`, error);
+          }
+          componentsData = data.components || [];
+        }
+
+        // 실제 컴포넌트 데이터 매핑
+        const components: ServiceComponent[] = [];
+
+        if (componentsData && componentsData.length > 0) {
+          // 그룹이 아닌 실제 컴포넌트만 필터링하고 상태 매핑
+          const actualComponents = componentsData
+            .filter((component: any) => !component.group && component.name)
+            .map((component: any) => ({
+              name: component.name,
+              status: StatusUtils.normalizeStatus(component.status || data.status?.indicator || 'operational'),
+            }));
+
+          if (actualComponents.length > 0) {
+            components.push(...actualComponents);
+          }
+        }
+
+        // 컴포넌트가 없으면 기본 컴포넌트 목록 사용 (fallback)
+        if (components.length === 0 && config.components) {
+          components.push(
+            ...config.components.map(componentName => ({
+              name: componentName,
+              status: baseStatus,
+            }))
+          );
+        }
 
         return {
           service_name: config.service_name,
@@ -303,12 +343,8 @@ export async function fetchNetlifyStatus(): Promise<Service> {
  */
 export async function fetchDockerHubStatus(): Promise<Service> {
   try {
-    console.log('Docker Hub 웹 스크래핑 시작...');
     // 웹 스크래핑을 통해 Docker 상태 정보 가져오기
     const scrapedStatus = await WebScrapingService.fetchDockerStatus();
-    console.log('Docker Hub 스크래핑 결과:', scrapedStatus);
-    console.log('Docker Hub 컴포넌트 개수:', scrapedStatus.components.length);
-    console.log('Docker Hub 첫 번째 컴포넌트:', scrapedStatus.components[0]);
     
     // ServiceStatus를 Service 인터페이스로 변환
     const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
@@ -316,7 +352,7 @@ export async function fetchDockerHubStatus(): Promise<Service> {
       status: comp.status,
     }));
 
-    const result = {
+    return {
       service_name: 'dockerhub',
       display_name: 'Docker Hub',
       description: '컨테이너 이미지 레지스트리 및 저장소',
@@ -325,10 +361,6 @@ export async function fetchDockerHubStatus(): Promise<Service> {
       icon: 'docker',
       components,
     };
-    
-    console.log('Docker Hub 최종 결과:', result);
-    console.log('Docker Hub 최종 컴포넌트 개수:', result.components.length);
-    return result;
   } catch (error) {
     console.error('Docker Hub 웹 스크래핑 오류:', error);
 
@@ -366,50 +398,126 @@ export async function fetchDockerHubStatus(): Promise<Service> {
 }
 
 /**
- * AWS 상태 조회 (간소화된 버전)
+ * AWS 상태 조회 (StatusPage API v2 또는 스크래핑 기반)
  */
 export async function fetchAWSStatus(): Promise<Service> {
   try {
-    // AWS Health API는 복잡하므로 간단한 헬스체크로 대체
-    const response = await apiClient.get('https://health.aws.amazon.com/health/status', {
-      timeout: 5000,
-    });
+    // 먼저 StatusPage API v2를 시도
+    try {
+      const response = await apiClient.get(
+        `${CORS_PROXY}https://status.aws.amazon.com/api/v2/status.json`
+      );
+      const data = response.data;
+      const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
-    const components: ServiceComponent[] = [
-      { name: 'EC2', status: 'operational' },
-      { name: 'S3', status: 'operational' },
-      { name: 'RDS', status: 'operational' },
-      { name: 'Lambda', status: 'operational' },
-      { name: 'CloudFront', status: 'operational' },
-      { name: 'Route 53', status: 'operational' },
-      { name: 'CloudWatch', status: 'operational' },
-      { name: 'IAM', status: 'operational' },
-      { name: 'ECS', status: 'operational' },
-      { name: 'EKS', status: 'operational' },
-    ];
+      // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
+      let componentsData;
+      try {
+        const componentsResponse = await apiClient.get(
+          `${CORS_PROXY}https://status.aws.amazon.com/api/v2/components.json`
+        );
+        componentsData = componentsResponse.data.components;
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('AWS components API 호출 실패, status.json의 components 사용:', error);
+        }
+        componentsData = data.components || [];
+      }
 
-    return {
-      service_name: 'aws',
-      display_name: 'AWS',
-      description: '아마존 웹 서비스 클라우드 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.aws.amazon.com',
-      icon: 'aws',
-      components,
-    };
+      // 실제 컴포넌트 데이터 매핑
+      const components: ServiceComponent[] = [];
+
+      if (componentsData && componentsData.length > 0) {
+        // 그룹이 아닌 실제 컴포넌트만 필터링하고 상태 매핑
+        const actualComponents = componentsData
+          .filter((component: any) => !component.group && component.name)
+          .map((component: any) => ({
+            name: component.name,
+            status: StatusUtils.normalizeStatus(component.status || data.status?.indicator || 'operational'),
+          }));
+
+        if (actualComponents.length > 0) {
+          components.push(...actualComponents);
+        }
+      }
+
+      // 컴포넌트가 없으면 주요 서비스 목록 사용 (fallback)
+      if (components.length === 0) {
+        const defaultComponents = [
+          'Amazon EC2',
+          'Amazon S3',
+          'Amazon RDS',
+          'AWS Lambda',
+          'Amazon CloudFront',
+          'Amazon Route 53',
+          'Amazon CloudWatch',
+          'AWS Identity and Access Management',
+          'Amazon ECS',
+          'Amazon EKS',
+          'Amazon VPC',
+          'Amazon API Gateway',
+          'Amazon DynamoDB',
+          'Amazon ElastiCache',
+          'Amazon Elasticsearch Service',
+        ];
+
+        components.push(
+          ...defaultComponents.map(componentName => ({
+            name: componentName,
+            status: baseStatus,
+          }))
+        );
+      }
+
+      return {
+        service_name: 'aws',
+        display_name: 'AWS',
+        description: '아마존 웹 서비스 클라우드 플랫폼',
+        status: StatusUtils.calculateServiceStatus(components),
+        page_url: 'https://status.aws.amazon.com',
+        icon: 'aws',
+        components,
+      };
+    } catch (apiError) {
+      // StatusPage API 실패 시 웹 스크래핑 시도
+      if (import.meta.env.DEV) {
+        console.warn('AWS StatusPage API 실패, 웹 스크래핑 시도:', apiError);
+      }
+      
+      // 웹 스크래핑을 통해 AWS 상태 정보 가져오기
+      const scrapedStatus = await WebScrapingService.fetchAWSStatus();
+      
+      // ServiceStatus를 Service 인터페이스로 변환
+      const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
+        name: comp.name,
+        status: comp.status,
+      }));
+
+      return {
+        service_name: 'aws',
+        display_name: 'AWS',
+        description: '아마존 웹 서비스 클라우드 플랫폼',
+        status: scrapedStatus.overall_status,
+        page_url: 'https://status.aws.amazon.com',
+        icon: 'aws',
+        components,
+      };
+    }
   } catch (error) {
-    console.error('AWS API 오류:', error);
+    console.error('AWS 상태 조회 오류:', error);
+    
+    // 모든 방법 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
-      { name: 'EC2', status: 'operational' },
-      { name: 'S3', status: 'operational' },
-      { name: 'RDS', status: 'operational' },
-      { name: 'Lambda', status: 'operational' },
-      { name: 'CloudFront', status: 'operational' },
-      { name: 'Route 53', status: 'operational' },
-      { name: 'CloudWatch', status: 'operational' },
-      { name: 'IAM', status: 'operational' },
-      { name: 'ECS', status: 'operational' },
-      { name: 'EKS', status: 'operational' },
+      { name: 'Amazon EC2', status: StatusType.OPERATIONAL },
+      { name: 'Amazon S3', status: StatusType.OPERATIONAL },
+      { name: 'Amazon RDS', status: StatusType.OPERATIONAL },
+      { name: 'AWS Lambda', status: StatusType.OPERATIONAL },
+      { name: 'Amazon CloudFront', status: StatusType.OPERATIONAL },
+      { name: 'Amazon Route 53', status: StatusType.OPERATIONAL },
+      { name: 'Amazon CloudWatch', status: StatusType.OPERATIONAL },
+      { name: 'AWS Identity and Access Management', status: StatusType.OPERATIONAL },
+      { name: 'Amazon ECS', status: StatusType.OPERATIONAL },
+      { name: 'Amazon EKS', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -429,12 +537,8 @@ export async function fetchAWSStatus(): Promise<Service> {
  */
 export async function fetchSlackStatus(): Promise<Service> {
   try {
-    console.log('Slack 웹 스크래핑 시작...');
     // 웹 스크래핑을 통해 Slack 상태 정보 가져오기
     const scrapedStatus = await WebScrapingService.fetchSlackStatus();
-    console.log('Slack 스크래핑 결과:', scrapedStatus);
-    console.log('Slack 컴포넌트 개수:', scrapedStatus.components.length);
-    console.log('Slack 첫 번째 컴포넌트:', scrapedStatus.components[0]);
     
     // ServiceStatus를 Service 인터페이스로 변환
     const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
@@ -442,7 +546,7 @@ export async function fetchSlackStatus(): Promise<Service> {
       status: comp.status,
     }));
 
-    const result = {
+    return {
       service_name: 'slack',
       display_name: 'Slack',
       description: '팀 커뮤니케이션 및 협업 플랫폼',
@@ -451,10 +555,6 @@ export async function fetchSlackStatus(): Promise<Service> {
       icon: 'slack',
       components,
     };
-    
-    console.log('Slack 최종 결과:', result);
-    console.log('Slack 최종 컴포넌트 개수:', result.components.length);
-    return result;
   } catch (error) {
     console.error('Slack 웹 스크래핑 오류:', error);
 
@@ -550,21 +650,64 @@ export async function fetchFirebaseStatus(): Promise<Service> {
 }
 
 /**
- * Cursor 상태 조회 (공개 API가 없으므로 간단한 헬스체크)
+ * Cursor 상태 조회 (StatusPage API v2 사용)
  */
 export async function fetchCursorStatus(): Promise<Service> {
   try {
-    // Cursor는 공개 상태 API가 없으므로 기본적으로 정상으로 처리
-    const components: ServiceComponent[] = [
-      { name: 'Desktop App', status: 'operational' },
-      { name: 'AI Copilot', status: 'operational' },
-      { name: 'Sync Service', status: 'operational' },
-      { name: 'Extensions', status: 'operational' },
-      { name: 'Editor Core', status: 'operational' },
-      { name: 'AI Assistant', status: 'operational' },
-      { name: 'Code Completion', status: 'operational' },
-      { name: 'Chat Interface', status: 'operational' },
-    ];
+    // StatusPage API v2를 통해 실제 컴포넌트 상태 조회
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.cursor.com/api/v2/status.json`
+    );
+    const data = response.data;
+
+    // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
+    let componentsData;
+    try {
+      const componentsResponse = await apiClient.get(
+        `${CORS_PROXY}https://status.cursor.com/api/v2/components.json`
+      );
+      componentsData = componentsResponse.data.components;
+    } catch (error) {
+      console.warn('Cursor components API 호출 실패, status.json의 components 사용:', error);
+      // status.json에서 컴포넌트 정보가 있으면 사용
+      componentsData = data.components || [];
+    }
+
+    // 실제 컴포넌트 데이터 매핑
+    const components: ServiceComponent[] = [];
+
+    if (componentsData && componentsData.length > 0) {
+      // 그룹이 아닌 실제 컴포넌트만 필터링하고 상태 매핑
+      components.push(
+        ...componentsData
+          .filter((component: any) => !component.group && component.name)
+          .map((component: any) => ({
+            name: component.name,
+            status: StatusUtils.normalizeStatus(component.status || data.status?.indicator || 'operational'),
+          }))
+      );
+    }
+
+    // 컴포넌트가 없으면 기본 컴포넌트 목록 사용
+    if (components.length === 0) {
+      const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
+      components.push(
+        { name: 'Cursor App', status: baseStatus },
+        { name: 'Chat - Agent & Custom Modes', status: baseStatus },
+        { name: 'Tab', status: baseStatus },
+        { name: 'Codebase Indexing', status: baseStatus },
+        { name: 'Extension Marketplace', status: baseStatus },
+        { name: 'Background Agent', status: baseStatus },
+        { name: 'Infrastructure', status: baseStatus },
+        { name: 'Slack Integration', status: baseStatus },
+        { name: 'GitHub Integrations', status: baseStatus },
+        { name: 'PR Indexing', status: baseStatus },
+        { name: 'BugBot', status: baseStatus },
+        { name: 'Website', status: baseStatus },
+        { name: 'User Dashboard (cursor.com)', status: baseStatus },
+        { name: 'Cursor Forum (forum.cursor.com)', status: baseStatus },
+      );
+    }
 
     return {
       service_name: 'cursor',
@@ -577,15 +720,22 @@ export async function fetchCursorStatus(): Promise<Service> {
     };
   } catch (error) {
     console.error('Cursor API 오류:', error);
+    // 폴백: 기본 컴포넌트 목록 (실제 상태 페이지의 컴포넌트 목록 기반)
     const components: ServiceComponent[] = [
-      { name: 'Desktop App', status: 'operational' },
-      { name: 'AI Copilot', status: 'operational' },
-      { name: 'Sync Service', status: 'operational' },
-      { name: 'Extensions', status: 'operational' },
-      { name: 'Editor Core', status: 'operational' },
-      { name: 'AI Assistant', status: 'operational' },
-      { name: 'Code Completion', status: 'operational' },
-      { name: 'Chat Interface', status: 'operational' },
+      { name: 'Cursor App', status: 'operational' },
+      { name: 'Chat - Agent & Custom Modes', status: 'operational' },
+      { name: 'Tab', status: 'operational' },
+      { name: 'Codebase Indexing', status: 'operational' },
+      { name: 'Extension Marketplace', status: 'operational' },
+      { name: 'Background Agent', status: 'operational' },
+      { name: 'Infrastructure', status: 'operational' },
+      { name: 'Slack Integration', status: 'operational' },
+      { name: 'GitHub Integrations', status: 'operational' },
+      { name: 'PR Indexing', status: 'operational' },
+      { name: 'BugBot', status: 'operational' },
+      { name: 'Website', status: 'operational' },
+      { name: 'User Dashboard (cursor.com)', status: 'operational' },
+      { name: 'Cursor Forum (forum.cursor.com)', status: 'operational' },
     ];
 
     return {
