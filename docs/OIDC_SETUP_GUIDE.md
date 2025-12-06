@@ -1,5 +1,18 @@
 # GitHub OIDC 설정 가이드
 
+> **마지막 업데이트**: 2025-01-30
+
+GitHub Actions에서 AWS ECR에 접근하기 위한 OIDC(OpenID Connect) 인증 설정 가이드입니다.
+
+OIDC를 사용하면 AWS 액세스 키를 GitHub Secrets에 저장할 필요 없이 안전하게 인증할 수 있습니다.
+
+## 개요
+
+OIDC를 사용하면:
+- ✅ AWS 액세스 키를 GitHub Secrets에 저장할 필요 없음
+- ✅ 더 안전한 인증 방식
+- ✅ 역할 기반 접근 제어
+
 ## 1. AWS에서 GitHub OIDC Provider 생성
 
 ### AWS CLI로 설정:
@@ -74,3 +87,8 @@ aws iam get-role --role-name GitHubActionsECRPush
 ## 3. 테스트
 
 OIDC 설정 완료 후 GitHub Actions를 다시 실행하면 OIDC 인증이 성공적으로 작동합니다.
+
+## 📚 관련 문서
+
+- [GitHub Actions 설정 가이드](./GITHUB_ACTIONS_SETUP.md) - 전체 CI/CD 설정
+- [배포 가이드](./DEPLOYMENT_GUIDE.md) - 배포 프로세스

@@ -1,10 +1,12 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Settings, Sun, Moon, Bell, BellOff } from 'lucide-react';
+import { motion } from 'framer-motion';
 import StatusBadge from './StatusBadge';
 import LanguageSelector from './LanguageSelector';
 import SortDropdown from './SortDropdown';
 import type { Language, SortType } from '../types/ui';
+import { Button } from '../design-system/Button';
+import { Icon } from '../design-system/Icon';
+import { StatusType } from '../types/status';
 
 interface HeaderProps {
   title: string;
@@ -46,319 +48,109 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
-  title,
-  language,
-  isAnyLoading,
-  loadingCount,
-  stats,
-  sortType,
-  isSortDropdownOpen,
-  isLanguageDropdownOpen,
-  statusFilter,
-  theme,
-  onRefresh,
-  onFilterOpen,
-  onSortChange,
-  onSortDropdownToggle,
-  onLanguageChange,
-  onLanguageDropdownToggle,
-  onTitleClick,
-  onStatusFilter,
-  onThemeToggle,
-  notificationsEnabled = false,
-  onToggleNotifications,
-  translations
+  title, language, isAnyLoading, loadingCount, stats, sortType, isSortDropdownOpen,
+  isLanguageDropdownOpen, statusFilter, theme, onRefresh, onFilterOpen, onSortChange,
+  onSortDropdownToggle, onLanguageChange, onLanguageDropdownToggle, onTitleClick,
+  onStatusFilter, onThemeToggle, notificationsEnabled = false, onToggleNotifications, translations
 }) => {
-  // 🔥 빌게이츠 요청: 진행률 계산 제거 (더 이상 사용하지 않음)
-
   return (
     <header className="header-premium header-section sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        {/* 데스크톱 헤더 레이아웃 */}
+        {/* Desktop Header */}
         <div className="hidden md:flex justify-between items-center py-4">
-          {/* 좌측: 서비스 제목 */}
-          <h1 
-            className="desktop-title"
-          >
-            {title}
-          </h1>
-          
-          {/* 우측: 상태 표시 + 버튼들 */}
+          <h1 className="desktop-title">{title}</h1>
           <div className="flex items-center gap-4">
-            {/* 🔥 빌게이츠 요청: 퍼센트 표기 영역 완전 삭제 */}
-            <div className="flex items-center gap-4">
-              {/* 상태 배지들 */}
-              <div className="flex items-center gap-3 text-sm">
-                <StatusBadge
-                  status="unknown"
-                  count={loadingCount}
-                  isLoading={loadingCount > 0}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-                <StatusBadge
-                  status="operational"
-                  count={stats.operational}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-                <StatusBadge
-                  status="degraded_performance"
-                  count={stats.degraded}
-                  onClick={() => onStatusFilter('degraded_performance')}
-                  isSelected={statusFilter === 'degraded_performance'}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-                <StatusBadge
-                  status="major_outage"
-                  count={stats.outage}
-                  onClick={() => onStatusFilter('major_outage')}
-                  isSelected={statusFilter === 'major_outage'}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-              </div>
+            <div className="flex items-center gap-3 text-sm">
+              <StatusBadge status={StatusType.UNKNOWN} count={loadingCount} isLoading={loadingCount > 0} />
+              <StatusBadge status={StatusType.OPERATIONAL} count={stats.operational} />
+              <StatusBadge
+                status={StatusType.DEGRADED_PERFORMANCE}
+                count={stats.degraded}
+                onClick={() => onStatusFilter('degraded_performance')}
+                isSelected={statusFilter === 'degraded_performance'}
+              />
+              <StatusBadge
+                status={StatusType.MAJOR_OUTAGE}
+                count={stats.outage}
+                onClick={() => onStatusFilter('major_outage')}
+                isSelected={statusFilter === 'major_outage'}
+              />
             </div>
             
-            {/* 필터 버튼 */}
-            <button
-              onClick={onFilterOpen}
-              className="btn-secondary focus-ring flex items-center justify-center gap-2 hover-lift"
-            >
-              <Settings className="w-4 h-4" />
+            <Button variant="secondary" onClick={onFilterOpen}>
+              <Icon name="Settings" size={16} className="mr-2" />
               <span>{translations.filter}</span>
-            </button>
+            </Button>
             
-            {/* 정렬 버튼 */}
             <SortDropdown
-              sortType={sortType}
-              isOpen={isSortDropdownOpen}
-              onToggle={onSortDropdownToggle}
-              onSortChange={onSortChange}
-              translations={{
-                sortDefault: translations.sortDefault,
-                sortNameAsc: translations.sortNameAsc,
-                sortNameDesc: translations.sortNameDesc
-              }}
+              sortType={sortType} isOpen={isSortDropdownOpen} onToggle={onSortDropdownToggle}
+              onSortChange={onSortChange} translations={{ sortDefault: translations.sortDefault, sortNameAsc: translations.sortNameAsc, sortNameDesc: translations.sortNameDesc }}
             />
-
-            {/* 언어 선택 드롭다운 */}
             <LanguageSelector
-              language={language}
-              isOpen={isLanguageDropdownOpen}
-              onToggle={onLanguageDropdownToggle}
+              language={language} isOpen={isLanguageDropdownOpen} onToggle={onLanguageDropdownToggle}
               onLanguageChange={onLanguageChange}
             />
 
-            {/* 알림 토글 버튼 */}
             {onToggleNotifications && (
-              <motion.button
-                onClick={onToggleNotifications}
-                className={`btn-icon focus-ring hover-lift ${notificationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
+              <Button
+                variant="ghost" size="icon" onClick={onToggleNotifications}
                 aria-label={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
                 title={notificationsEnabled ? (language === 'ko' ? '알림 끄기' : 'Disable notifications') : (language === 'ko' ? '알림 켜기' : 'Enable notifications')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ 
-                  scale: 0.95,
-                  transition: { duration: 0.1 }
-                }}
+                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
               >
-                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-              </motion.button>
+                <Icon name={notificationsEnabled ? 'Bell' : 'BellOff'} size={20} />
+              </Button>
             )}
 
-            {/* 테마 토글 버튼 */}
-            <motion.button
-              onClick={onThemeToggle}
-              className="btn-icon focus-ring hover-lift"
+            <Button
+              variant="ghost" size="icon" onClick={onThemeToggle}
               aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-              whileHover={{ 
-                scale: 1.05,
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ 
-                scale: 0.95,
-                transition: { duration: 0.1 }
-              }}
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
             >
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-            </motion.button>
+              <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={20} />
+            </Button>
 
-            {/* 새로고침 버튼 */}
-            <motion.button
-              onClick={onRefresh}
-              className="btn-icon focus-ring hover-lift"
-              aria-label={translations.refresh}
-              disabled={isAnyLoading}
-              whileHover={{ 
-                scale: 1.05,
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ 
-                scale: 0.95,
-                transition: { duration: 0.1 }
-              }}
-              animate={isAnyLoading ? {
-                rotate: [0, 10, -10, 0],
-                transition: {
-                  duration: 0.6,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-              } : {}}
+            <Button
+              variant="ghost" size="icon" onClick={onRefresh} aria-label={translations.refresh}
+              isLoading={isAnyLoading} disabled={isAnyLoading}
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
             >
-              <motion.div
-                animate={isAnyLoading ? {
-                  rotate: 360,
-                  transition: {
-                    duration: 1,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }
-                } : {}}
-              >
-                <RefreshCw className="w-5 h-5" />
-              </motion.div>
-            </motion.button>
+              {!isAnyLoading && <Icon name="RefreshCw" size={20} />}
+            </Button>
           </div>
         </div>
         
-        {/* 모바일 헤더 레이아웃 */}
+        {/* Mobile Header */}
         <div className="md:hidden py-4">
-          {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
           <div className="flex justify-between items-center mb-3">
-            <h1 
-              className="desktop-title"
-            >
-              {title}
-            </h1>
-            
-            {/* 상태 요약 카드 - 모바일 컴팩트 버전 */}
+            <h1 className="desktop-title">{title}</h1>
             <div className="flex items-center gap-1 text-sm">
-              {loadingCount > 0 && (
-                <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
-                  <RefreshCw className="w-3 h-3 animate-spin text-blue-400" />
-                  <span className="text-blue-400 font-medium text-xs">{loadingCount}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-green-400 font-medium text-xs">{stats.operational}</span>
-              </div>
-              {stats.degraded > 0 && (
-                <button 
-                  className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20 cursor-pointer hover:scale-105 hover:bg-yellow-500/20 transition-all duration-200 active:scale-95"
-                  onClick={() => onStatusFilter('degraded_performance')}
-                  style={{
-                    backgroundColor: statusFilter === 'degraded_performance' ? 'rgba(234, 179, 8, 0.3)' : undefined,
-                    borderColor: statusFilter === 'degraded_performance' ? 'rgba(234, 179, 8, 0.5)' : undefined
-                  }}
-                >
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                  <span className="text-yellow-400 font-medium text-xs">{stats.degraded}</span>
-                </button>
-              )}
-              {stats.outage > 0 && (
-                <button 
-                  className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20 cursor-pointer hover:scale-105 hover:bg-red-500/20 transition-all duration-200 active:scale-95"
-                  onClick={() => onStatusFilter('major_outage')}
-                  style={{
-                    backgroundColor: statusFilter === 'major_outage' ? 'rgba(239, 68, 68, 0.3)' : undefined,
-                    borderColor: statusFilter === 'major_outage' ? 'rgba(239, 68, 68, 0.5)' : undefined
-                  }}
-                >
-                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                  <span className="text-red-400 font-medium text-xs">{stats.outage}</span>
-                </button>
-              )}
+              {loadingCount > 0 && <StatusBadge status={StatusType.UNKNOWN} count={loadingCount} isLoading={true} />}
+              <StatusBadge status={StatusType.OPERATIONAL} count={stats.operational} />
+              {stats.degraded > 0 && <StatusBadge status={StatusType.DEGRADED_PERFORMANCE} count={stats.degraded} onClick={() => onStatusFilter('degraded_performance')} isSelected={statusFilter === 'degraded_performance'} />}
+              {stats.outage > 0 && <StatusBadge status={StatusType.MAJOR_OUTAGE} count={stats.outage} onClick={() => onStatusFilter('major_outage')} isSelected={statusFilter === 'major_outage'} />}
             </div>
           </div>
           
-          {/* 두 번째 줄: 필터 | 정렬 | 언어 | 새로고침 */}
           <div className="flex justify-center items-center">
-            {/* 컨트롤 버튼들 */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={onFilterOpen}
-                className="btn-secondary focus-ring flex items-center justify-center gap-1 hover-lift text-xs px-2 py-1"
-              >
-                <Settings className="w-3 h-3" />
+              <Button variant="secondary" size="sm" onClick={onFilterOpen}>
+                <Icon name="Settings" size={12} className="mr-1" />
                 <span>{translations.filter}</span>
-              </button>
-              
-              {/* 정렬 버튼 - 모바일 */}
-              <SortDropdown
-                sortType={sortType}
-                isOpen={isSortDropdownOpen}
-                onToggle={onSortDropdownToggle}
-                onSortChange={onSortChange}
-                translations={{
-                  sortDefault: translations.sortDefault,
-                  sortNameAsc: translations.sortNameAsc,
-                  sortNameDesc: translations.sortNameDesc
-                }}
-                isMobile={true}
-              />
-              
-              {/* 언어변경 버튼 */}
-              <LanguageSelector
-                language={language}
-                isOpen={isLanguageDropdownOpen}
-                onToggle={onLanguageDropdownToggle}
-                onLanguageChange={onLanguageChange}
-                isMobile={true}
-              />
-              
-              {/* 알림 토글 버튼 - 모바일 */}
+              </Button>
+              <SortDropdown sortType={sortType} isOpen={isSortDropdownOpen} onToggle={onSortDropdownToggle} onSortChange={onSortChange} translations={{ sortDefault: translations.sortDefault, sortNameAsc: translations.sortNameAsc, sortNameDesc: translations.sortNameDesc }} isMobile={true} />
+              <LanguageSelector language={language} isOpen={isLanguageDropdownOpen} onToggle={onLanguageDropdownToggle} onLanguageChange={onLanguageChange} isMobile={true} />
               {onToggleNotifications && (
-                <button
-                  onClick={onToggleNotifications}
-                  className={`btn-icon focus-ring hover-lift ${notificationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
-                  aria-label={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
-                  title={notificationsEnabled ? (language === 'ko' ? '알림 끄기' : 'Disable notifications') : (language === 'ko' ? '알림 켜기' : 'Enable notifications')}
-                >
-                  {notificationsEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-                </button>
+                <Button variant="ghost" size="icon" onClick={onToggleNotifications}>
+                  <Icon name={notificationsEnabled ? 'Bell' : 'BellOff'} size={16} />
+                </Button>
               )}
-
-              {/* 테마 토글 버튼 - 모바일 */}
-              <button
-                onClick={onThemeToggle}
-                className="btn-icon focus-ring hover-lift"
-                aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-              >
-                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              </button>
-
-              {/* 새로고침 버튼 */}
-              <button
-                onClick={onRefresh}
-                className="btn-icon focus-ring hover-lift"
-                aria-label={translations.refresh}
-                disabled={isAnyLoading}
-              >
-                <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
-              </button>
+              <Button variant="ghost" size="icon" onClick={onThemeToggle}>
+                <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onRefresh} isLoading={isAnyLoading} disabled={isAnyLoading}>
+                {!isAnyLoading && <Icon name="RefreshCw" size={16} />}
+              </Button>
             </div>
           </div>
         </div>

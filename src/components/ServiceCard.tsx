@@ -1,10 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, ChevronUp, ChevronDown, Globe, Activity, TrendingUp, Zap, Clock } from 'lucide-react';
-import type { Service, ServiceComponent } from '../services/api';
+import { ChevronUp, ChevronDown, Globe } from 'lucide-react';
+import { Service, ServiceComponent, StatusType } from '../types/status';
 import { getCategoryForService } from '../types/categories';
+import { useTheme } from '../design-system/ThemeContext';
+import { Icon } from '../design-system/Icon';
+import { Button } from '../design-system/Button';
+import { cn } from '../utils/cn';
 
-// 이미지 import
+// 이미지 import (유지)
 import openaiIcon from '@/assets/gpt.png';
 import anthropicIcon from '@/assets/claude.png';
 import cursorIcon from '@/assets/cursor.png';
@@ -27,7 +31,6 @@ import auth0Icon from '@/assets/auth0.png';
 import sendgridIcon from '@/assets/sendgrid.png';
 import cloudflareIcon from '@/assets/cloudflare.png';
 import datadogIcon from '@/assets/datadog.png';
-// Newly added service icons
 import groqIcon from '@/assets/groq.png';
 import zetaglobalIcon from '@/assets/zetaglobal.png';
 import vercelIcon from '@/assets/vercel.png';
@@ -37,126 +40,63 @@ import huggingfaceIcon from '@/assets/huggingface.png';
 import gitlabIcon from '@/assets/gitlab.svg';
 
 interface ServiceCardProps {
-  service: Service & { status: string };
+  service: ServiceStatus;
   isExpanded: boolean;
   isLoading: boolean;
   language: 'ko' | 'en';
   onToggleExpansion: () => void;
   onRefresh: () => void;
   getServiceDescription: (serviceName: string) => string;
-  getStatusText: (status: string) => string;
-  getStatusColorClass: (status: string) => string;
-  getStatusColor: (status: string) => string;
+  getStatusText: (status: StatusType) => string;
   translations: {
     refreshService: string;
     statusPage: string;
   };
 }
 
-// 이미지 아이콘 매핑
+// 이미지 아이콘 매핑 (유지)
 const getServiceIcon = (iconName: string): string => {
   const iconMap: { [key: string]: string } = {
-    openai: openaiIcon,
-    anthropic: anthropicIcon,
-    cursor: cursorIcon,
-    googleai: googleaiIcon,
-    github: githubIcon,
-    netlify: netlifyIcon,
-    docker: dockerIcon,
-    aws: awsIcon,
-    slack: slackIcon,
-    firebase: firebaseIcon,
-    supabase: supabaseIcon,
-    perplexity: perplexityIcon,
-    v0: v0Icon,
-    replit: replitIcon,
-    grok: grokIcon,
-    heroku: herokuIcon,
-    atlassian: atlassianIcon,
-    circleci: circleciIcon,
-    auth0: auth0Icon,
-    sendgrid: sendgridIcon,
-    cloudflare: cloudflareIcon,
-    datadog: datadogIcon,
-    // Newly added mappings
-    groq: groqIcon,
-    zetaglobal: zetaglobalIcon,
-    vercel: vercelIcon,
-    stripe: stripeIcon,
-    mongodb: mongodbIcon,
-    huggingface: huggingfaceIcon,
-    gitlab: gitlabIcon,
+    openai: openaiIcon, anthropic: anthropicIcon, cursor: cursorIcon, googleai: googleaiIcon, github: githubIcon,
+    netlify: netlifyIcon, docker: dockerIcon, aws: awsIcon, slack: slackIcon, firebase: firebaseIcon,
+    supabase: supabaseIcon, perplexity: perplexityIcon, v0: v0Icon, replit: replitIcon, grok: grokIcon,
+    heroku: herokuIcon, atlassian: atlassianIcon, circleci: circleciIcon, auth0: auth0Icon, sendgrid: sendgridIcon,
+    cloudflare: cloudflareIcon, datadog: datadogIcon, groq: groqIcon, zetaglobal: zetaglobalIcon,
+    vercel: vercelIcon, stripe: stripeIcon, mongodb: mongodbIcon, huggingface: huggingfaceIcon, gitlab: gitlabIcon,
   };
   return iconMap[iconName] || '';
 };
 
+// ServiceIcon 컴포넌트 (분리 가능, 현재는 유지)
 export const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: number }) => {
   const iconSrc = getServiceIcon(iconName);
-  
   if (iconSrc) {
     const needsWhiteBackground = ['github', 'cursor', 'netlify', 'perplexity', 'v0', 'replit', 'circleci', 'grok'].includes(iconName);
-    
     return (
       <div className="service-icon-premium group" style={{ '--icon-size': `${size}px` } as React.CSSProperties}>
         <div className="service-icon-container">
           <img 
-            src={iconSrc} 
-            alt={`${iconName} icon`} 
-            className="service-icon-image"
-            style={{ 
-              width: `${size}px`, 
-              height: `${size}px`,
-              objectFit: 'contain',
-              borderRadius: '10px',
-              backgroundColor: needsWhiteBackground ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
-              padding: needsWhiteBackground ? '3px' : '0'
-            }}
+            src={iconSrc} alt={`${iconName} icon`} className="service-icon-image"
+            style={{ width: `${size}px`, height: `${size}px`, objectFit: 'contain', borderRadius: '10px', backgroundColor: needsWhiteBackground ? 'rgba(255, 255, 255, 0.9)' : 'transparent', padding: needsWhiteBackground ? '3px' : '0' }}
           />
-          {/* 글래스 오버레이 */}
           <div className="service-icon-glass"></div>
-          {/* 네온 글로우 */}
           <div className="service-icon-glow"></div>
         </div>
       </div>
     );
   }
-  
-  // 아이콘이 없는 경우 서비스 이름의 첫 글자를 원형 배경에 표시
   const firstLetter = iconName.charAt(0).toUpperCase();
-  const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 
-    'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
-  ];
-  const colorIndex = iconName.charCodeAt(0) % colors.length;
-  const bgColor = colors[colorIndex];
-  
   const gradients = [
-    'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)', // blue
-    'linear-gradient(135deg, #10b981 0%, #047857 100%)', // green
-    'linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%)', // purple
-    'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', // red
-    'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', // yellow
-    'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)', // indigo
-    'linear-gradient(135deg, #ec4899 0%, #be185d 100%)', // pink
-    'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)'  // teal
+    'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)', 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+    'linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%)', 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+    'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
+    'linear-gradient(135deg, #ec4899 0%, #be185d 100%)', 'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)'
   ];
-  const gradient = gradients[colorIndex];
-  
+  const gradient = gradients[iconName.charCodeAt(0) % gradients.length];
   return (
-    <div 
-      className="service-icon-premium group"
-      style={{ '--icon-size': `${size}px` } as React.CSSProperties}
-    >
-      <div 
-        className="service-icon-container service-icon-fallback"
-        style={{ 
-          background: gradient,
-          fontSize: `${size * 0.4}px`
-        }}
-      >
-        <span className="relative z-10 font-bold text-white">
-          {firstLetter}
-        </span>
+    <div className="service-icon-premium group" style={{ '--icon-size': `${size}px` } as React.CSSProperties}>
+      <div className="service-icon-container service-icon-fallback" style={{ background: gradient, fontSize: `${size * 0.4}px` }}>
+        <span className="relative z-10 font-bold text-white">{firstLetter}</span>
         <div className="service-icon-glass"></div>
         <div className="service-icon-glow"></div>
       </div>
@@ -164,142 +104,54 @@ export const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: 
   );
 };
 
-// 상태에 따른 아이콘 반환
-export const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'operational': return <Activity className="w-4 h-4 text-green-400" />;
-    case 'degraded':
-    case 'degraded_performance': return <TrendingUp className="w-4 h-4 text-yellow-400" />;
-    case 'outage':
-    case 'partial_outage':
-    case 'major_outage': return <Zap className="w-4 h-4 text-red-400" />;
-    case 'maintenance':
-    case 'under_maintenance': return <Clock className="w-4 h-4 text-blue-400" />;
-    default: return <Clock className="w-4 h-4 text-gray-400" />;
-  }
-};
 
 const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
-  service,
-  isExpanded,
-  isLoading,
-  language,
-  onToggleExpansion,
-  onRefresh,
-  getServiceDescription,
-  getStatusText,
-  getStatusColorClass,
-  getStatusColor,
-  translations
+  service, isExpanded, isLoading, language, onToggleExpansion, onRefresh, getServiceDescription, getStatusText, translations
 }) => {
-  // 상태별 네온 보더 색상
-  const getStatusBorderColor = (status: string) => {
-    switch (status) {
-      case 'operational': return 'rgba(46, 255, 180, 0.4)';
-      case 'degraded':
-      case 'degraded_performance': return 'rgba(230, 165, 50, 0.4)';
-      case 'outage':
-      case 'partial_outage':
-      case 'major_outage': return 'rgba(214, 48, 49, 0.6)';
-      case 'maintenance':
-      case 'under_maintenance': return 'rgba(59, 130, 246, 0.4)';
-      default: return 'rgba(237, 236, 232, 0.2)';
-    }
-  };
+  const { theme, statusColors } = useTheme();
 
-  // 상태별 글로우 효과
-  const getStatusGlow = (status: string) => {
-    switch (status) {
-      case 'operational': return '0 0 20px rgba(46, 255, 180, 0.15)';
-      case 'degraded':
-      case 'degraded_performance': return '0 0 20px rgba(230, 165, 50, 0.15)';
-      case 'outage':
-      case 'partial_outage':
-      case 'major_outage': return '0 0 20px rgba(214, 48, 49, 0.2)';
-      case 'maintenance':
-      case 'under_maintenance': return '0 0 20px rgba(59, 130, 246, 0.15)';
-      default: return '0 0 10px rgba(237, 236, 232, 0.1)';
-    }
-  };
-
-  // Framer Motion 애니메이션 정의
   const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }
-    },
-    hover: {
-      y: -8,
-      scale: 1.02,
-      rotateX: 2,
-      transition: {
-        duration: 0.4,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }
-    },
-    tap: {
-      scale: 0.98,
-      transition: {
-        duration: 0.1
-      }
-    }
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] } },
+    hover: { y: -8, scale: 1.02, rotateX: 2, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
+    tap: { scale: 0.98, transition: { duration: 0.1 } }
   };
 
-  // 카테고리별 스타일 클래스 결정
   const category = getCategoryForService(service.service_name);
   const categoryClass = category ? `service-card-${category.id.replace('-', '')}` : '';
 
-  // 상태별 시각적 강조 클래스 결정
-  const getStatusPriorityClass = (status: string) => {
+  const getStatusPriorityClass = (status: StatusType) => {
     switch (status) {
-      case 'major_outage':
-      case 'outage':
-        return 'status-critical';
-      case 'partial_outage':
-      case 'degraded_performance':
-      case 'degraded':
-        return 'status-warning';
-      case 'operational':
-        return 'status-normal';
-      case 'under_maintenance':
-      case 'maintenance':
-        return 'status-maintenance';
-      default:
-        return 'status-normal';
+      case StatusType.MAJOR_OUTAGE: return 'status-critical';
+      case StatusType.PARTIAL_OUTAGE:
+      case StatusType.DEGRADED_PERFORMANCE: return 'status-warning';
+      case StatusType.OPERATIONAL: return 'status-normal';
+      case StatusType.UNDER_MAINTENANCE: return 'status-maintenance';
+      default: return 'status-normal';
     }
   };
 
-  const statusPriorityClass = getStatusPriorityClass(service.status);
+  const statusPriorityClass = getStatusPriorityClass(service.overall_status);
+  const statusColor = statusColors[service.overall_status];
 
   return (
     <motion.div
-      className={`service-card-premium ${categoryClass} ${statusPriorityClass} ${isExpanded ? 'expanded' : ''} group cursor-pointer`}
-      onClick={(e) => {
-        onToggleExpansion();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onToggleExpansion();
-        }
-      }}
+      className={cn(
+        'service-card-premium group cursor-pointer',
+        categoryClass,
+        statusPriorityClass,
+        isExpanded && 'expanded'
+      )}
+      onClick={onToggleExpansion}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleExpansion(); } }}
       tabIndex={0}
       role="button"
       aria-expanded={isExpanded}
       aria-label={`${service.display_name} 서비스 상세 정보 보기`}
       style={{
-        '--status-border': getStatusBorderColor(service.status),
-        '--status-glow': getStatusGlow(service.status)
+        '--status-border': statusColor.glow,
+        '--status-glow': statusColor.glow,
+        color: theme.colors.textPrimary,
       } as React.CSSProperties}
       variants={cardVariants}
       initial="hidden"
@@ -310,33 +162,30 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
       {/* 상단: 아이콘, 제목, 새로고침/확장 버튼 */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <ServiceIcon iconName={service.icon} size={24} />
+          <ServiceIcon iconName={service.icon_url || service.service_name} size={24} />
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold text-foreground truncate">{service.display_name}</h2>
+            <h2 className="text-base font-semibold truncate" style={{ color: theme.colors.textPrimary }}>{service.display_name}</h2>
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRefresh();
-            }}
-            disabled={isLoading}
-            className="btn-icon p-1.5"
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => { e.stopPropagation(); onRefresh(); }}
+            isLoading={isLoading}
             aria-label={translations.refreshService}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleExpansion();
-            }}
-            className="btn-icon p-1.5 md:hidden"
+            {!isLoading && <Icon name="RefreshCw" size={16} />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => { e.stopPropagation(); onToggleExpansion(); }}
+            className="md:hidden"
             aria-label={isExpanded ? "접기" : "펼치기"}
           >
-            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
         </div>
       </div>
 
@@ -347,22 +196,8 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
             <motion.div
               key="expanded"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ 
-                opacity: 1, 
-                height: "auto",
-                transition: {
-                  duration: 0.4,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }
-              }}
-              exit={{ 
-                opacity: 0, 
-                height: 0,
-                transition: {
-                  duration: 0.3,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }
-              }}
+              animate={{ opacity: 1, height: "auto", transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } }}
+              exit={{ opacity: 0, height: 0, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } }}
               className="mt-2 -mx-1 pr-1 custom-scrollbar overflow-y-auto"
             >
               {service.components && service.components.length > 0 ? (
@@ -370,48 +205,26 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
                   className="space-y-2 py-1"
                   initial="hidden"
                   animate="visible"
-                  variants={{
-                    hidden: {},
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.05
-                      }
-                    }
-                  }}
+                  variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                 >
-                  {service.components.map((component: ServiceComponent, index: number) => (
+                  {service.components.map((component: ServiceComponent) => (
                     <motion.li 
-                      key={index} 
+                      key={component.id} 
                       className="flex items-center justify-between text-sm"
-                      variants={{
-                        hidden: { opacity: 0, x: -20 },
-                        visible: { 
-                          opacity: 1, 
-                          x: 0,
-                          transition: {
-                            duration: 0.4,
-                            ease: [0.25, 0.46, 0.45, 0.94]
-                          }
-                        }
-                      }}
+                      variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } } }}
                     >
-                      <span className="text-gray-300 truncate flex-1 mr-2">{component.name}</span>
+                      <span className="truncate flex-1 mr-2" style={{ color: theme.colors.textSecondary }}>{component.name}</span>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className={`text-xs font-medium ${getStatusColorClass(component.status)}`}>
+                        <span className="text-xs font-medium" style={{ color: statusColors[component.status].main }}>
                           {getStatusText(component.status)}
                         </span>
-                        {getStatusIcon(component.status)}
+                        <Icon name={component.status} size={14} />
                       </div>
                     </motion.li>
                   ))}
                 </motion.ul>
               ) : (
-                <motion.p 
-                  className="text-sm text-muted-foreground text-center py-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
+                <motion.p className="text-sm text-center py-4" style={{ color: theme.colors.textSecondary }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                   {language === 'ko' ? '세부 컴포넌트 정보가 없습니다.' : 'No detailed component information available.'}
                 </motion.p>
               )}
@@ -420,59 +233,30 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
             <motion.div
               key="collapsed"
               initial={{ opacity: 0, y: 10 }}
-              animate={{ 
-                opacity: 1, 
-                y: 0,
-                transition: {
-                  duration: 0.4,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }
-              }}
-              exit={{ 
-                opacity: 0, 
-                y: -10,
-                transition: {
-                  duration: 0.3,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }
-              }}
+              animate={{ opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } }}
+              exit={{ opacity: 0, y: -10, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } }}
               className="flex flex-col justify-center flex-1"
             >
-              <motion.p 
-                className="service-description text-sm text-muted-foreground mb-2"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ 
-                  opacity: 1, 
-                  x: 0,
-                  transition: { delay: 0.1, duration: 0.3 }
-                }}
-              >
+              <p className="service-description text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
                 {getServiceDescription(service.service_name)}
-              </motion.p>
-              <motion.div 
-                className="flex items-center gap-1.5"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ 
-                  opacity: 1, 
-                  x: 0,
-                  transition: { delay: 0.2, duration: 0.3 }
-                }}
-              >
-                <div className={`status-dot ${getStatusColor(service.status)}`} />
-                {getStatusIcon(service.status)}
-              </motion.div>
+              </p>
+              <div className="flex items-center gap-1.5">
+                <div className="status-dot" style={{ backgroundColor: statusColor.main }} />
+                <Icon name={service.overall_status} size={16} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* 하단: 상태 페이지 링크 */}
-      <div className="pt-2 border-t border-border/50 mt-auto">
+      <div className="pt-2 border-t mt-auto" style={{ borderColor: theme.colors.cardBorder }}>
         <a
           href={service.page_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs link-status-page focus-ring rounded px-2 py-1"
+          className="inline-flex items-center gap-1.5 text-xs focus-ring rounded px-2 py-1"
+          style={{ color: theme.colors.textSecondary }}
           onClick={(e) => e.stopPropagation()}
         >
           <Globe className="w-3 h-3 flex-shrink-0" />

@@ -1,16 +1,9 @@
-# 🚀 배포 가이드 - service-status.garyzone.pro
+# 🚀 배포 가이드
 
-## 🚨 현재 문제 및 해결 방안
+> **마지막 업데이트**: 2025-01-30  
+> **배포 주소**: https://services.garyzone.pro/
 
-### 문제 진단
-- ❌ **HTTPS 접근 실패**: SSL 인증서 또는 HTTPS 리스너 부재
-- ❌ **HTTP 빈 화면**: nginx 설정 또는 컨테이너 실행 문제
-
-### 해결된 설정
-- ✅ **도메인 설정**: `service-status.garyzone.pro` 추가
-- ✅ **HTTPS 리다이렉트**: 프록시 뒤에서 자동 HTTPS 전환
-- ✅ **보안 헤더**: HSTS, CSP 등 보안 강화
-- ✅ **에러 페이지**: 사용자 친화적 5xx 에러 페이지
+이 문서는 Service Status Dashboard의 배포 방법과 설정을 설명합니다.
 
 ## 🏗️ 권장 배포 아키텍처
 
@@ -141,17 +134,19 @@ docker exec -it service-status nginx -s reload
 
 ## 🔍 문제 해결
 
-### HTTPS 접근 실패
+### 일반적인 문제
+
+#### HTTPS 접근 실패
 1. **SSL 인증서 확인**: ACM 또는 Let's Encrypt 설정
 2. **ALB 리스너 확인**: 443 포트 HTTPS 리스너 존재 여부
 3. **보안 그룹 확인**: 443 포트 인바운드 규칙
 
-### HTTP 빈 화면
+#### HTTP 빈 화면
 1. **컨테이너 상태 확인**: `docker ps`, `docker logs`
 2. **헬스체크 확인**: `/health` 엔드포인트 응답
 3. **nginx 설정 확인**: 문법 오류 여부
 
-### 로그 확인
+#### 로그 확인
 ```bash
 # ECS 로그 확인
 aws logs get-log-events \
@@ -162,18 +157,16 @@ aws logs get-log-events \
 docker logs service-status
 ```
 
-## 📞 긴급 복구
-
-문제가 지속될 경우:
-
-1. **롤백**: 이전 안정 버전으로 복구
-2. **헬스체크 비활성화**: 임시로 트래픽 허용
-3. **직접 IP 접근**: ALB 우회하여 컨테이너 직접 접근
-
+#### 긴급 복구
 ```bash
-# 긴급 롤백
+# 이전 버전으로 롤백
 aws ecs update-service \
   --cluster service-status-cluster \
   --service service-status-service \
   --task-definition service-status:previous-version
 ```
+
+## 📚 관련 문서
+
+- [GitHub Actions 설정 가이드](./GITHUB_ACTIONS_SETUP.md) - CI/CD 파이프라인 설정
+- [OIDC 설정 가이드](./OIDC_SETUP_GUIDE.md) - GitHub OIDC 인증 설정

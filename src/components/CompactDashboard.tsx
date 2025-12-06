@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, Wifi, Clock, Settings, Star, Eye, EyeOff, X, Activity, TrendingUp, Zap, ArrowUpDown, ArrowUp, ArrowDown, Globe } from 'lucide-react';
+import { Wifi, Settings, Star, Eye, EyeOff, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { serviceFetchers, serviceNames, StatusUtils } from '../services/api';
-import type { Service, ServiceComponent } from '../services/api';
+import { ServiceStatus, ServiceComponent } from '../types/status'; // 'Service' changed to 'ServiceStatus'
 import { SERVICE_CATEGORIES, groupServicesByCategory } from '../types/categories';
 import { StatusType } from '../types/status';
 import type { ComponentFilter, Favorites, ServiceExpansion, ViewMode, SortType, Language } from '../types/ui';
@@ -11,7 +11,7 @@ import StatusBadge from './StatusBadge';
 import LanguageSelector from './LanguageSelector';
 import SortDropdown from './SortDropdown';
 import Header from './Header';
-import ServiceCard, { ServiceIcon, getStatusIcon } from './ServiceCard';
+import ServiceCard, { ServiceIcon } from './ServiceCard'; // getStatusIcon removed
 import SidebarFilter from './SidebarFilter';
 import BottomSheetFilter from './BottomSheetFilter';
 import KeyboardNavigation from './KeyboardNavigation';
@@ -20,7 +20,9 @@ import LoadingProgressBar from './LoadingProgressBar';
 import { useNotification } from '../hooks/useNotification';
 import { useStatusHistory } from '../hooks/useStatusHistory';
 import { Stagger, PageTransition, ServiceCardSkeleton } from './animations';
-
+import { CollapsibleSection } from './animations/CollapsibleSection'; // New import
+import { Icon } from '../design-system/Icon'; // New import
+import { statusColors } from '../design-system/theme'; // New import
 
 interface CompactDashboardProps {
   className?: string;
@@ -63,7 +65,9 @@ const translations = {
     categoryView: '카테고리 보기',
     listView: '목록 보기',
     hideCategory: '카테고리 숨기기',
-    showCategory: '카테고리 표시하기'
+    showCategory: '카테고리 표시하기',
+    allSystemsOperational: '모든 시스템 정상', // New translation
+    showAllOperationalServices: '모든 정상 서비스 보기', // New translation
   },
   en: {
     title: 'Service Status Dashboard',
@@ -96,7 +100,9 @@ const translations = {
     categoryView: 'Category View',
     listView: 'List View',
     hideCategory: 'Hide Category',
-    showCategory: 'Show Category'
+    showCategory: 'Show Category',
+    allSystemsOperational: 'All systems operational', // New translation
+    showAllOperationalServices: 'Show all operational services', // New translation
   }
 };
 
@@ -106,7 +112,7 @@ const translations = {
 
 const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<ServiceStatus[]>([]);
   const [serviceLoadingStates, setServiceLoadingStates] = useState<ServiceLoadingState>({});
   const [filters, setFilters] = useState<ComponentFilter>({});
   const [favorites, setFavorites] = useState<Favorites>({});
@@ -218,7 +224,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   ], []);
 
   // 기본 필터 및 즐겨찾기 설정 생성 (메모이제이션)
-  const getDefaultFilters = useCallback((serviceList: Service[]): ComponentFilter => {
+  const getDefaultFilters = useCallback((serviceList: ServiceStatus[]): ComponentFilter => {
     const filters: ComponentFilter = {};
     serviceList.forEach(service => {
       filters[service.service_name] = {};
@@ -229,7 +235,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     return filters;
   }, []);
 
-  const getDefaultFavorites = useCallback((serviceList: Service[]): Favorites => {
+  const getDefaultFavorites = useCallback((serviceList: ServiceStatus[]): Favorites => {
     const favorites: Favorites = {};
     serviceList.forEach(service => {
       favorites[service.service_name] = {};
@@ -240,7 +246,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     return favorites;
   }, []);
 
-  const getDefaultExpansion = useCallback((serviceList: Service[]): ServiceExpansion => {
+  const getDefaultExpansion = useCallback((serviceList: ServiceStatus[]): ServiceExpansion => {
     const expansion: ServiceExpansion = {};
     serviceList.forEach(service => {
       expansion[service.service_name] = false; // 기본적으로 모두 접힌 상태
@@ -254,7 +260,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   }, []);
 
   // 캐시에서 서비스 데이터 가져오기 (5분 TTL)
-  const getCachedServiceData = useCallback((serviceName: string): Service | null => {
+  const getCachedServiceData = useCallback((serviceName: string): ServiceStatus | null => {
     try {
       const cacheKey = getCacheKey(serviceName);
       const cached = localStorage.getItem(cacheKey);
@@ -277,7 +283,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   }, [getCacheKey]);
 
   // 서비스 데이터를 캐시에 저장
-  const setCachedServiceData = useCallback((serviceName: string, data: Service) => {
+  const setCachedServiceData = useCallback((serviceName: string, data: ServiceStatus) => {
     try {
       const cacheKey = getCacheKey(serviceName);
       const cacheData = {
@@ -860,57 +866,19 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: StatusType) => {
     switch (status) {
-      case 'operational': return t.operational;
-      case 'degraded':
-      case 'degraded_performance': return t.degraded;
-      case 'outage':
-      case 'partial_outage':
-      case 'major_outage': return t.outage;
-      case 'maintenance':
-      case 'under_maintenance': return t.maintenance;
-      default: return status;
+      case StatusType.OPERATIONAL: return t.operational;
+      case StatusType.DEGRADED_PERFORMANCE: return t.degradedPerformance;
+      case StatusType.PARTIAL_OUTAGE: return t.majorOutage; // Changed from 'outage'
+      case StatusType.MAJOR_OUTAGE: return t.majorOutage;
+      case StatusType.UNDER_MAINTENANCE: return t.maintenance;
+      case StatusType.UNKNOWN: return t.loading; // Use loading translation for unknown
+      default: return String(status);
     }
   };
 
-  const getStatusColorClass = (status: string) => {
-    switch (status) {
-      case 'operational':
-        return 'border-green-500/50 hover:border-green-500/80';
-      case 'degraded':
-      case 'degraded_performance':
-        return 'border-yellow-500/50 hover:border-yellow-500/80';
-      case 'outage':
-      case 'partial_outage':
-      case 'major_outage':
-        return 'border-red-500/50 hover:border-red-500/80';
-      case 'maintenance':
-      case 'under_maintenance':
-        return 'border-blue-500/50 hover:border-blue-500/80';
-      default:
-        return 'border-gray-600/50 hover:border-gray-500/80';
-    }
-  };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'operational':
-        return 'status-operational';
-      case 'degraded':
-      case 'degraded_performance':
-        return 'status-degraded';
-      case 'outage':
-      case 'partial_outage':
-      case 'major_outage':
-        return 'status-major-outage';
-      case 'maintenance':
-      case 'under_maintenance':
-        return 'status-maintenance';
-      default:
-        return 'status-unknown';
-    }
-  };
 
   // 계산된 상태를 포함한 서비스 데이터 (useMemo로 메모이제이션)
   const servicesWithCalculatedStatus = useMemo(() => {
@@ -926,8 +894,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       serviceName: string;
       serviceDisplayName: string;
       componentName: string;
-      status: string;
-      icon: string;
+      status: StatusType; // Changed type to StatusType
+      icon: string; // Changed type to string (iconName for ServiceIcon)
     }> = [];
 
     filteredServices.forEach(service => {
@@ -939,7 +907,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
             serviceDisplayName: service.display_name,
             componentName: component.name,
             status: component.status,
-            icon: service.icon
+            icon: service.icon_url || service.service_name // Use icon_url from ServiceStatus
           });
         }
       });
@@ -1067,8 +1035,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   }, [sortedServices]);
 
   // 상태별로 그룹화된 서비스 가져오기 (useMemo로 메모이제이션)
-  const servicesByStatus = useMemo(() => {
-    const grouped: Record<string, Service[]> = {
+    const servicesByStatus = useMemo(() => {
+      const grouped: Record<string, ServiceStatus[]> = {
       critical: [], // major_outage, partial_outage
       warning: [], // degraded_performance, under_maintenance
       normal: [], // operational
@@ -1090,7 +1058,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   }, [sortedServices]);
 
   // 필터링된 카테고리별 서비스 카운트 계산
-  const getFilteredCategoryCount = (categoryServices: Service[]) => {
+  const getFilteredCategoryCount = (categoryServices: ServiceStatus[]) => {
     const filteredServices = categoryServices.filter(service => {
       // 컴포넌트 필터링
       const hasSelectedComponent = service.components.some(component => 
@@ -1314,8 +1282,8 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                         <ServiceIcon iconName={item.icon} size={20} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <div className={`status-dot ${getStatusColor(item.status)}`} />
-                            {getStatusIcon(item.status)}
+                            <div className="status-dot" style={{backgroundColor: statusColors[item.status].main}} />
+                            <Icon name={item.status} size={16} />
                           </div>
                           <p className="text-xs md:text-sm font-medium text-foreground truncate">
                             {item.componentName}
@@ -1343,33 +1311,42 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
 
           {/* 서비스 표시 영역 - 카테고리 뷰 */}
             <div className="space-y-4">
-              {Object.entries(categorizedServices).map(([categoryName, categoryServices]) => (
-                <motion.div 
-                  key={categoryName} 
-                  className="category-section-premium"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.5,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                    delay: 0.1
-                  }}
-                >
-                  {/* 카테고리 헤더 */}
+              {Object.entries(categorizedServices).map(([categoryName, categoryServices]) => {
+                // 서비스를 Operational과 Non-Operational로 분리
+                const nonOperationalServices = categoryServices.filter(service => 
+                  StatusUtils.calculateServiceStatus(service.components) !== StatusType.OPERATIONAL
+                );
+                const operationalServices = categoryServices.filter(service => 
+                  StatusUtils.calculateServiceStatus(service.components) === StatusType.OPERATIONAL
+                );
+
+                return (
                   <motion.div 
-                    className={`category-header-premium ${visibleCategories.has(categoryName) ? 'visible' : 'hidden'}`}
-                    onClick={() => toggleCategoryVisibility(categoryName)}
-                    title={visibleCategories.has(categoryName) ? t.hideCategory : t.showCategory}
-                    role="button"
-                    tabIndex={0}
-                    whileHover={{
-                      scale: 1.01,
-                      transition: { duration: 0.2 }
+                    key={categoryName} 
+                    className="category-section-premium"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                      delay: 0.1
                     }}
-                    whileTap={{
-                      scale: 0.99,
-                      transition: { duration: 0.1 }
-                    }}
+                  >
+                    {/* 카테고리 헤더 */}
+                    <motion.div 
+                      className={`category-header-premium ${visibleCategories.has(categoryName) ? 'visible' : 'hidden'}`}
+                      onClick={() => toggleCategoryVisibility(categoryName)}
+                      title={visibleCategories.has(categoryName) ? t.hideCategory : t.showCategory}
+                      role="button"
+                      tabIndex={0}
+                      whileHover={{
+                        scale: 1.01,
+                        transition: { duration: 0.2 }
+                      }}
+                      whileTap={{
+                        scale: 0.99,
+                        transition: { duration: 0.1 }
+                      }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
@@ -1429,9 +1406,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                         }}
                       >
                         {visibleCategories.has(categoryName) ? (
-                          <Eye className="w-5 h-5" />
+                          <Icon name="Eye" size={20} />
                         ) : (
-                          <EyeOff className="w-5 h-5" />
+                          <Icon name="EyeOff" size={20} />
                         )}
                       </motion.div>
                     </motion.div>
@@ -1439,55 +1416,82 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
 
                   {/* 카테고리 서비스 목록 */}
                   {visibleCategories.has(categoryName) && (
-                    <Stagger
-                      className={`service-grid ${isAnimating ? 'moving' : ''} mt-3`}
-                      delay={0.1}
-                      staggerDelay={0.08}
-                      direction="up"
-                      distance={30}
-                    >
-                      {categoryServices
-                        .sort((a, b) => {
-                          // 상태별 우선순위 정렬: Critical → Warning → Normal
-                          const getStatusPriority = (service: Service) => {
-                            const status = StatusUtils.calculateServiceStatus(service.components);
-                            if (status === StatusType.MAJOR_OUTAGE || status === StatusType.PARTIAL_OUTAGE) return 0; // Critical
-                            if (status === StatusType.DEGRADED_PERFORMANCE || status === StatusType.UNDER_MAINTENANCE) return 1; // Warning
-                            return 2; // Normal
-                          };
-                          return getStatusPriority(a) - getStatusPriority(b);
-                        })
-                        .map((service) => {
-                const isLoading = serviceLoadingStates[service.service_name];
-                
-                if (isLoading) {
-                  return <ServiceCardSkeleton key={service.service_name} />;
-                }
+                    <>
+                      {/* 비정상 서비스 먼저 표시 */}
+                      {nonOperationalServices.length > 0 && (
+                        <Stagger
+                          className={`service-grid ${isAnimating ? 'moving' : ''} mt-3`}
+                          delay={0.1} staggerDelay={0.08} direction="up" distance={30}
+                        >
+                          {nonOperationalServices
+                            .sort((a, b) => {
+                              // 상태별 우선순위 정렬: Critical → Warning → Degrading -> Maintenance
+                              const getStatusPriority = (service: ServiceStatus) => {
+                                const status = StatusUtils.calculateServiceStatus(service.components);
+                                if (status === StatusType.MAJOR_OUTAGE || status === StatusType.PARTIAL_OUTAGE) return 0; // Critical
+                                if (status === StatusType.DEGRADED_PERFORMANCE) return 1; // Warning
+                                if (status === StatusType.UNDER_MAINTENANCE) return 2; // Maintenance
+                                return 3; // Operational (should not happen here)
+                              };
+                              return getStatusPriority(a) - getStatusPriority(b);
+                            })
+                            .map((service) => {
+                              const isLoading = serviceLoadingStates[service.service_name];
+                              if (isLoading) return <ServiceCardSkeleton key={service.service_name} />;
+                              return (
+                                <ServiceCard
+                                  key={service.service_name} service={service}
+                                  isExpanded={expandedServices[service.service_name] || false}
+                                  isLoading={isLoading || false} language={language}
+                                  onToggleExpansion={() => toggleServiceExpansion(service.service_name)}
+                                  onRefresh={() => loadServiceData(service.service_name as keyof typeof serviceFetchers, false)}
+                                  getServiceDescription={getServiceDescription} getStatusText={getStatusText}
+                                  translations={{ refreshService: t.refreshService, statusPage: t.statusPage }}
+                                />
+                              );
+                            })}
+                        </Stagger>
+                      )}
 
-                return (
-                        <ServiceCard
-                    key={service.service_name}
-                          service={service}
-                          isExpanded={expandedServices[service.service_name] || false}
-                          isLoading={serviceLoadingStates[service.service_name] || false}
-                          language={language}
-                          onToggleExpansion={() => toggleServiceExpansion(service.service_name)}
-                          onRefresh={() => loadServiceData(service.service_name as keyof typeof serviceFetchers, false)}
-                          getServiceDescription={getServiceDescription}
-                          getStatusText={getStatusText}
-                          getStatusColorClass={getStatusColorClass}
-                          getStatusColor={getStatusColor}
-                          translations={{
-                            refreshService: t.refreshService,
-                            statusPage: t.statusPage
-                          }}
-                        />
+                      {/* 정상 서비스는 CollapsibleSection으로 감싸기 */}
+                      {operationalServices.length > 0 && (
+                        <CollapsibleSection
+                          className="mt-6"
+                          title={
+                            <span className="flex items-center gap-2 text-base md:text-lg font-semibold" style={{color: statusColors[StatusType.OPERATIONAL].main}}>
+                              <Icon name={StatusType.OPERATIONAL} size={20} color={statusColors[StatusType.OPERATIONAL].main} />
+                              {language === 'ko' ? `모든 ${operationalServices.length}개 시스템 정상` : `All ${operationalServices.length} Systems Operational`}
+                            </span>
+                          }
+                          defaultOpen={nonOperationalServices.length === 0} // 문제 서비스가 없으면 기본적으로 열려있게
+                        >
+                          <Stagger
+                            className={`service-grid ${isAnimating ? 'moving' : ''} mt-3`}
+                            delay={0.05} staggerDelay={0.05} direction="up" distance={20}
+                          >
+                            {operationalServices.map((service) => {
+                              const isLoading = serviceLoadingStates[service.service_name];
+                              if (isLoading) return <ServiceCardSkeleton key={service.service_name} />;
+                              return (
+                                <ServiceCard
+                                  key={service.service_name} service={service}
+                                  isExpanded={expandedServices[service.service_name] || false}
+                                  isLoading={isLoading || false} language={language}
+                                  onToggleExpansion={() => toggleServiceExpansion(service.service_name)}
+                                  onRefresh={() => loadServiceData(service.service_name as keyof typeof serviceFetchers, false)}
+                                  getServiceDescription={getServiceDescription} getStatusText={getStatusText}
+                                  translations={{ refreshService: t.refreshService, statusPage: t.statusPage }}
+                                />
+                              );
+                            })}
+                          </Stagger>
+                        </CollapsibleSection>
+                      )}
+                    </>
+                    )}
+                  </motion.div>
                 );
               })}
-                    </Stagger>
-          )}
-                </motion.div>
-              ))}
             </div>
 
           {/* 하단 광고 배너 */}
@@ -1514,7 +1518,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               {/* 항상 표시되는 요약 */}
               <div className="mobile-footer-summary">
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-primary" />
+                  <Icon name="Activity" size={16} />
                   <span className="text-sm font-medium">
                     {language === 'ko' 
                       ? `${filteredServices.length}개 서비스 모니터링`
@@ -1548,7 +1552,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                 {/* 통계 정보 */}
                 <div className="mobile-footer-stats">
                   <div className="mobile-footer-stat-item">
-                    <Globe className="w-3 h-3 text-green-400" />
+                    <Icon name="Globe" size={12} />
                     <span>
                       {overallStats.operational}/{filteredServices.length} {language === 'ko' ? '정상 운영' : 'Operational'}
                     </span>
@@ -1580,19 +1584,20 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <span className="relative">
-                  <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
+                  {/* Icon 컴포넌트 사용 */}
+                  <Icon name="RefreshCw" size={16} className={isAnyLoading ? 'animate-spin' : ''} />
                   {isAnyLoading && <span className="absolute inset-0 bg-blue-400/20 rounded-full blur-sm"></span>}
                 </span>
                 <span>{language === 'ko' ? '자동 업데이트: 1분마다' : 'Auto Update: Every 1 minute'}</span>
               </div>
               <span className="hidden sm:inline text-gray-600">•</span>
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-blue-400" />
+                <Icon name="Activity" size={16} />
                 <span>{t.monitoring}: {servicesWithCalculatedStatus.length}{t.services}</span>
               </div>
               <span className="hidden sm:inline text-gray-600">•</span>
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-green-400" />
+                <Icon name="Globe" size={16} />
                 <span>
                   {overallStats.operational}/{servicesWithCalculatedStatus.length} {language === 'ko' ? '정상 운영' : 'Operational'}
                 </span>

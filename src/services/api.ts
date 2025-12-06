@@ -30,8 +30,43 @@ interface ServiceConfig {
   componentUrls?: { [componentName: string]: string };
 }
 
-// CORS 프록시 설정 (개발 환경용)
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+// CORS 프록시 설정 (여러 대안 프록시 지원)
+const CORS_PROXIES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://api.codetabs.com/v1/proxy?quest=',
+];
+
+let currentProxyIndex = 0;
+
+/**
+ * 프록시를 사용하여 URL 생성
+ */
+function getProxiedUrl(url: string, useProxy: boolean = true): string {
+  // 개발 환경에서는 Vite 프록시를 우선 사용
+  if (import.meta.env.DEV && !useProxy) {
+    // 직접 호출 시도 (CORS 허용되는 경우)
+    return url;
+  }
+  
+  // 프로덕션 또는 프록시 필요 시
+  if (useProxy) {
+    const proxy = CORS_PROXIES[currentProxyIndex % CORS_PROXIES.length];
+    return `${proxy}${encodeURIComponent(url)}`;
+  }
+  
+  return url;
+}
+
+/**
+ * 다음 프록시로 전환
+ */
+function switchToNextProxy(): void {
+  currentProxyIndex = (currentProxyIndex + 1) % CORS_PROXIES.length;
+  if (import.meta.env.DEV) {
+    console.log(`CORS 프록시 전환: ${CORS_PROXIES[currentProxyIndex]}`);
+  }
+}
 
 // API 클라이언트 설정
 const createApiClient = (timeout = 10000): AxiosInstance => {
@@ -44,6 +79,75 @@ const createApiClient = (timeout = 10000): AxiosInstance => {
 };
 
 const apiClient = createApiClient();
+
+/**
+ * 재시도 로직이 포함된 API 호출
+ */
+async function fetchWithRetry(
+  url: string,
+  maxRetries: number = 3,
+  useProxy: boolean = true
+): Promise<any> {
+  let lastError: any = null;
+  
+  // 직접 호출 시도 (CORS 허용되는 경우)
+  if (!useProxy) {
+    try {
+      const response = await apiClient.get(url);
+      return response;
+    } catch (error: any) {
+      // CORS 에러인 경우 프록시 사용
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('CORS')) {
+        useProxy = true;
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  // 프록시를 통한 호출 시도
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const proxiedUrl = getProxiedUrl(url, useProxy);
+      const response = await apiClient.get(proxiedUrl);
+      
+      // 응답이 프록시 래퍼인 경우 실제 데이터 추출
+      if (response.data && typeof response.data === 'string') {
+        try {
+          return { ...response, data: JSON.parse(response.data) };
+        } catch {
+          // JSON 파싱 실패 시 원본 반환
+          return response;
+        }
+      }
+      
+      return response;
+    } catch (error: any) {
+      lastError = error;
+      
+      // 타임아웃 또는 네트워크 에러인 경우 다음 프록시 시도
+      if (
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ERR_NETWORK' ||
+        error.response?.status >= 500
+      ) {
+        if (attempt < maxRetries - 1) {
+          switchToNextProxy();
+          // 지수 백오프: 1초, 2초, 4초
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          continue;
+        }
+      }
+      
+      // 다른 에러는 즉시 throw
+      if (error.response?.status < 500) {
+        throw error;
+      }
+    }
+  }
+  
+  throw lastError;
+}
 
 // 공통 유틸리티 함수들
 export class StatusUtils {
@@ -109,7 +213,13 @@ async function websiteComponentsFromUrls(
   urlEntries: Array<[string, string]>
 ): Promise<ServiceComponent[]> {
   const results = await Promise.allSettled(
-    urlEntries.map(([, url]) => apiClient.get(`${CORS_PROXY}${url}`, { timeout: 8000 }))
+    urlEntries.map(async ([, url]) => {
+      try {
+        return await fetchWithRetry(url, 2, true);
+      } catch (error) {
+        throw error;
+      }
+    })
   );
 
   return results.map((result, idx) => {
@@ -117,9 +227,9 @@ async function websiteComponentsFromUrls(
     if (result.status === 'fulfilled') {
       const code = result.value.status;
       const ok = code >= 200 && code < 400;
-      return { name, status: ok ? 'operational' : 'outage' };
+      return { name, status: ok ? StatusType.OPERATIONAL : StatusType.MAJOR_OUTAGE };
     }
-    return { name, status: 'outage' };
+    return { name, status: StatusType.UNKNOWN };
   });
 }
 
@@ -215,9 +325,18 @@ class ServiceStatusFetcher {
     // statuspage 기반
     if (config.kind === 'statuspage') {
       try {
+        if (!config.api_url) {
+          throw new Error(`API URL not configured for ${config.service_name}`);
+        }
+
         // StatusPage API v2를 통해 실제 컴포넌트 상태 조회
-        const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
+        const response = await fetchWithRetry(config.api_url, 3, true);
         const data = response.data;
+        
+        if (!data || !data.status) {
+          throw new Error(`Invalid API response from ${config.service_name}`);
+        }
+        
         const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
         // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
@@ -226,7 +345,7 @@ class ServiceStatusFetcher {
           // api_url에서 /status.json을 /components.json으로 교체
           const componentsUrl = config.api_url?.replace('/status.json', '/components.json');
           if (componentsUrl) {
-            const componentsResponse = await apiClient.get(`${CORS_PROXY}${componentsUrl}`);
+            const componentsResponse = await fetchWithRetry(componentsUrl, 2, true);
             componentsData = componentsResponse.data.components;
           }
         } catch (error) {
@@ -273,17 +392,30 @@ class ServiceStatusFetcher {
           icon: config.icon,
           components,
         };
-      } catch (error) {
-        console.error(`${config.service_name} API 오류:`, error);
+      } catch (error: any) {
+        const errorMessage = error?.message || error?.toString() || 'Unknown error';
+        console.error(`${config.service_name} API 오류:`, errorMessage);
+        
+        // 에러 상세 정보 로깅 (개발 환경에서만)
+        if (import.meta.env.DEV) {
+          console.error('Error details:', {
+            service: config.service_name,
+            apiUrl: config.api_url,
+            error: errorMessage,
+            response: error?.response?.data,
+            status: error?.response?.status,
+          });
+        }
+        
         const components: ServiceComponent[] = (config.components || []).map(componentName => ({
           name: componentName,
-          status: StatusType.OPERATIONAL,
+          status: StatusType.UNKNOWN, // 에러 시 UNKNOWN 상태로 표시
         }));
         return {
           service_name: config.service_name,
           display_name: config.display_name,
           description: config.description,
-          status: StatusUtils.calculateServiceStatus(components),
+          status: StatusType.UNKNOWN,
           page_url: config.page_url,
           icon: config.icon,
           components,
@@ -404,18 +536,14 @@ export async function fetchAWSStatus(): Promise<Service> {
   try {
     // 먼저 StatusPage API v2를 시도
     try {
-      const response = await apiClient.get(
-        `${CORS_PROXY}https://status.aws.amazon.com/api/v2/status.json`
-      );
+      const response = await fetchWithRetry('https://status.aws.amazon.com/api/v2/status.json', 3, true);
       const data = response.data;
       const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
       // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
       let componentsData;
       try {
-        const componentsResponse = await apiClient.get(
-          `${CORS_PROXY}https://status.aws.amazon.com/api/v2/components.json`
-        );
+        const componentsResponse = await fetchWithRetry('https://status.aws.amazon.com/api/v2/components.json', 2, true);
         componentsData = componentsResponse.data.components;
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -655,17 +783,13 @@ export async function fetchFirebaseStatus(): Promise<Service> {
 export async function fetchCursorStatus(): Promise<Service> {
   try {
     // StatusPage API v2를 통해 실제 컴포넌트 상태 조회
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.cursor.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.cursor.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
     let componentsData;
     try {
-      const componentsResponse = await apiClient.get(
-        `${CORS_PROXY}https://status.cursor.com/api/v2/components.json`
-      );
+      const componentsResponse = await fetchWithRetry('https://status.cursor.com/api/v2/components.json', 2, true);
       componentsData = componentsResponse.data.components;
     } catch (error) {
       console.warn('Cursor components API 호출 실패, status.json의 components 사용:', error);
@@ -800,9 +924,7 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
  */
 export async function fetchPerplexityStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.perplexity.ai/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.perplexity.ai/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -847,9 +969,7 @@ export async function fetchPerplexityStatus(): Promise<Service> {
 export async function fetchV0Status(): Promise<Service> {
   try {
     // Vercel 상태 페이지에서 v0 관련 정보 조회
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.vercel-status.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://www.vercel-status.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -901,9 +1021,7 @@ export async function fetchV0Status(): Promise<Service> {
  */
 export async function fetchReplitStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.replit.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.replit.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     // Replit의 복잡한 8개 컴포넌트 구조
@@ -979,7 +1097,7 @@ export async function fetchReplitStatus(): Promise<Service> {
 export async function fetchXAIStatus(): Promise<Service> {
   try {
     // RSS 피드를 통한 상태 정보 조회 시도
-    const response = await apiClient.get(`${CORS_PROXY}https://status.x.ai/feed.xml`);
+    const response = await fetchWithRetry('https://status.x.ai/feed.xml', 3, true);
 
     // RSS에서 최신 상태 정보 파싱 (간단한 구현)
     const isOperational = !response.data.includes('outage') && !response.data.includes('degraded');
@@ -1041,17 +1159,13 @@ export async function fetchXAIStatus(): Promise<Service> {
  */
 export async function fetchSupabaseStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.supabase.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.supabase.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     // Supabase 컴포넌트들의 실제 상태를 가져오기 위해 components API도 호출
     let componentsData;
     try {
-      const componentsResponse = await apiClient.get(
-        `${CORS_PROXY}https://status.supabase.com/api/v2/components.json`
-      );
+      const componentsResponse = await fetchWithRetry('https://status.supabase.com/api/v2/components.json', 2, true);
       componentsData = componentsResponse.data.components;
     } catch (error) {
       console.warn('Supabase components API 호출 실패, 기본 상태 사용:', error);
@@ -1157,9 +1271,7 @@ export async function fetchSupabaseStatus(): Promise<Service> {
  */
 export async function fetchHerokuStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.heroku.com/api/v4/current-status`
-    );
+    const response = await fetchWithRetry('https://status.heroku.com/api/v4/current-status', 3, true);
     const data = response.data;
 
     // Heroku는 특별한 API 구조를 사용 (status 배열)
@@ -1211,9 +1323,7 @@ export async function fetchHerokuStatus(): Promise<Service> {
 export async function fetchAtlassianStatus(): Promise<Service> {
   try {
     // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://developer.status.atlassian.com/api/v2/components.json`
-    );
+    const response = await fetchWithRetry('https://developer.status.atlassian.com/api/v2/components.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = (data.components || [])
@@ -1258,9 +1368,7 @@ export async function fetchAtlassianStatus(): Promise<Service> {
 export async function fetchCircleCIStatus(): Promise<Service> {
   try {
     // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.circleci.com/api/v2/components.json`
-    );
+    const response = await fetchWithRetry('https://status.circleci.com/api/v2/components.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = (data.components || [])
@@ -1306,9 +1414,7 @@ export async function fetchCircleCIStatus(): Promise<Service> {
 export async function fetchAuth0Status(): Promise<Service> {
   try {
     // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://auth0.statuspage.io/api/v2/components.json`
-    );
+    const response = await fetchWithRetry('https://auth0.statuspage.io/api/v2/components.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = (data.components || [])
@@ -1354,9 +1460,7 @@ export async function fetchAuth0Status(): Promise<Service> {
 export async function fetchSendGridStatus(): Promise<Service> {
   try {
     // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.sendgrid.com/api/v2/components.json`
-    );
+    const response = await fetchWithRetry('https://status.sendgrid.com/api/v2/components.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = (data.components || [])
@@ -1402,9 +1506,7 @@ export async function fetchSendGridStatus(): Promise<Service> {
 export async function fetchCloudflareStatus(): Promise<Service> {
   try {
     // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.cloudflarestatus.com/api/v2/components.json`
-    );
+    const response = await fetchWithRetry('https://www.cloudflarestatus.com/api/v2/components.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = (data.components || [])
@@ -1450,9 +1552,7 @@ export async function fetchCloudflareStatus(): Promise<Service> {
 export async function fetchDatadogStatus(): Promise<Service> {
   try {
     // 컴포넌트 정보를 별도 엔드포인트에서 가져옴
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.datadoghq.com/api/v2/components.json`
-    );
+    const response = await fetchWithRetry('https://status.datadoghq.com/api/v2/components.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = (data.components || [])
@@ -1497,9 +1597,7 @@ export async function fetchDatadogStatus(): Promise<Service> {
  */
 export async function fetchZetaGlobalStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.zetaglobal.net/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.zetaglobal.net/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -1608,9 +1706,7 @@ export async function fetchZetaGlobalStatus(): Promise<Service> {
  */
 export async function fetchVercelStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.vercel-status.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://www.vercel-status.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -1694,9 +1790,7 @@ export async function fetchVercelStatus(): Promise<Service> {
  */
 export async function fetchStripeStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.stripe.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.stripe.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -1780,9 +1874,7 @@ export async function fetchStripeStatus(): Promise<Service> {
  */
 export async function fetchMongoDBStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.mongodb.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.mongodb.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -1869,9 +1961,7 @@ export async function fetchMongoDBStatus(): Promise<Service> {
  */
 export async function fetchHuggingFaceStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.huggingface.co/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.huggingface.co/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [
@@ -1945,9 +2035,7 @@ export async function fetchHuggingFaceStatus(): Promise<Service> {
  */
 export async function fetchGitLabStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.gitlab.com/api/v2/status.json`
-    );
+    const response = await fetchWithRetry('https://status.gitlab.com/api/v2/status.json', 3, true);
     const data = response.data;
 
     const components: ServiceComponent[] = [

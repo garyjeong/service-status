@@ -1,8 +1,14 @@
-# GitHub Actions ECR Push Setup
+# GitHub Actions ECR Push 설정 가이드
 
-This project ships a workflow that builds the Docker image and pushes it to Amazon ECR on every push to `main`.
+> **마지막 업데이트**: 2025-01-30
 
-## 1) Required GitHub Secrets
+이 프로젝트는 GitHub Actions를 통해 Docker 이미지를 빌드하고 Amazon ECR에 자동으로 푸시하는 워크플로우를 포함합니다.
+
+## 개요
+
+`main` 브랜치에 푸시할 때마다 자동으로 Docker 이미지를 빌드하고 ECR에 푸시합니다.
+
+## 1. 필수 GitHub Secrets 설정
 
 Add these repository secrets (Settings → Secrets and variables → Actions → New repository secret):
 
@@ -29,7 +35,7 @@ or a custom policy allowing:
 - `ecr:UploadLayerPart`
 - `ecr:GetAuthorizationToken`
 
-## 2) Workflow
+## 2. 워크플로우
 
 File: `.github/workflows/ecr-push.yml`
 
@@ -39,12 +45,12 @@ File: `.github/workflows/ecr-push.yml`
   - `${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:latest`
   - `${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}`
 
-## 3) Validate
+## 3. 검증
 
 - Check Actions tab → build-and-push-ecr → latest run → ensure `Login to Amazon ECR` and `Build and push Docker image` steps succeed.
 - Verify pushed images in ECR Console → Repositories → `${ECR_REPOSITORY}`.
 
-## 4) Pulling/Deploying
+## 4. 이미지 Pull 및 배포
 
 Use the `:latest` (or specific commit SHA) tag from ECR in your runtime environment:
 
@@ -55,3 +61,8 @@ aws ecr get-login-password --region $AWS_REGION | \
 
 docker pull ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest
 ```
+
+## 📚 관련 문서
+
+- [배포 가이드](./DEPLOYMENT_GUIDE.md) - 전체 배포 프로세스
+- [OIDC 설정 가이드](./OIDC_SETUP_GUIDE.md) - OIDC 인증 설정 (권장)

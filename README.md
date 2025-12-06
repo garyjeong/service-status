@@ -361,7 +361,11 @@ GitHub Actions를 통한 AWS ECR 자동 배포를 지원합니다.
 014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:<commit-sha>
 ```
 
-자세한 설정 가이드는 [GitHub Actions 설정 가이드](docs/GITHUB_ACTIONS_SETUP.md)를 참조하세요.
+자세한 설정 가이드는 다음 문서를 참조하세요:
+- [GitHub Actions 설정 가이드](docs/GITHUB_ACTIONS_SETUP.md)
+- [OIDC 설정 가이드](docs/OIDC_SETUP_GUIDE.md) (권장)
+- [배포 가이드](docs/DEPLOYMENT_GUIDE.md)
+- [모니터링 서비스 정의서](docs/SERVICES.md)
 
 ### Netlify 배포
 
@@ -483,6 +487,16 @@ docker rmi ai-dashboard
 3. **개발 경험**: 현대적인 React + TypeScript 스택
 4. **유지보수**: 단일 언어 생태계로 일관성 향상
 5. **비주얼 개선**: 실제 AI 서비스 로고와 현대적 UI/UX
+
+## 📚 문서
+
+- [모니터링 서비스 정의서](docs/SERVICES.md) - 모든 모니터링 서비스의 상세 정의
+- [프로젝트 분석 보고서](docs/PROJECT_ANALYSIS.md) - 프로젝트 구조 및 분석
+- [최적화 계획서](docs/TODO.md) - 개선 계획 및 최적화 방안
+- [배포 가이드](docs/DEPLOYMENT_GUIDE.md) - 배포 방법 및 설정
+- [GitHub Actions 설정](docs/GITHUB_ACTIONS_SETUP.md) - CI/CD 파이프라인 설정
+- [OIDC 설정 가이드](docs/OIDC_SETUP_GUIDE.md) - OIDC 인증 설정
+- [Endpoint 개선 요약](docs/ENDPOINT_FIX_SUMMARY.md) - API endpoint 개선 사항
 
 ## 📞 지원
 
