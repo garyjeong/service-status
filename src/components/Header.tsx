@@ -74,69 +74,69 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="header-premium header-section sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        {/* 데스크톱 헤더 레이아웃 */}
-        <div className="hidden md:flex justify-between items-center py-4">
-          {/* 좌측: 서비스 제목 */}
-          <h1 
-            className="desktop-title"
-          >
-            {title}
-          </h1>
-          
-          {/* 우측: 상태 표시 + 버튼들 */}
-          <div className="flex items-center gap-4">
-            {/* 🔥 빌게이츠 요청: 퍼센트 표기 영역 완전 삭제 */}
-            <div className="flex items-center gap-4">
-              {/* 상태 배지들 */}
-              <div className="flex items-center gap-3 text-sm">
-                <StatusBadge
-                  status="unknown"
-                  count={loadingCount}
-                  isLoading={loadingCount > 0}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-                <StatusBadge
-                  status="operational"
-                  count={stats.operational}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-                <StatusBadge
-                  status="degraded_performance"
-                  count={stats.degraded}
-                  onClick={() => onStatusFilter('degraded_performance')}
-                  isSelected={statusFilter === 'degraded_performance'}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-                <StatusBadge
-                  status="major_outage"
-                  count={stats.outage}
-                  onClick={() => onStatusFilter('major_outage')}
-                  isSelected={statusFilter === 'major_outage'}
-                  translations={{
-                    operational: translations.operational,
-                    degraded: translations.degradedPerformance,
-                    outage: translations.majorOutage,
-                    loading: translations.loading
-                  }}
-                />
-              </div>
-            </div>
+        {/* 데스크톱 헤더 레이아웃 - 2단계 GNB */}
+        <div className="hidden md:block">
+          {/* 1단계 최상위 GNB: 타이틀과 상태 통계 */}
+          <div className="gnb-primary flex justify-between items-center py-3 border-b border-border/50">
+            {/* 좌측: 서비스 제목 */}
+            <h1 
+              className="desktop-title"
+            >
+              {title}
+            </h1>
             
+            {/* 우측: 상태 통계 */}
+            <div className="flex items-center gap-3 text-sm">
+              <StatusBadge
+                status="unknown"
+                count={loadingCount}
+                isLoading={loadingCount > 0}
+                translations={{
+                  operational: translations.operational,
+                  degraded: translations.degradedPerformance,
+                  outage: translations.majorOutage,
+                  loading: translations.loading
+                }}
+              />
+              <StatusBadge
+                status="operational"
+                count={stats.operational}
+                translations={{
+                  operational: translations.operational,
+                  degraded: translations.degradedPerformance,
+                  outage: translations.majorOutage,
+                  loading: translations.loading
+                }}
+              />
+              <StatusBadge
+                status="degraded_performance"
+                count={stats.degraded}
+                onClick={() => onStatusFilter('degraded_performance')}
+                isSelected={statusFilter === 'degraded_performance'}
+                translations={{
+                  operational: translations.operational,
+                  degraded: translations.degradedPerformance,
+                  outage: translations.majorOutage,
+                  loading: translations.loading
+                }}
+              />
+              <StatusBadge
+                status="major_outage"
+                count={stats.outage}
+                onClick={() => onStatusFilter('major_outage')}
+                isSelected={statusFilter === 'major_outage'}
+                translations={{
+                  operational: translations.operational,
+                  degraded: translations.degradedPerformance,
+                  outage: translations.majorOutage,
+                  loading: translations.loading
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* 2단계 기능 영역: 필터, 정렬, 언어, 알림, 테마, 새로고침 */}
+          <div className="gnb-secondary flex justify-end items-center gap-3 py-2">
             {/* 필터 버튼 */}
             <button
               onClick={onFilterOpen}
@@ -243,12 +243,12 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
         
-        {/* 모바일 헤더 레이아웃 */}
-        <div className="md:hidden py-4">
-          {/* 첫 번째 줄: 서비스 제목 | 모든 상태 통합 표시 */}
-          <div className="flex justify-between items-center mb-3">
+        {/* 모바일 헤더 레이아웃 - 2단계 GNB */}
+        <div className="md:hidden">
+          {/* 1단계 최상위 GNB: 타이틀과 상태 통계 */}
+          <div className="gnb-primary flex justify-between items-center py-3 border-b border-border/50">
             <h1 
-              className="desktop-title"
+              className="desktop-title text-base"
             >
               {title}
             </h1>
@@ -294,72 +294,69 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
           
-          {/* 두 번째 줄: 필터 | 정렬 | 언어 | 새로고침 */}
-          <div className="flex justify-center items-center">
-            {/* 컨트롤 버튼들 */}
-            <div className="flex items-center gap-2">
+          {/* 2단계 기능 영역: 필터, 정렬, 언어, 알림, 테마, 새로고침 */}
+          <div className="gnb-secondary flex justify-center items-center gap-2 py-2">
+            <button
+              onClick={onFilterOpen}
+              className="btn-secondary focus-ring flex items-center justify-center gap-1 hover-lift text-xs px-2 py-1"
+            >
+              <Settings className="w-3 h-3" />
+              <span>{translations.filter}</span>
+            </button>
+            
+            {/* 정렬 버튼 - 모바일 */}
+            <SortDropdown
+              sortType={sortType}
+              isOpen={isSortDropdownOpen}
+              onToggle={onSortDropdownToggle}
+              onSortChange={onSortChange}
+              translations={{
+                sortDefault: translations.sortDefault,
+                sortNameAsc: translations.sortNameAsc,
+                sortNameDesc: translations.sortNameDesc
+              }}
+              isMobile={true}
+            />
+            
+            {/* 언어변경 버튼 */}
+            <LanguageSelector
+              language={language}
+              isOpen={isLanguageDropdownOpen}
+              onToggle={onLanguageDropdownToggle}
+              onLanguageChange={onLanguageChange}
+              isMobile={true}
+            />
+            
+            {/* 알림 토글 버튼 - 모바일 */}
+            {onToggleNotifications && (
               <button
-                onClick={onFilterOpen}
-                className="btn-secondary focus-ring flex items-center justify-center gap-1 hover-lift text-xs px-2 py-1"
+                onClick={onToggleNotifications}
+                className={`btn-icon focus-ring hover-lift ${notificationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
+                aria-label={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
+                title={notificationsEnabled ? (language === 'ko' ? '알림 끄기' : 'Disable notifications') : (language === 'ko' ? '알림 켜기' : 'Enable notifications')}
               >
-                <Settings className="w-3 h-3" />
-                <span>{translations.filter}</span>
+                {notificationsEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
               </button>
-              
-              {/* 정렬 버튼 - 모바일 */}
-              <SortDropdown
-                sortType={sortType}
-                isOpen={isSortDropdownOpen}
-                onToggle={onSortDropdownToggle}
-                onSortChange={onSortChange}
-                translations={{
-                  sortDefault: translations.sortDefault,
-                  sortNameAsc: translations.sortNameAsc,
-                  sortNameDesc: translations.sortNameDesc
-                }}
-                isMobile={true}
-              />
-              
-              {/* 언어변경 버튼 */}
-              <LanguageSelector
-                language={language}
-                isOpen={isLanguageDropdownOpen}
-                onToggle={onLanguageDropdownToggle}
-                onLanguageChange={onLanguageChange}
-                isMobile={true}
-              />
-              
-              {/* 알림 토글 버튼 - 모바일 */}
-              {onToggleNotifications && (
-                <button
-                  onClick={onToggleNotifications}
-                  className={`btn-icon focus-ring hover-lift ${notificationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
-                  aria-label={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
-                  title={notificationsEnabled ? (language === 'ko' ? '알림 끄기' : 'Disable notifications') : (language === 'ko' ? '알림 켜기' : 'Enable notifications')}
-                >
-                  {notificationsEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-                </button>
-              )}
+            )}
 
-              {/* 테마 토글 버튼 - 모바일 */}
-              <button
-                onClick={onThemeToggle}
-                className="btn-icon focus-ring hover-lift"
-                aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-              >
-                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              </button>
+            {/* 테마 토글 버튼 - 모바일 */}
+            <button
+              onClick={onThemeToggle}
+              className="btn-icon focus-ring hover-lift"
+              aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
 
-              {/* 새로고침 버튼 */}
-              <button
-                onClick={onRefresh}
-                className="btn-icon focus-ring hover-lift"
-                aria-label={translations.refresh}
-                disabled={isAnyLoading}
-              >
-                <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
+            {/* 새로고침 버튼 */}
+            <button
+              onClick={onRefresh}
+              className="btn-icon focus-ring hover-lift"
+              aria-label={translations.refresh}
+              disabled={isAnyLoading}
+            >
+              <RefreshCw className={`w-4 h-4 ${isAnyLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>

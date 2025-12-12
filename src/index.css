@@ -618,6 +618,51 @@ body::after {
   /* overflow: hidden; 🔥 드롭다운 메뉴가 잘리는 문제로 제거 */
 }
 
+/* 2단계 GNB 스타일 */
+.gnb-primary {
+  /* 1단계 최상위 GNB: 타이틀과 상태 통계 */
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gnb-secondary {
+  /* 2단계 기능 영역: 필터, 정렬, 언어, 알림, 테마, 새로고침 */
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* 모바일 GNB 최적화 */
+@media (max-width: 768px) {
+  .gnb-primary {
+    min-height: 44px;
+    padding: 0.5rem 0;
+  }
+  
+  .gnb-secondary {
+    min-height: 36px;
+    padding: 0.5rem 0;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .gnb-secondary .btn-icon {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.5rem;
+  }
+  
+  .gnb-secondary .btn-secondary {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
 /* 헤더 글래스 오버레이 */
 .header-premium::before {
   content: '';
