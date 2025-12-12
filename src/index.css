@@ -2534,15 +2534,23 @@ p {
   }
 }
 
-/* 작은 데스크톱: 4열 그리드로 전환 (모든 카드 동일 크기) */
+/* 작은 데스크톱: 2열 2행 구조 유지 (건강도 2열, 나머지 각 1열) */
 @media (min-width: 900px) {
   .status-summary-stats {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
 }
 
-/* 데스크톱: 4열 그리드 유지 */
+/* 중간 데스크톱: 2열 2행 구조 유지 */
+@media (min-width: 960px) {
+  .status-summary-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+/* 데스크톱: 4열 그리드로 전환 */
 @media (min-width: 1024px) {
   .status-summary-stats {
     grid-template-columns: repeat(4, 1fr);
@@ -2725,14 +2733,21 @@ p {
   }
 }
 
-/* 작은 데스크톱: 건강도 카드는 첫 번째 열만 차지 (1.5fr) */
+/* 작은 데스크톱: 건강도 카드 2열 차지 유지 (2열 2행 구조) */
 @media (min-width: 900px) {
   .status-summary-health {
-    grid-column: 1; /* 첫 번째 열만 차지 */
+    grid-column: span 2;
   }
 }
 
-/* 데스크톱: 건강도 카드는 첫 번째 열만 차지 (1.5fr) */
+/* 중간 데스크톱: 건강도 카드 2열 차지 유지 */
+@media (min-width: 960px) {
+  .status-summary-health {
+    grid-column: span 2;
+  }
+}
+
+/* 데스크톱: 건강도 카드는 첫 번째 열만 차지 (4열 구조) */
 @media (min-width: 1024px) {
   .status-summary-health {
     grid-column: 1; /* 첫 번째 열만 차지 */
@@ -2959,7 +2974,7 @@ p {
   }
 }
 
-/* 작은 데스크톱 최적화 */
+/* 작은 데스크톱 최적화 (2열 2행 구조) */
 @media (min-width: 900px) and (max-width: 1023px) {
   .status-summary-stats {
     gap: 0.5rem;
@@ -2970,7 +2985,22 @@ p {
   }
 
   .status-summary-health {
-    min-height: 65px;
+    min-height: 75px;
+  }
+  
+  /* 중간 데스크톱에서 더 나은 간격 */
+  @media (min-width: 960px) {
+    .status-summary-stats {
+      gap: 0.625rem;
+    }
+    
+    .status-summary-card {
+      min-height: 70px;
+    }
+    
+    .status-summary-health {
+      min-height: 80px;
+    }
   }
 }
 
