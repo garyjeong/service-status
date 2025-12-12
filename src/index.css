@@ -2719,31 +2719,31 @@ p {
   border-color: rgba(139, 95, 254, 0.2);
 }
 
-/* 작은 태블릿 이상: 건강도 카드 1열 차지 유지 (2열 2행 구조) */
+/* 작은 태블릿 이상: 건강도 카드 1열 차지 (2열 2행 구조) */
 @media (min-width: 640px) {
   .status-summary-health {
     grid-column: span 1;
   }
 }
 
-/* 중간 태블릿: 건강도 카드 2열 차지 유지 */
+/* 중간 태블릿: 건강도 카드 1열 차지 유지 (2열 2행 구조) */
 @media (min-width: 768px) {
   .status-summary-health {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 }
 
-/* 작은 데스크톱: 건강도 카드 2열 차지 유지 (2열 2행 구조) */
+/* 작은 데스크톱: 건강도 카드 1열 차지 유지 (2열 2행 구조) */
 @media (min-width: 900px) {
   .status-summary-health {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 }
 
-/* 중간 데스크톱: 건강도 카드 2열 차지 유지 */
+/* 중간 데스크톱: 건강도 카드 1열 차지 유지 (2열 2행 구조) */
 @media (min-width: 960px) {
   .status-summary-health {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 }
 

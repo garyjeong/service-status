@@ -342,7 +342,7 @@ export class WebScrapingService {
         return response.data;
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn(`Proxy ${proxy} failed:`, error.message);
+        console.warn(`Proxy ${proxy} failed:`, error.message);
         }
         continue;
       }
@@ -356,7 +356,7 @@ export class WebScrapingService {
       return DockerStatusParser.parse(html);
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('Docker status fetch error:', error);
+      console.error('Docker status fetch error:', error);
       }
       return this.createErrorStatus('Docker', error);
     }
@@ -368,7 +368,7 @@ export class WebScrapingService {
       return SlackStatusParser.parse(html);
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('Slack status fetch error:', error);
+      console.error('Slack status fetch error:', error);
       }
       return this.createErrorStatus('Slack', error);
     }
@@ -380,7 +380,7 @@ export class WebScrapingService {
       return FirebaseStatusParser.parse(html);
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('Firebase status fetch error:', error);
+      console.error('Firebase status fetch error:', error);
       }
       return this.createErrorStatus('Firebase', error);
     }
@@ -392,7 +392,7 @@ export class WebScrapingService {
       return AWSStatusParser.parse(html);
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('AWS status fetch error:', error);
+      console.error('AWS status fetch error:', error);
       }
       return this.createErrorStatus('AWS', error);
     }

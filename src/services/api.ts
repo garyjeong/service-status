@@ -326,7 +326,7 @@ class ServiceStatusFetcher {
         };
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.error(`${config.service_name} API 오류:`, error);
+        console.error(`${config.service_name} API 오류:`, error);
         }
         const components: ServiceComponent[] = (config.components || []).map(componentName => ({
           name: componentName,
@@ -416,7 +416,7 @@ export async function fetchDockerHubStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Docker Hub 웹 스크래핑 오류:', error);
+    console.error('Docker Hub 웹 스크래핑 오류:', error);
     }
 
     // 웹 스크래핑 실패 시 기본 컴포넌트 반환
@@ -565,7 +565,7 @@ export async function fetchAWSStatus(): Promise<Service> {
     }
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('AWS 상태 조회 오류:', error);
+    console.error('AWS 상태 조회 오류:', error);
     }
     
     // 모든 방법 실패 시 기본 컴포넌트 반환
@@ -619,7 +619,7 @@ export async function fetchSlackStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Slack 웹 스크래핑 오류:', error);
+    console.error('Slack 웹 스크래핑 오류:', error);
     }
 
     // 웹 스크래핑 실패 시 기본 컴포넌트 반환
@@ -674,7 +674,7 @@ export async function fetchFirebaseStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Firebase 웹 스크래핑 오류:', error);
+    console.error('Firebase 웹 스크래핑 오류:', error);
     }
 
     // 웹 스크래핑 실패 시 기본 컴포넌트 반환
@@ -740,7 +740,7 @@ export async function fetchCursorStatus(): Promise<Service> {
       componentsData = componentsResponse.data.components;
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.warn('Cursor components API 호출 실패, status.json의 components 사용:', error);
+      console.warn('Cursor components API 호출 실패, status.json의 components 사용:', error);
       }
       // status.json에서 컴포넌트 정보가 있으면 사용
       componentsData = data.components || [];
@@ -793,7 +793,7 @@ export async function fetchCursorStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Cursor API 오류:', error);
+    console.error('Cursor API 오류:', error);
     }
     // 폴백: 기본 컴포넌트 목록 (실제 상태 페이지의 컴포넌트 목록 기반)
     const components: ServiceComponent[] = [
@@ -850,7 +850,7 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Google AI API 오류:', error);
+    console.error('Google AI API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Gemini API', status: 'operational' },
@@ -901,7 +901,7 @@ export async function fetchPerplexityStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Perplexity API 오류:', error);
+    console.error('Perplexity API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Website', status: 'operational' },
@@ -957,7 +957,7 @@ export async function fetchV0Status(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('v0 API 오류:', error);
+    console.error('v0 API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'v0 Platform', status: 'operational' },
@@ -1031,7 +1031,7 @@ export async function fetchReplitStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Replit API 오류:', error);
+    console.error('Replit API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Website', status: 'operational' },
@@ -1093,7 +1093,7 @@ export async function fetchXAIStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('xAI API 오류:', error);
+    console.error('xAI API 오류:', error);
     }
     // 기본 상태로 폴백
     const components: ServiceComponent[] = [
@@ -1145,7 +1145,7 @@ export async function fetchSupabaseStatus(): Promise<Service> {
       componentsData = componentsResponse.data.components;
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.warn('Supabase components API 호출 실패, 기본 상태 사용:', error);
+      console.warn('Supabase components API 호출 실패, 기본 상태 사용:', error);
       }
       componentsData = [];
     }
@@ -1219,7 +1219,7 @@ export async function fetchSupabaseStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Supabase API 오류:', error);
+    console.error('Supabase API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Analytics', status: 'operational' },
@@ -1281,7 +1281,7 @@ export async function fetchHerokuStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Heroku API 오류:', error);
+    console.error('Heroku API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Apps', status: 'operational' },
@@ -1330,7 +1330,7 @@ export async function fetchAtlassianStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Atlassian API 오류:', error);
+    console.error('Atlassian API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'APIs', status: 'operational' },
@@ -1379,7 +1379,7 @@ export async function fetchCircleCIStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('CircleCI API 오류:', error);
+    console.error('CircleCI API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'AWS', status: 'operational' },
@@ -1429,7 +1429,7 @@ export async function fetchAuth0Status(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Auth0 API 오류:', error);
+    console.error('Auth0 API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'User Authentication', status: 'operational' },
@@ -1479,7 +1479,7 @@ export async function fetchSendGridStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('SendGrid API 오류:', error);
+    console.error('SendGrid API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Web API', status: 'operational' },
@@ -1529,7 +1529,7 @@ export async function fetchCloudflareStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Cloudflare API 오류:', error);
+    console.error('Cloudflare API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'CDN', status: 'operational' },
@@ -1579,7 +1579,7 @@ export async function fetchDatadogStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Datadog API 오류:', error);
+    console.error('Datadog API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Infrastructure Monitoring', status: 'operational' },
@@ -1681,7 +1681,7 @@ export async function fetchZetaGlobalStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Zeta Global API 오류:', error);
+    console.error('Zeta Global API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Web Application', status: 'operational' },
@@ -1774,7 +1774,7 @@ export async function fetchVercelStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Vercel API 오류:', error);
+    console.error('Vercel API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Edge Network', status: 'operational' },
@@ -1862,7 +1862,7 @@ export async function fetchStripeStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Stripe API 오류:', error);
+    console.error('Stripe API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'API', status: 'operational' },
@@ -1953,7 +1953,7 @@ export async function fetchMongoDBStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('MongoDB API 오류:', error);
+    console.error('MongoDB API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Clusters', status: 'operational' },
@@ -2033,7 +2033,7 @@ export async function fetchHuggingFaceStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Hugging Face API 오류:', error);
+    console.error('Hugging Face API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'Hub', status: 'operational' },
@@ -2119,7 +2119,7 @@ export async function fetchGitLabStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('GitLab API 오류:', error);
+    console.error('GitLab API 오류:', error);
     }
     const components: ServiceComponent[] = [
       { name: 'GitLab.com', status: 'operational' },
@@ -2192,7 +2192,7 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
         return result.value;
       } else {
         if (import.meta.env.DEV) {
-          console.error(`서비스 ${index} 로딩 실패:`, result.reason);
+        console.error(`서비스 ${index} 로딩 실패:`, result.reason);
         }
         // 기본 서비스 반환 (에러 처리)
         return {
@@ -2208,7 +2208,7 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     });
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('전체 서비스 상태 조회 실패:', error);
+    console.error('전체 서비스 상태 조회 실패:', error);
     }
     return [];
   }
