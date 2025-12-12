@@ -2373,14 +2373,14 @@ p {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: calc(var(--card-radius) * 0.75);
-  padding: 0.75rem;
+  padding: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 @media (min-width: 1024px) {
   .status-summary-container {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 }
 
@@ -2392,11 +2392,11 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .status-summary-title {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--foreground);
   margin: 0;
@@ -2404,42 +2404,42 @@ p {
 
 @media (min-width: 1024px) {
   .status-summary-title {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 }
 
 .status-summary-alert {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.3);
   border-radius: calc(var(--card-radius) * 0.75);
   color: rgb(245, 158, 11);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
 }
 
 @media (min-width: 1024px) {
   .status-summary-alert {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    gap: 0.375rem;
   }
 }
 
 .status-summary-stats {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 0.625rem;
-  margin-bottom: 0.625rem;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 /* 태블릿 이상: 2열 그리드 */
 @media (min-width: 640px) {
   .status-summary-stats {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    gap: 0.625rem;
   }
 }
 
@@ -2447,7 +2447,7 @@ p {
 @media (min-width: 1024px) {
   .status-summary-stats {
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
+    gap: 0.625rem;
   }
 }
 
@@ -2455,7 +2455,7 @@ p {
 @media (min-width: 1280px) {
   .status-summary-stats {
     grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 0.875rem;
+    gap: 0.75rem;
   }
 }
 
@@ -2463,29 +2463,29 @@ p {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: calc(var(--card-radius) * 0.75);
-  padding: 0.625rem;
+  padding: 0.5rem;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 75px;
+  min-height: 60px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 /* 태블릿 이상 */
 @media (min-width: 640px) {
   .status-summary-card {
-    min-height: 85px;
-    padding: 0.75rem;
+    min-height: 70px;
+    padding: 0.625rem;
   }
 }
 
 /* 데스크톱에서 카드 높이 최적화 */
 @media (min-width: 1024px) {
   .status-summary-card {
-    min-height: 95px;
-    padding: 0.875rem;
+    min-height: 80px;
+    padding: 0.75rem;
   }
 }
 
@@ -2503,8 +2503,8 @@ p {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  margin-bottom: 0.375rem;
-  font-size: 0.6875rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--muted-foreground);
   flex-shrink: 0;
@@ -2512,9 +2512,9 @@ p {
 
 @media (min-width: 1024px) {
   .status-summary-card-header {
-    margin-bottom: 0.5rem;
-    font-size: 0.75rem;
-    gap: 0.375rem;
+    margin-bottom: 0.375rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
   }
 }
 
@@ -2522,19 +2522,19 @@ p {
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
   flex-grow: 1;
   justify-content: flex-start;
 }
 
 @media (min-width: 1024px) {
   .status-summary-card-value {
-    margin-bottom: 0.375rem;
+    margin-bottom: 0.25rem;
   }
 }
 
 .status-summary-count {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--foreground);
   line-height: 1;
@@ -2542,30 +2542,30 @@ p {
 
 @media (min-width: 1024px) {
   .status-summary-count {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 }
 
 @media (min-width: 1280px) {
   .status-summary-count {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 }
 
 .status-summary-total {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   color: var(--muted-foreground);
 }
 
 @media (min-width: 1024px) {
   .status-summary-total {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
 }
 
 .status-summary-card-percentage {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--muted-foreground);
   margin-top: auto;
@@ -2573,23 +2573,23 @@ p {
 
 @media (min-width: 1024px) {
   .status-summary-card-percentage {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
   }
 }
 
 .status-summary-card-hint {
-  font-size: 0.5625rem;
+  font-size: 0.5rem;
   color: var(--muted-foreground);
   margin-top: auto;
-  padding-top: 0.25rem;
+  padding-top: 0.125rem;
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
 
 @media (min-width: 1024px) {
   .status-summary-card-hint {
-    font-size: 0.625rem;
-    padding-top: 0.375rem;
+    font-size: 0.5625rem;
+    padding-top: 0.25rem;
   }
 }
 
@@ -2622,18 +2622,18 @@ p {
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.25rem;
   flex-grow: 1;
 }
 
 @media (min-width: 1024px) {
   .status-summary-health-score {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
   }
 }
 
 .status-summary-health-value {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 800;
   background: linear-gradient(135deg, var(--primary-accent) 0%, rgba(139, 95, 254, 0.7) 100%);
   -webkit-background-clip: text;
@@ -2644,37 +2644,37 @@ p {
 
 @media (min-width: 1024px) {
   .status-summary-health-value {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 }
 
 @media (min-width: 1280px) {
   .status-summary-health-value {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 }
 
 .status-summary-health-unit {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--muted-foreground);
 }
 
 @media (min-width: 1024px) {
   .status-summary-health-unit {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 }
 
 @media (min-width: 1280px) {
   .status-summary-health-unit {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 }
 
 .status-summary-health-bar {
   width: 100%;
-  height: 4px;
+  height: 3px;
   background: var(--bg-tertiary);
   border-radius: 2px;
   overflow: hidden;
@@ -2684,8 +2684,8 @@ p {
 
 @media (min-width: 1024px) {
   .status-summary-health-bar {
-    height: 5px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
   }
 }
 
@@ -2712,94 +2712,99 @@ p {
 .status-summary-message {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.625rem;
+  gap: 0.25rem;
+  padding: 0.5rem;
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: calc(var(--card-radius) * 0.75);
   color: var(--success-accent);
   text-align: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
 }
 
 @media (min-width: 1024px) {
   .status-summary-message {
-    padding: 0.75rem;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
+    padding: 0.625rem;
+    gap: 0.375rem;
+    font-size: 0.75rem;
   }
 }
 
 /* 모바일 최적화 */
 @media (max-width: 640px) {
   .status-summary-container {
-    padding: 0.625rem;
+    padding: 0.5rem;
   }
   
   .status-summary-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.375rem;
-    margin-bottom: 0.625rem;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
   }
   
   .status-summary-title {
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
   }
   
   .status-summary-card {
-    min-height: 70px;
-    padding: 0.5rem;
+    min-height: 55px;
+    padding: 0.375rem;
   }
   
   .status-summary-count {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
   
   .status-summary-health-value {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
   
   .status-summary-health-unit {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
   
   .status-summary-card-header {
-    margin-bottom: 0.25rem;
-    font-size: 0.625rem;
+    margin-bottom: 0.125rem;
+    font-size: 0.5625rem;
     gap: 0.25rem;
   }
   
   .status-summary-card-value {
-    margin-bottom: 0.125rem;
+    margin-bottom: 0.0625rem;
   }
   
   .status-summary-total {
-    font-size: 0.6875rem;
-  }
-  
-  .status-summary-card-percentage {
     font-size: 0.625rem;
   }
   
-  .status-summary-card-hint {
+  .status-summary-card-percentage {
     font-size: 0.5625rem;
-    padding-top: 0.125rem;
+  }
+  
+  .status-summary-card-hint {
+    font-size: 0.5rem;
+    padding-top: 0.0625rem;
   }
   
   .status-summary-health-bar {
-    height: 3px;
+    height: 2px;
   }
   
   .status-summary-health-score {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
   }
   
   .status-summary-message {
-    padding: 0.5rem;
-    font-size: 0.6875rem;
+    padding: 0.375rem;
+    font-size: 0.625rem;
     gap: 0.25rem;
+  }
+  
+  .status-summary-stats {
+    gap: 0.375rem;
+    margin-bottom: 0.375rem;
   }
 }
 
