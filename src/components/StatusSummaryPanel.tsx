@@ -82,7 +82,7 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
           )}
         </div>
 
-        {/* 통계 카드들 */}
+        {/* 통계 카드들 - 동적 그리드 레이아웃 */}
         <div className="status-summary-stats">
           {/* 전체 시스템 건강도 */}
           <motion.div
@@ -92,8 +92,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             transition={{ delay: 0.1 }}
           >
             <div className="status-summary-card-header">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-xs font-medium opacity-80">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-xs md:text-sm font-medium opacity-80">
                 {language === 'ko' ? '시스템 건강도' : 'System Health'}
               </span>
             </div>
@@ -119,8 +119,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             transition={{ delay: 0.2 }}
           >
             <div className="status-summary-card-header">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
-              <span className="text-xs font-medium">{t.operational}</span>
+              <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+              <span className="text-xs md:text-sm font-medium">{t.operational}</span>
             </div>
             <div className="status-summary-card-value">
               <span className="status-summary-count">{stats.operational}</span>
@@ -139,10 +139,18 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             transition={{ delay: 0.3 }}
             onClick={() => onStatusFilter && onStatusFilter(statusFilter === 'degraded_performance' ? null : 'degraded_performance')}
             style={{ cursor: onStatusFilter ? 'pointer' : 'default' }}
+            role={onStatusFilter ? 'button' : undefined}
+            tabIndex={onStatusFilter ? 0 : undefined}
+            onKeyDown={(e) => {
+              if (onStatusFilter && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onStatusFilter(statusFilter === 'degraded_performance' ? null : 'degraded_performance');
+              }
+            }}
           >
             <div className="status-summary-card-header">
-              <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              <span className="text-xs font-medium">{t.degraded}</span>
+              <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+              <span className="text-xs md:text-sm font-medium">{t.degraded}</span>
             </div>
             <div className="status-summary-card-value">
               <span className="status-summary-count">{stats.degraded}</span>
@@ -163,10 +171,18 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             transition={{ delay: 0.4 }}
             onClick={() => onStatusFilter && onStatusFilter(statusFilter === 'major_outage' ? null : 'major_outage')}
             style={{ cursor: onStatusFilter ? 'pointer' : 'default' }}
+            role={onStatusFilter ? 'button' : undefined}
+            tabIndex={onStatusFilter ? 0 : undefined}
+            onKeyDown={(e) => {
+              if (onStatusFilter && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onStatusFilter(statusFilter === 'major_outage' ? null : 'major_outage');
+              }
+            }}
           >
             <div className="status-summary-card-header">
-              <AlertCircle className="w-4 h-4 text-red-500" />
-              <span className="text-xs font-medium">{t.outage}</span>
+              <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
+              <span className="text-xs md:text-sm font-medium">{t.outage}</span>
             </div>
             <div className="status-summary-card-value">
               <span className="status-summary-count">{stats.outage}</span>
