@@ -2534,10 +2534,10 @@ p {
   }
 }
 
-/* 작은 데스크톱: 4열 그리드로 전환 (건강도 1.5fr, 나머지 각 1fr) */
+/* 작은 데스크톱: 4열 그리드로 전환 (모든 카드 동일 크기) */
 @media (min-width: 900px) {
   .status-summary-stats {
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
   }
 }
@@ -2545,7 +2545,7 @@ p {
 /* 데스크톱: 4열 그리드 유지 */
 @media (min-width: 1024px) {
   .status-summary-stats {
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
   }
 }
@@ -2553,7 +2553,7 @@ p {
 /* 큰 화면: 최적화된 레이아웃 */
 @media (min-width: 1280px) {
   .status-summary-stats {
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.625rem;
   }
 }
