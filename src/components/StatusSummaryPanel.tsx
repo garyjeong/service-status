@@ -65,8 +65,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
       <div className="status-summary-container">
         {/* 헤더 */}
         <div className="status-summary-header">
-          <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-1.5">
+            <Activity className="w-4 h-4 md:w-4 md:h-4 text-primary" />
             <h2 className="status-summary-title">{t.statusSummary}</h2>
           </div>
           {hasIssues && (
@@ -76,8 +76,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <AlertTriangle className="w-4 h-4" />
-              <span className="text-sm font-medium">{t.issuesDetected}</span>
+              <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="text-xs md:text-sm font-medium">{t.issuesDetected}</span>
             </motion.div>
           )}
         </div>
@@ -92,8 +92,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             transition={{ delay: 0.1 }}
           >
             <div className="status-summary-card-header">
-              <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="text-xs md:text-sm font-medium opacity-80">
+              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="text-xs font-medium opacity-80">
                 {language === 'ko' ? '시스템 건강도' : 'System Health'}
               </span>
             </div>
@@ -119,8 +119,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             transition={{ delay: 0.2 }}
           >
             <div className="status-summary-card-header">
-              <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
-              <span className="text-xs md:text-sm font-medium">{t.operational}</span>
+              <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
+              <span className="text-xs font-medium">{t.operational}</span>
             </div>
             <div className="status-summary-card-value">
               <span className="status-summary-count">{stats.operational}</span>
@@ -149,8 +149,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             }}
           >
             <div className="status-summary-card-header">
-              <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
-              <span className="text-xs md:text-sm font-medium">{t.degraded}</span>
+              <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-500" />
+              <span className="text-xs font-medium">{t.degraded}</span>
             </div>
             <div className="status-summary-card-value">
               <span className="status-summary-count">{stats.degraded}</span>
@@ -181,8 +181,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             }}
           >
             <div className="status-summary-card-header">
-              <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
-              <span className="text-xs md:text-sm font-medium">{t.outage}</span>
+              <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500" />
+              <span className="text-xs font-medium">{t.outage}</span>
             </div>
             <div className="status-summary-card-value">
               <span className="status-summary-count">{stats.outage}</span>
@@ -204,8 +204,8 @@ const StatusSummaryPanel: React.FC<StatusSummaryPanelProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
-            <span className="text-sm font-medium">{t.allSystemsOperational}</span>
+            <CheckCircle2 className="w-4 h-4 md:w-4 md:h-4 text-green-500" />
+            <span className="text-xs md:text-sm font-medium">{t.allSystemsOperational}</span>
           </motion.div>
         )}
       </div>
