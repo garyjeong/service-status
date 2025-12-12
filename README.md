@@ -1,8 +1,6 @@
 # 🌐 외부 서비스 상태 모니터링 대시보드
 
-> 마지막 업데이트: 2025-09-30
-
-🐳 **ECR 자동 배포 준비 완료** - main 브랜치 푸시 시 자동으로 ECR에 Docker 이미지가 빌드됩니다.
+> 마지막 업데이트: 2025-01-27
 
 실시간으로 개발자가 자주 사용하는 외부 서비스들의 상태를 모니터링하는 **프리미엄 글래스모피즘 대시보드**입니다. Framer Motion 기반 3D 애니메이션과 고급 마이크로 인터랙션으로 업계 최고 수준의 사용자 경험을 제공합니다.
 
@@ -338,32 +336,45 @@ proxy: {
 - **번들 압축**: esbuild를 통한 최적화
 - **이미지 최적화**: Vite의 asset 처리
 
-## 🚀 배포
+## 🚀 배포 (Fly.io)
 
-### AWS ECR 자동 배포 (추천)
+### 배포된 앱
 
-GitHub Actions를 통한 AWS ECR 자동 배포를 지원합니다.
+- **프로덕션 URL**: https://service-status.fly.dev
+- **리전**: nrt (Tokyo)
 
-#### 설정 방법
+### Fly.io 환경 변수 설정
 
-1. **GitHub Repository Secrets 설정**:
-   - `AWS_ACCESS_KEY_ID`: AWS 액세스 키
-   - `AWS_SECRET_ACCESS_KEY`: AWS 시크릿 키
+service-status는 정적 사이트이므로 특별한 환경 변수가 필요하지 않습니다. 필요시 다음 스크립트를 사용하세요:
 
-2. **배포 트리거**:
-   - `main` 또는 `master` 브랜치에 push 시 자동 배포
-   - Pull Request 생성 시 빌드 테스트
-
-3. **생성되는 이미지**:
-
-```text
-014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:latest
-014125597282.dkr.ecr.ap-northeast-2.amazonaws.com/service-status:<commit-sha>
+```bash
+# 환경 변수 설정 스크립트 실행
+./scripts/setup-fly-env.sh
 ```
 
-자세한 설정 가이드는 [GitHub Actions 설정 가이드](docs/GITHUB_ACTIONS_SETUP.md)를 참조하세요.
+### 배포 상태 확인
 
-### Netlify 배포
+```bash
+# 앱 상태 확인
+fly status --app service-status
+
+# 로그 확인
+fly logs --app service-status
+
+# 환경 변수 확인
+fly secrets list --app service-status
+```
+
+### 배포 명령어
+
+```bash
+# 배포
+fly deploy --app service-status
+```
+
+### 기타 배포 옵션
+
+#### Netlify 배포
 
 ```bash
 # 빌드
