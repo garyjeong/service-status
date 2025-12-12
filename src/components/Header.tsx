@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Settings, Sun, Moon, Bell, BellOff } from 'lucide-react';
+import { RefreshCw, Settings, Sun, Moon } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import LanguageSelector from './LanguageSelector';
 import SortDropdown from './SortDropdown';
@@ -167,26 +167,6 @@ const Header: React.FC<HeaderProps> = ({
               onLanguageChange={onLanguageChange}
             />
 
-            {/* 알림 토글 버튼 */}
-            {onToggleNotifications && (
-              <motion.button
-                onClick={onToggleNotifications}
-                className={`btn-icon focus-ring hover-lift ${notificationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
-                aria-label={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
-                title={notificationsEnabled ? (language === 'ko' ? '알림 끄기' : 'Disable notifications') : (language === 'ko' ? '알림 켜기' : 'Enable notifications')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ 
-                  scale: 0.95,
-                  transition: { duration: 0.1 }
-                }}
-              >
-                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-              </motion.button>
-            )}
-
             {/* 테마 토글 버튼 */}
             <motion.button
               onClick={onThemeToggle}
@@ -326,18 +306,6 @@ const Header: React.FC<HeaderProps> = ({
               onLanguageChange={onLanguageChange}
               isMobile={true}
             />
-            
-            {/* 알림 토글 버튼 - 모바일 */}
-            {onToggleNotifications && (
-              <button
-                onClick={onToggleNotifications}
-                className={`btn-icon focus-ring hover-lift ${notificationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
-                aria-label={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
-                title={notificationsEnabled ? (language === 'ko' ? '알림 끄기' : 'Disable notifications') : (language === 'ko' ? '알림 켜기' : 'Enable notifications')}
-              >
-                {notificationsEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-              </button>
-            )}
 
             {/* 테마 토글 버튼 - 모바일 */}
             <button
