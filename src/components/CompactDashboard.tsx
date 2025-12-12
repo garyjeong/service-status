@@ -387,7 +387,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       }
       
     } catch (err) {
-      console.error(`${String(serviceName)} 상태 데이터 로드 실패:`, err);
+      if (import.meta.env.DEV) {
+        console.error(`${String(serviceName)} 상태 데이터 로드 실패:`, err);
+      }
       setError(`${String(serviceName)} 서비스 로드 실패`);
     } finally {
       setServiceLoadingStates(prev => ({ ...prev, [serviceName]: false }));
@@ -458,7 +460,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         const parsedFavorites = JSON.parse(savedFavorites);
         setFavorites(parsedFavorites);
       } catch (error) {
-        console.error('Failed to parse saved favorites:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to parse saved favorites:', error);
+        }
       }
     }
 
@@ -469,7 +473,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         const parsedFilters = JSON.parse(savedFilters);
         setFilters(parsedFilters);
       } catch (error) {
-        console.error('Failed to parse saved filters:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to parse saved filters:', error);
+        }
       }
     }
 
@@ -488,7 +494,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         
         setVisibleCategories(savedSet);
       } catch (error) {
-        console.error('Failed to parse saved visible categories:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to parse saved visible categories:', error);
+        }
       }
     }
 

@@ -341,7 +341,9 @@ export class WebScrapingService {
         const response = await axios.get(proxyUrl, { timeout: this.TIMEOUT });
         return response.data;
       } catch (error) {
-        console.warn(`Proxy ${proxy} failed:`, error.message);
+        if (import.meta.env.DEV) {
+          console.warn(`Proxy ${proxy} failed:`, error.message);
+        }
         continue;
       }
     }
@@ -353,7 +355,9 @@ export class WebScrapingService {
       const html = await this.fetchWithFallback('https://www.dockerstatus.com/');
       return DockerStatusParser.parse(html);
     } catch (error) {
-      console.error('Docker status fetch error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Docker status fetch error:', error);
+      }
       return this.createErrorStatus('Docker', error);
     }
   }
@@ -363,7 +367,9 @@ export class WebScrapingService {
       const html = await this.fetchWithFallback('https://slack-status.com/');
       return SlackStatusParser.parse(html);
     } catch (error) {
-      console.error('Slack status fetch error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Slack status fetch error:', error);
+      }
       return this.createErrorStatus('Slack', error);
     }
   }
@@ -373,7 +379,9 @@ export class WebScrapingService {
       const html = await this.fetchWithFallback('https://status.firebase.google.com/');
       return FirebaseStatusParser.parse(html);
     } catch (error) {
-      console.error('Firebase status fetch error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Firebase status fetch error:', error);
+      }
       return this.createErrorStatus('Firebase', error);
     }
   }
@@ -383,7 +391,9 @@ export class WebScrapingService {
       const html = await this.fetchWithFallback('https://status.aws.amazon.com/');
       return AWSStatusParser.parse(html);
     } catch (error) {
-      console.error('AWS status fetch error:', error);
+      if (import.meta.env.DEV) {
+        console.error('AWS status fetch error:', error);
+      }
       return this.createErrorStatus('AWS', error);
     }
   }

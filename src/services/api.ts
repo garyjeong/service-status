@@ -33,6 +33,47 @@ interface ServiceConfig {
 // CORS 프록시 설정 (개발 환경용)
 const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
+// 서비스별 우선순위 및 타임아웃 설정
+const SERVICE_PRIORITY: Record<string, { timeout: number; maxRetries: number }> = {
+  openai: { timeout: 8000, maxRetries: 3 },
+  anthropic: { timeout: 8000, maxRetries: 3 },
+  cursor: { timeout: 8000, maxRetries: 3 },
+  github: { timeout: 10000, maxRetries: 2 },
+  googleai: { timeout: 10000, maxRetries: 2 },
+  netlify: { timeout: 10000, maxRetries: 2 },
+  aws: { timeout: 12000, maxRetries: 2 },
+  default: { timeout: 10000, maxRetries: 2 },
+};
+
+// 지수 백오프 재시도 함수
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 2,
+  baseDelay: number = 1000
+): Promise<T> {
+  let lastError: Error | unknown;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      
+      // 마지막 시도가 아니면 재시도
+      if (attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt); // 지수 백오프
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // 모든 재시도 실패
+      throw lastError;
+    }
+  }
+  
+  throw lastError;
+}
+
 // API 클라이언트 설정
 const createApiClient = (timeout = 10000): AxiosInstance => {
   return axios.create({
@@ -212,11 +253,18 @@ class ServiceStatusFetcher {
       throw new Error(`Unknown service: ${serviceName}`);
     }
 
+    // 서비스별 설정 가져오기
+    const serviceConfig = SERVICE_PRIORITY[serviceName] || SERVICE_PRIORITY.default;
+    const serviceClient = createApiClient(serviceConfig.timeout);
+
     // statuspage 기반
     if (config.kind === 'statuspage') {
       try {
-        // StatusPage API v2를 통해 실제 컴포넌트 상태 조회
-        const response = await apiClient.get(`${CORS_PROXY}${config.api_url}`);
+        // StatusPage API v2를 통해 실제 컴포넌트 상태 조회 (재시도 로직 포함)
+        const response = await retryWithBackoff(
+          () => serviceClient.get(`${CORS_PROXY}${config.api_url}`),
+          serviceConfig.maxRetries
+        );
         const data = response.data;
         const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
 
@@ -226,7 +274,10 @@ class ServiceStatusFetcher {
           // api_url에서 /status.json을 /components.json으로 교체
           const componentsUrl = config.api_url?.replace('/status.json', '/components.json');
           if (componentsUrl) {
-            const componentsResponse = await apiClient.get(`${CORS_PROXY}${componentsUrl}`);
+            const componentsResponse = await retryWithBackoff(
+              () => serviceClient.get(`${CORS_PROXY}${componentsUrl}`),
+              serviceConfig.maxRetries
+            );
             componentsData = componentsResponse.data.components;
           }
         } catch (error) {
@@ -274,7 +325,9 @@ class ServiceStatusFetcher {
           components,
         };
       } catch (error) {
-        console.error(`${config.service_name} API 오류:`, error);
+        if (import.meta.env.DEV) {
+          console.error(`${config.service_name} API 오류:`, error);
+        }
         const components: ServiceComponent[] = (config.components || []).map(componentName => ({
           name: componentName,
           status: StatusType.OPERATIONAL,
@@ -362,7 +415,9 @@ export async function fetchDockerHubStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Docker Hub 웹 스크래핑 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Docker Hub 웹 스크래핑 오류:', error);
+    }
 
     // 웹 스크래핑 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
@@ -401,11 +456,15 @@ export async function fetchDockerHubStatus(): Promise<Service> {
  * AWS 상태 조회 (StatusPage API v2 또는 스크래핑 기반)
  */
 export async function fetchAWSStatus(): Promise<Service> {
+  const serviceConfig = SERVICE_PRIORITY.aws || SERVICE_PRIORITY.default;
+  const serviceClient = createApiClient(serviceConfig.timeout);
+  
   try {
-    // 먼저 StatusPage API v2를 시도
+    // 먼저 StatusPage API v2를 시도 (재시도 로직 포함)
     try {
-      const response = await apiClient.get(
-        `${CORS_PROXY}https://status.aws.amazon.com/api/v2/status.json`
+      const response = await retryWithBackoff(
+        () => serviceClient.get(`${CORS_PROXY}https://status.aws.amazon.com/api/v2/status.json`),
+        serviceConfig.maxRetries
       );
       const data = response.data;
       const baseStatus = StatusUtils.normalizeStatus(data.status?.indicator || 'operational');
@@ -413,8 +472,9 @@ export async function fetchAWSStatus(): Promise<Service> {
       // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
       let componentsData;
       try {
-        const componentsResponse = await apiClient.get(
-          `${CORS_PROXY}https://status.aws.amazon.com/api/v2/components.json`
+        const componentsResponse = await retryWithBackoff(
+          () => serviceClient.get(`${CORS_PROXY}https://status.aws.amazon.com/api/v2/components.json`),
+          serviceConfig.maxRetries
         );
         componentsData = componentsResponse.data.components;
       } catch (error) {
@@ -504,7 +564,9 @@ export async function fetchAWSStatus(): Promise<Service> {
       };
     }
   } catch (error) {
-    console.error('AWS 상태 조회 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('AWS 상태 조회 오류:', error);
+    }
     
     // 모든 방법 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
@@ -556,7 +618,9 @@ export async function fetchSlackStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Slack 웹 스크래핑 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Slack 웹 스크래핑 오류:', error);
+    }
 
     // 웹 스크래핑 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
@@ -609,7 +673,9 @@ export async function fetchFirebaseStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Firebase 웹 스크래핑 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Firebase 웹 스크래핑 오류:', error);
+    }
 
     // 웹 스크래핑 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
@@ -653,22 +719,29 @@ export async function fetchFirebaseStatus(): Promise<Service> {
  * Cursor 상태 조회 (StatusPage API v2 사용)
  */
 export async function fetchCursorStatus(): Promise<Service> {
+  const serviceConfig = SERVICE_PRIORITY.cursor || SERVICE_PRIORITY.default;
+  const serviceClient = createApiClient(serviceConfig.timeout);
+  
   try {
-    // StatusPage API v2를 통해 실제 컴포넌트 상태 조회
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.cursor.com/api/v2/status.json`
+    // StatusPage API v2를 통해 실제 컴포넌트 상태 조회 (재시도 로직 포함)
+    const response = await retryWithBackoff(
+      () => serviceClient.get(`${CORS_PROXY}https://status.cursor.com/api/v2/status.json`),
+      serviceConfig.maxRetries
     );
     const data = response.data;
 
     // 컴포넌트별 실제 상태를 가져오기 위해 components API도 호출
     let componentsData;
     try {
-      const componentsResponse = await apiClient.get(
-        `${CORS_PROXY}https://status.cursor.com/api/v2/components.json`
+      const componentsResponse = await retryWithBackoff(
+        () => serviceClient.get(`${CORS_PROXY}https://status.cursor.com/api/v2/components.json`),
+        serviceConfig.maxRetries
       );
       componentsData = componentsResponse.data.components;
     } catch (error) {
-      console.warn('Cursor components API 호출 실패, status.json의 components 사용:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Cursor components API 호출 실패, status.json의 components 사용:', error);
+      }
       // status.json에서 컴포넌트 정보가 있으면 사용
       componentsData = data.components || [];
     }
@@ -719,7 +792,9 @@ export async function fetchCursorStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Cursor API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Cursor API 오류:', error);
+    }
     // 폴백: 기본 컴포넌트 목록 (실제 상태 페이지의 컴포넌트 목록 기반)
     const components: ServiceComponent[] = [
       { name: 'Cursor App', status: 'operational' },
@@ -774,7 +849,9 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Google AI API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Google AI API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Gemini API', status: 'operational' },
       { name: 'AI Studio', status: 'operational' },
@@ -823,7 +900,9 @@ export async function fetchPerplexityStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Perplexity API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Perplexity API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Website', status: 'operational' },
       { name: 'API', status: 'operational' },
@@ -877,7 +956,9 @@ export async function fetchV0Status(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('v0 API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('v0 API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'v0 Platform', status: 'operational' },
       { name: 'AI Generation', status: 'operational' },
@@ -949,7 +1030,9 @@ export async function fetchReplitStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Replit API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Replit API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Website', status: 'operational' },
       { name: 'Repls', status: 'operational' },
@@ -1009,7 +1092,9 @@ export async function fetchXAIStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('xAI API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('xAI API 오류:', error);
+    }
     // 기본 상태로 폴백
     const components: ServiceComponent[] = [
       { name: 'Grok (iOS)', status: 'operational' },
@@ -1040,21 +1125,28 @@ export async function fetchXAIStatus(): Promise<Service> {
  * Supabase 상태 조회
  */
 export async function fetchSupabaseStatus(): Promise<Service> {
+  const serviceConfig = SERVICE_PRIORITY.default;
+  const serviceClient = createApiClient(serviceConfig.timeout);
+  
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.supabase.com/api/v2/status.json`
+    const response = await retryWithBackoff(
+      () => serviceClient.get(`${CORS_PROXY}https://status.supabase.com/api/v2/status.json`),
+      serviceConfig.maxRetries
     );
     const data = response.data;
 
     // Supabase 컴포넌트들의 실제 상태를 가져오기 위해 components API도 호출
     let componentsData;
     try {
-      const componentsResponse = await apiClient.get(
-        `${CORS_PROXY}https://status.supabase.com/api/v2/components.json`
+      const componentsResponse = await retryWithBackoff(
+        () => serviceClient.get(`${CORS_PROXY}https://status.supabase.com/api/v2/components.json`),
+        serviceConfig.maxRetries
       );
       componentsData = componentsResponse.data.components;
     } catch (error) {
-      console.warn('Supabase components API 호출 실패, 기본 상태 사용:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Supabase components API 호출 실패, 기본 상태 사용:', error);
+      }
       componentsData = [];
     }
 
@@ -1126,7 +1218,9 @@ export async function fetchSupabaseStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Supabase API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Supabase API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Analytics', status: 'operational' },
       { name: 'API Gateway', status: 'operational' },
@@ -1186,7 +1280,9 @@ export async function fetchHerokuStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Heroku API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Heroku API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Apps', status: 'operational' },
       { name: 'Data', status: 'operational' },
@@ -1233,7 +1329,9 @@ export async function fetchAtlassianStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Atlassian API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Atlassian API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'APIs', status: 'operational' },
       { name: 'Webhooks', status: 'operational' },
@@ -1280,7 +1378,9 @@ export async function fetchCircleCIStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('CircleCI API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('CircleCI API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'AWS', status: 'operational' },
       { name: 'Docker Jobs', status: 'operational' },
@@ -1328,7 +1428,9 @@ export async function fetchAuth0Status(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Auth0 API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Auth0 API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'User Authentication', status: 'operational' },
       { name: 'Management API', status: 'operational' },
@@ -1376,7 +1478,9 @@ export async function fetchSendGridStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('SendGrid API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('SendGrid API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Web API', status: 'operational' },
       { name: 'SMTP', status: 'operational' },
@@ -1424,7 +1528,9 @@ export async function fetchCloudflareStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Cloudflare API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Cloudflare API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'CDN', status: 'operational' },
       { name: 'DNS', status: 'operational' },
@@ -1472,7 +1578,9 @@ export async function fetchDatadogStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Datadog API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Datadog API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Infrastructure Monitoring', status: 'operational' },
       { name: 'APM', status: 'operational' },
@@ -1572,7 +1680,9 @@ export async function fetchZetaGlobalStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Zeta Global API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Zeta Global API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Web Application', status: 'operational' },
       { name: 'Platform', status: 'operational' },
@@ -1663,7 +1773,9 @@ export async function fetchVercelStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Vercel API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Vercel API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Edge Network', status: 'operational' },
       { name: 'Serverless Functions', status: 'operational' },
@@ -1749,7 +1861,9 @@ export async function fetchStripeStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Stripe API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Stripe API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'API', status: 'operational' },
       { name: 'Dashboard', status: 'operational' },
@@ -1838,7 +1952,9 @@ export async function fetchMongoDBStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('MongoDB API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('MongoDB API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Clusters', status: 'operational' },
       { name: 'Atlas Data API', status: 'operational' },
@@ -1916,7 +2032,9 @@ export async function fetchHuggingFaceStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('Hugging Face API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('Hugging Face API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'Hub', status: 'operational' },
       { name: 'Inference API', status: 'operational' },
@@ -2000,7 +2118,9 @@ export async function fetchGitLabStatus(): Promise<Service> {
       components,
     };
   } catch (error) {
-    console.error('GitLab API 오류:', error);
+    if (import.meta.env.DEV) {
+      console.error('GitLab API 오류:', error);
+    }
     const components: ServiceComponent[] = [
       { name: 'GitLab.com', status: 'operational' },
       { name: 'Git Operations', status: 'operational' },
@@ -2071,7 +2191,9 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
       if (result.status === 'fulfilled') {
         return result.value;
       } else {
-        console.error(`서비스 ${index} 로딩 실패:`, result.reason);
+        if (import.meta.env.DEV) {
+          console.error(`서비스 ${index} 로딩 실패:`, result.reason);
+        }
         // 기본 서비스 반환 (에러 처리)
         return {
           service_name: `service_${index}`,
@@ -2085,7 +2207,9 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
       }
     });
   } catch (error) {
-    console.error('전체 서비스 상태 조회 실패:', error);
+    if (import.meta.env.DEV) {
+      console.error('전체 서비스 상태 조회 실패:', error);
+    }
     return [];
   }
 }
