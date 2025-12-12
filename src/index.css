@@ -2714,15 +2714,15 @@ p {
 
 /* 건강도 카드 특별 스타일 */
 .status-summary-health {
-  grid-column: 1 / -1; /* 모바일: 전체 너비 */
+  grid-column: span 1; /* 기본: 1열 차지 (2열 2행 구조) */
   background: linear-gradient(135deg, rgba(139, 95, 254, 0.05) 0%, rgba(139, 95, 254, 0.1) 100%);
   border-color: rgba(139, 95, 254, 0.2);
 }
 
-/* 작은 태블릿 이상: 건강도 카드 2열 차지 (2열 2행 구조) */
+/* 작은 태블릿 이상: 건강도 카드 1열 차지 유지 (2열 2행 구조) */
 @media (min-width: 640px) {
   .status-summary-health {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 }
 
