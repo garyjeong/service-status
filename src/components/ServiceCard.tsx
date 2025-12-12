@@ -108,7 +108,7 @@ export const ServiceIcon = ({ iconName, size = 20 }: { iconName: string; size?: 
               height: `${size}px`,
               objectFit: 'contain',
               borderRadius: '10px',
-              backgroundColor: needsWhiteBackground ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
+              backgroundColor: needsWhiteBackground ? 'var(--icon-bg)' : 'var(--icon-bg-transparent)',
               padding: needsWhiteBackground ? '3px' : '0'
             }}
           />
@@ -192,17 +192,17 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
   getStatusColor,
   translations
 }) => {
-  // 상태별 네온 보더 색상
+  // 상태별 네온 보더 색상 (CSS 변수 사용)
   const getStatusBorderColor = (status: string) => {
     switch (status) {
-      case 'operational': return 'rgba(46, 255, 180, 0.4)';
+      case 'operational': return 'var(--status-operational-bg)';
       case 'degraded':
-      case 'degraded_performance': return 'rgba(230, 165, 50, 0.4)';
+      case 'degraded_performance': return 'var(--status-degraded-bg)';
       case 'outage':
       case 'partial_outage':
-      case 'major_outage': return 'rgba(214, 48, 49, 0.6)';
+      case 'major_outage': return 'var(--status-outage-bg)';
       case 'maintenance':
-      case 'under_maintenance': return 'rgba(59, 130, 246, 0.4)';
+      case 'under_maintenance': return 'var(--status-maintenance-bg)';
       default: return 'rgba(237, 236, 232, 0.2)';
     }
   };

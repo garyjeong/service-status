@@ -3,6 +3,7 @@
 export type ViewMode = 'category' | 'list';
 export type SortType = 'default' | 'name-asc' | 'name-desc';
 export type Language = 'ko' | 'en';
+export type Theme = 'light' | 'dark' | 'auto';
 
 export interface ComponentFilter {
   [serviceName: string]: {

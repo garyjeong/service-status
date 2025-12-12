@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Favorites, ServiceExpansion, SortType, Language, ComponentFilter } from '../types/ui';
+import type { Favorites, ServiceExpansion, SortType, Language, ComponentFilter, Theme } from '../types/ui';
 
 interface UserSettings {
   favorites: Favorites;
@@ -7,7 +7,7 @@ interface UserSettings {
   sortType: SortType;
   language: Language;
   filters: ComponentFilter;
-  theme: 'light' | 'dark';
+  theme: Theme;
   notificationsEnabled: boolean;
 }
 
@@ -37,7 +37,7 @@ export const useUserSettings = (options: UseUserSettingsOptions = {}) => {
           sortType: 'default',
           language: 'ko',
           filters: {},
-          theme: 'light',
+          theme: 'auto',
           notificationsEnabled: false
         });
       }
@@ -52,7 +52,7 @@ export const useUserSettings = (options: UseUserSettingsOptions = {}) => {
         sortType: 'default',
         language: 'ko',
         filters: {},
-        theme: 'light',
+        theme: 'auto',
         notificationsEnabled: false
       });
     } finally {

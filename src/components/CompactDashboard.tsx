@@ -5,7 +5,7 @@ import { serviceFetchers, serviceNames, StatusUtils } from '../services/api';
 import type { Service, ServiceComponent } from '../services/api';
 import { SERVICE_CATEGORIES, groupServicesByCategory } from '../types/categories';
 import { StatusType } from '../types/status';
-import type { ComponentFilter, Favorites, ServiceExpansion, ViewMode, SortType, Language } from '../types/ui';
+import type { ComponentFilter, Favorites, ServiceExpansion, ViewMode, SortType, Language, Theme } from '../types/ui';
 import AdFitBanner from './AdFitBanner';
 import StatusBadge from './StatusBadge';
 import LanguageSelector from './LanguageSelector';
@@ -123,11 +123,37 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   
+  // 시스템 테마 감지 함수
+  const getSystemTheme = useCallback((): 'light' | 'dark' => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  }, []);
+
+  // 실제 적용될 테마 계산 (auto 모드일 때 시스템 테마 사용)
+  const getEffectiveTheme = useCallback((themePreference: Theme): 'light' | 'dark' => {
+    if (themePreference === 'auto') {
+      return getSystemTheme();
+    }
+    return themePreference;
+  }, [getSystemTheme]);
+
   // 테마 상태 관리
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const [themePreference, setThemePreference] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('ui-theme') as 'light' | 'dark' | null;
-      return savedTheme || 'light';
+      const savedTheme = localStorage.getItem('ui-theme') as Theme | null;
+      return savedTheme || 'auto';
+    }
+    return 'auto';
+  });
+
+  // 실제 적용될 테마
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('ui-theme') as Theme | null;
+      const preference = savedTheme || 'auto';
+      return preference === 'auto' ? getSystemTheme() : preference;
     }
     return 'light';
   });
@@ -624,11 +650,59 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     };
   }, [isLanguageDropdownOpen, isSortDropdownOpen]);
 
+  // 시스템 테마 변경 감지
+  useEffect(() => {
+    if (themePreference !== 'auto') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setEffectiveTheme(e.matches ? 'dark' : 'light');
+    };
+
+    // 초기 설정
+    setEffectiveTheme(mediaQuery.matches ? 'dark' : 'light');
+
+    // 이벤트 리스너 추가
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // 구형 브라우저 지원
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, [themePreference]);
+
+  // 테마 선호도 변경 시 실제 테마 업데이트
+  useEffect(() => {
+    setEffectiveTheme(getEffectiveTheme(themePreference));
+  }, [themePreference, getEffectiveTheme]);
+
   // 테마 적용 useEffect
   useEffect(() => {
     const root = document.documentElement;
-    root.setAttribute('data-theme', theme);
-  }, [theme]);
+    root.setAttribute('data-theme', effectiveTheme);
+    
+    // theme-color 메타 태그 업데이트
+    let themeColor = '#FFFFFF'; // 라이트 테마 기본값
+    if (effectiveTheme === 'dark') {
+      themeColor = '#0F172A'; // 다크 테마 색상
+    }
+    
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(metaThemeColor);
+    }
+    metaThemeColor.setAttribute('content', themeColor);
+  }, [effectiveTheme]);
 
   const toggleComponentFilter = (serviceName: string, componentName: string) => {
     setFilters(prev => ({
@@ -1062,11 +1136,18 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     setStatusFilter(status);
   };
 
-  // 테마 토글 핸들러
+  // 테마 토글 핸들러 (light -> dark -> auto -> light 순환)
   const handleThemeToggle = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('ui-theme', newTheme);
+    let newThemePreference: Theme;
+    if (themePreference === 'light') {
+      newThemePreference = 'dark';
+    } else if (themePreference === 'dark') {
+      newThemePreference = 'auto';
+    } else {
+      newThemePreference = 'light';
+    }
+    setThemePreference(newThemePreference);
+    localStorage.setItem('ui-theme', newThemePreference);
   };
 
   // 카테고리별로 그룹화된 서비스 가져오기 (useMemo로 메모이제이션)
@@ -1143,6 +1224,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         onRefresh={refreshData}
         onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
         onToggleLanguage={() => setLanguage(language === 'ko' ? 'en' : 'ko')}
+        onToggleTheme={handleThemeToggle}
         onStatusFilter={handleStatusFilter}
         onEscape={() => {
           if (isFilterOpen) setIsFilterOpen(false);
@@ -1163,7 +1245,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
         isSortDropdownOpen={isSortDropdownOpen}
         isLanguageDropdownOpen={isLanguageDropdownOpen}
         statusFilter={statusFilter}
-        theme={theme}
+        theme={effectiveTheme}
         onRefresh={refreshData}
         onFilterOpen={() => setIsFilterOpen(!isFilterOpen)}
                 onSortChange={handleSortChange}
@@ -1197,7 +1279,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
             stats={stats}
             totalServices={filteredServices.length}
             language={language}
-            theme={theme}
+            theme={effectiveTheme}
             onStatusFilter={handleStatusFilter}
             statusFilter={statusFilter}
           />
@@ -1209,7 +1291,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               total={loadingProgress.total}
               loading={loadingProgress.loading}
               language={language}
-              theme={theme}
+              theme={effectiveTheme}
               onRetry={refreshData}
               error={error}
             />
@@ -1223,9 +1305,9 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               style={{
-                backgroundColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.1)' : 'rgb(239, 246, 255)',
-                borderColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.3)' : 'rgb(191, 219, 254)',
-                color: theme === 'dark' ? 'rgb(147, 197, 253)' : 'rgb(30, 58, 138)'
+                backgroundColor: 'var(--filter-alert-bg)',
+                borderColor: 'var(--filter-alert-border)',
+                color: 'var(--filter-alert-text)'
               }}
                       >
                         <div className="flex items-center gap-2">

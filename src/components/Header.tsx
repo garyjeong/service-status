@@ -172,6 +172,9 @@ const Header: React.FC<HeaderProps> = ({
               onClick={onThemeToggle}
               className="btn-icon focus-ring hover-lift"
               aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              title={theme === 'light' 
+                ? (language === 'ko' ? '다크 모드로 전환 (Ctrl/Cmd + Shift + T)' : 'Switch to dark theme (Ctrl/Cmd + Shift + T)')
+                : (language === 'ko' ? '라이트 모드로 전환 (Ctrl/Cmd + Shift + T)' : 'Switch to light theme (Ctrl/Cmd + Shift + T)')}
               whileHover={{ 
                 scale: 1.05,
                 transition: { duration: 0.2 }
@@ -181,7 +184,15 @@ const Header: React.FC<HeaderProps> = ({
                 transition: { duration: 0.1 }
               }}
             >
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              <motion.div
+                key={theme}
+                initial={{ rotate: -180, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 180, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              >
+                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              </motion.div>
             </motion.button>
 
             {/* 새로고침 버튼 */}
@@ -250,8 +261,8 @@ const Header: React.FC<HeaderProps> = ({
                   className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20 cursor-pointer hover:scale-105 hover:bg-yellow-500/20 transition-all duration-200 active:scale-95"
                   onClick={() => onStatusFilter('degraded_performance')}
                   style={{
-                    backgroundColor: statusFilter === 'degraded_performance' ? 'rgba(234, 179, 8, 0.3)' : undefined,
-                    borderColor: statusFilter === 'degraded_performance' ? 'rgba(234, 179, 8, 0.5)' : undefined
+                    backgroundColor: statusFilter === 'degraded_performance' ? 'var(--status-degraded-bg)' : undefined,
+                    borderColor: statusFilter === 'degraded_performance' ? 'var(--status-degraded-bg)' : undefined
                   }}
                 >
                   <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
@@ -263,8 +274,8 @@ const Header: React.FC<HeaderProps> = ({
                   className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20 cursor-pointer hover:scale-105 hover:bg-red-500/20 transition-all duration-200 active:scale-95"
                   onClick={() => onStatusFilter('major_outage')}
                   style={{
-                    backgroundColor: statusFilter === 'major_outage' ? 'rgba(239, 68, 68, 0.3)' : undefined,
-                    borderColor: statusFilter === 'major_outage' ? 'rgba(239, 68, 68, 0.5)' : undefined
+                    backgroundColor: statusFilter === 'major_outage' ? 'var(--status-outage-bg)' : undefined,
+                    borderColor: statusFilter === 'major_outage' ? 'var(--status-outage-bg)' : undefined
                   }}
                 >
                   <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
@@ -308,13 +319,32 @@ const Header: React.FC<HeaderProps> = ({
             />
 
             {/* 테마 토글 버튼 - 모바일 */}
-            <button
+            <motion.button
               onClick={onThemeToggle}
               className="btn-icon focus-ring hover-lift"
               aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              title={theme === 'light' 
+                ? (language === 'ko' ? '다크 모드로 전환' : 'Switch to dark theme')
+                : (language === 'ko' ? '라이트 모드로 전환' : 'Switch to light theme')}
+              whileHover={{ 
+                scale: 1.05,
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ 
+                scale: 0.95,
+                transition: { duration: 0.1 }
+              }}
             >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </button>
+              <motion.div
+                key={theme}
+                initial={{ rotate: -180, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 180, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              >
+                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              </motion.div>
+            </motion.button>
 
             {/* 새로고침 버튼 */}
             <button

@@ -4,6 +4,7 @@ interface KeyboardNavigationProps {
   onRefresh?: () => void;
   onToggleFilter?: () => void;
   onToggleLanguage?: () => void;
+  onToggleTheme?: () => void;
   onEscape?: () => void;
   onArrowUp?: () => void;
   onArrowDown?: () => void;
@@ -19,6 +20,7 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({
   onRefresh,
   onToggleFilter,
   onToggleLanguage,
+  onToggleTheme,
   onEscape,
   onArrowUp,
   onArrowDown,
@@ -60,6 +62,14 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({
         if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
           onToggleLanguage?.();
+        }
+        break;
+
+      case 't':
+      case 'T':
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          onToggleTheme?.();
         }
         break;
 
@@ -140,6 +150,7 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({
             'Ctrl/Cmd + R': 'Refresh all services',
             'Ctrl/Cmd + F': 'Toggle filter',
             'Ctrl/Cmd + L': 'Toggle language',
+            'Ctrl/Cmd + Shift + T': 'Toggle theme',
             'Escape': 'Close modals/overlays',
             'Ctrl/Cmd + Arrow Keys': 'Navigate',
             'Ctrl/Cmd + Enter': 'Confirm action',
@@ -159,6 +170,7 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({
     onRefresh,
     onToggleFilter,
     onToggleLanguage,
+    onToggleTheme,
     onEscape,
     onArrowUp,
     onArrowDown,

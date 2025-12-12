@@ -58,13 +58,13 @@
   --font-body: 'Inter', 'Spoqa Han Sans Neo', system-ui;    /* 🎨 Inter로 가독성 향상 */
   --font-code: 'JetBrains Mono', 'SF Mono', monospace;      /* 🎨 코드용 폰트 */
   
-  /* === 컬러풀 상태 컬러 === */
-  --status-operational: 16 185 129;   /* #10B981 - 그린 */
-  --status-degraded: 245 158 11;      /* #F59E0B - 옐로우 */
-  --status-partial-outage: 239 68 68; /* #EF4444 - 레드 */
-  --status-major-outage: 220 38 38;   /* #DC2626 - 딥 레드 */
-  --status-maintenance: 107 114 128;   /* #6B7280 - 그레이 */
-  --status-unknown: 156 163 175;      /* #9CA3AF - 그레이 */
+  /* === 컬러풀 상태 컬러 (라이트 테마 - 더 진한 색상) === */
+  --status-operational: 5 150 105;    /* #059669 - 더 진한 그린 */
+  --status-degraded: 217 119 6;       /* #D97706 - 더 진한 옐로우 */
+  --status-partial-outage: 220 38 38; /* #DC2626 - 딥 레드 */
+  --status-major-outage: 185 28 28;   /* #B91C1C - 더 진한 레드 */
+  --status-maintenance: 75 85 99;     /* #4B5563 - 더 진한 그레이 */
+  --status-unknown: 107 114 128;     /* #6B7280 - 그레이 */
   
   /* === 라이트 테마 Tailwind 호환 변수들 === */
   --background: 255 255 255;      /* #FFFFFF */
@@ -78,15 +78,31 @@
   --secondary: 249 250 251;      /* #F9FAFB */
   --secondary-foreground: 31 41 55; /* #1F2937 */
   --muted: 249 250 251;          /* #F9FAFB */
-  --muted-foreground: 107 114 128; /* #6B7280 */
+  --muted-foreground: 75 85 99;  /* #4B5563 - 대비 개선 (AA 기준 충족) */
   --accent: 243 244 246;         /* #F3F4F6 */
   --accent-foreground: 31 41 55;  /* #1F2937 */
   --destructive: 239 68 68;      /* #EF4444 */
   --destructive-foreground: 255 255 255; /* #FFFFFF */
   --border: 229 231 235;         /* #E5E7EB */
   --input: 229 231 235;          /* #E5E7EB */
-  --ring: 107 114 128;           /* #6B7280 */
+  --ring: 75 85 99;              /* #4B5563 - 대비 개선 (AA 기준 충족) */
   --radius: 0.5rem;              /* 8px */
+  
+  /* === 필터 알림 색상 === */
+  --filter-alert-bg: rgb(239, 246, 255);
+  --filter-alert-border: rgb(191, 219, 254);
+  --filter-alert-text: rgb(30, 58, 138);
+  
+  /* === 아이콘 배경 색상 === */
+  --icon-bg: rgba(255, 255, 255, 0.9);
+  --icon-bg-light: rgba(255, 255, 255, 0.95);
+  --icon-bg-transparent: transparent;
+  
+  /* === 상태별 배경 색상 (라이트 테마 - 더 진한 색상) === */
+  --status-operational-bg: rgba(5, 150, 105, 0.3);
+  --status-degraded-bg: rgba(217, 119, 6, 0.3);
+  --status-outage-bg: rgba(185, 28, 28, 0.4);
+  --status-maintenance-bg: rgba(59, 130, 246, 0.3);
 }
 
 /* === 다크 테마 === */
@@ -142,6 +158,30 @@
   --input: 71 85 105;           /* #475569 */
   --ring: 139 95 254;           /* #8B5FFE */
   --radius: 0.5rem;             /* 8px */
+  
+  /* === 필터 알림 색상 === */
+  --filter-alert-bg: rgba(59, 130, 246, 0.1);
+  --filter-alert-border: rgba(59, 130, 246, 0.3);
+  --filter-alert-text: rgb(147, 197, 253);
+  
+  /* === 아이콘 배경 색상 === */
+  --icon-bg: rgba(30, 41, 59, 0.9);
+  --icon-bg-light: rgba(30, 41, 59, 0.95);
+  --icon-bg-transparent: transparent;
+  
+  /* === 컬러풀 상태 컬러 (다크 테마 - 더 밝은 색상) === */
+  --status-operational: 34 197 94;     /* #22C55E - 더 밝은 그린 */
+  --status-degraded: 250 204 21;       /* #FACC15 - 더 밝은 옐로우 */
+  --status-partial-outage: 248 113 113; /* #F87171 - 더 밝은 레드 */
+  --status-major-outage: 239 68 68;    /* #EF4444 - 레드 */
+  --status-maintenance: 96 165 250;    /* #60A5FA - 더 밝은 블루 */
+  --status-unknown: 148 163 184;       /* #94A3B8 - 그레이 */
+  
+  /* === 상태별 배경 색상 (다크 테마 - 더 밝은 색상) === */
+  --status-operational-bg: rgba(34, 197, 94, 0.3);
+  --status-degraded-bg: rgba(250, 204, 21, 0.3);
+  --status-outage-bg: rgba(248, 113, 113, 0.4);
+  --status-maintenance-bg: rgba(96, 165, 250, 0.3);
 }
 
 /* Base styles - 테마 적응형 시스템 */
@@ -149,6 +189,9 @@
   border-color: rgb(var(--border));
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   color: rgb(var(--foreground));
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 전역 텍스트 색상 테마 적응형 */
@@ -168,7 +211,22 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
   min-height: 100vh;
   min-height: 100dvh;
   letter-spacing: -0.01em;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* prefers-reduced-motion 지원 */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 html {
@@ -528,6 +586,16 @@ body::after {
   position: relative;
   z-index: 3;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 다크 모드에서 아이콘 가시성 개선 */
+:root[data-theme="dark"] .service-icon-image {
+  filter: brightness(1.1) contrast(1.05);
+}
+
+/* 라이트 모드에서 아이콘 최적화 */
+:root[data-theme="light"] .service-icon-image {
+  filter: brightness(0.95) contrast(1.05);
 }
 
 /* 글래스 오버레이 */
@@ -1385,20 +1453,35 @@ body::after {
   color: rgb(var(--muted-foreground));
 }
 
-/* 단순한 포커스 상태 */
-.category-header-premium:focus {
+/* 단순한 포커스 상태 (접근성 개선) */
+.category-header-premium:focus,
+.category-header-premium:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(var(--ring));
+  box-shadow: 0 0 0 3px rgba(139, 95, 254, 0.4), 0 0 0 1px var(--primary-accent);
   border-color: var(--primary-accent);
 }
 
 /* 애니메이션 제거 - 미니멀 디자인 */
 
 /* 포커스 링 개선 */
-.focus-ring:focus {
+/* 포커스 링 스타일 개선 (접근성 강화) */
+.focus-ring:focus,
+.focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(139, 95, 254, 0.5);
+  box-shadow: 0 0 0 3px rgba(139, 95, 254, 0.4), 0 0 0 1px var(--primary-accent);
   border-color: var(--primary-accent);
+}
+
+/* 라이트 테마 포커스 링 개선 */
+:root[data-theme="light"] .focus-ring:focus,
+:root[data-theme="light"] .focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px rgba(139, 95, 254, 0.3), 0 0 0 1px var(--primary-accent);
+}
+
+/* 다크 테마 포커스 링 개선 */
+:root[data-theme="dark"] .focus-ring:focus,
+:root[data-theme="dark"] .focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px rgba(139, 95, 254, 0.5), 0 0 0 1px var(--primary-accent);
 }
 
 /* Dark mode focus/selection contrast fixes */
