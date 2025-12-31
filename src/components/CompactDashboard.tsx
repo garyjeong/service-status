@@ -1269,6 +1269,17 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                   sortNameDesc: t.sortNameDesc
                 }}
               />
+      
+      {/* 헤더 바로 밑 광고 배너 */}
+      <div className="w-full flex justify-center py-2 bg-background border-b border-border/50">
+        <ins 
+          className="kakao_ad_area" 
+          style={{ display: 'none' }}
+          data-ad-unit="DAN-Bms9gIB1eRHIUjoI"
+          data-ad-width="320"
+          data-ad-height="100"
+        />
+      </div>
             
       {/* 메인 컨텐츠 */}
       <main className="main-content">
