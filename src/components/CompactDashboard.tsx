@@ -1269,17 +1269,6 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                   sortNameDesc: t.sortNameDesc
                 }}
               />
-      
-      {/* 헤더 바로 밑 광고 배너 */}
-      <div className="w-full flex justify-center py-2 bg-background border-b border-border/50">
-        <ins 
-          className="kakao_ad_area" 
-          style={{ display: 'none' }}
-          data-ad-unit="DAN-Bms9gIB1eRHIUjoI"
-          data-ad-width="320"
-          data-ad-height="100"
-        />
-      </div>
             
       {/* 메인 컨텐츠 */}
       <main className="main-content">
@@ -1591,17 +1580,19 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
               ))}
             </div>
 
-          {/* 하단 광고 배너 */}
-          <div className="mt-4 mb-3 md:mt-8 md:mb-6 flex justify-center">
-            <AdFitBanner 
-              onNoAd={() => {
-                // 광고 로드 실패 시 무시 (사용자 경험에 영향 없음)
-              }}
-            />
-          </div>
-
         </div>
       </main>
+
+      {/* 푸터 위 광고 배너 */}
+      <div className="w-full flex justify-center py-4 bg-background border-t border-border/50">
+        <ins 
+          className="kakao_ad_area" 
+          style={{ display: 'none' }}
+          data-ad-unit="DAN-Bms9gIB1eRHIUjoI"
+          data-ad-width="320"
+          data-ad-height="100"
+        />
+      </div>
 
       {/* 푸터 섹션 */}
       <footer className="footer-section">
