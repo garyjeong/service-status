@@ -50,16 +50,32 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({ onNoAd }) => {
     setSelectedMobileAdUnit(MOBILE_AD_UNITS[randomIndex]);
   }, []);
 
-  // 스크립트 로드
+  // 스크립트 로드 및 광고 초기화
   useEffect(() => {
-    if (!document.querySelector('script[src*="ba.min.js"]')) {
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = '//t1.daumcdn.net/kas/static/ba.min.js';
-      script.async = true;
-      document.head.appendChild(script);
-    }
-  }, []);
+    const loadScript = () => {
+      return new Promise<void>((resolve) => {
+        if (document.querySelector('script[src*="ba.min.js"]')) {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = '//t1.daumcdn.net/kas/static/ba.min.js';
+        script.async = true;
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
+    };
+
+    loadScript().then(() => {
+      // 광고 스크립트 로드 후 약간의 지연을 두고 광고 새로고침
+      setTimeout(() => {
+        if (typeof (window as any).adfit === 'function') {
+          (window as any).adfit('refresh');
+        }
+      }, 100);
+    });
+  }, [selectedDesktopAdUnit, selectedMobileAdUnit]);
 
   return (
     <div className="adfit-banner-container">

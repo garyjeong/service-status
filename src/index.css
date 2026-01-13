@@ -357,22 +357,32 @@ body::after {
   overflow: hidden;
 }
 
-/* 🎯 미니멀 ServiceCard v4.0 - 🎨 미묘한 색상 포인트 추가 */
+/* 🎯 모바일 퍼스트 ServiceCard - 큰 터치 영역과 간소화된 디자인 */
 .service-card-premium {
-  background: linear-gradient(135deg, #FFFFFF 0%, rgba(248,250,252,0.8) 100%); /* 🎨 미묘한 배경 그라디언트 */
-  border: 1px solid rgba(139, 92, 246, 0.06); /* 🎨 미묘한 보라 경계선 */
-  border-radius: var(--radius);  /* 더 작은 보더 */
-  padding: 1rem;                 /* 더 작은 패딩 */
-  transition: all 0.2s ease; /* 모든 변화에 대한 애니메이션 */
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: 16px;  /* 모바일에서 더 큰 보더 */
+  padding: 1.25rem;     /* 모바일에서 더 큰 패딩 */
+  transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   width: 100%;
   overflow: hidden;
-  min-height: 180px;
+  min-height: 160px;
   height: auto;
+}
+
+/* 데스크톱에서 더 작게 */
+@media (min-width: 769px) {
+  .service-card-premium {
+    border-radius: 12px;
+    padding: 1rem;
+    min-height: 140px;
+    box-shadow: var(--card-shadow);
+  }
 }
 
 /* 단순 그레이 카드 스타일 (카테고리별 색상 제거) */
@@ -397,12 +407,22 @@ body::after {
 
 /* 불필요한 효과 제거 - 미니멀 디자인 */
 
-/* 🎨 대시보드 카드 강조 호버 효과 */
-.service-card-premium:hover {
-  background: linear-gradient(135deg, rgba(248,250,252,0.9) 0%, rgba(238,242,255,1) 100%); /* 🎨 더 강한 보라 힌트 */
-  border-color: rgba(139, 95, 254, 0.2); /* 🎨 더 진한 보라 경계선 (드롭다운과 동일) */
-  box-shadow: 0 8px 25px rgba(139, 95, 254, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08); /* 🎨 더 강한 보라 그림자 */
-  transform: translateY(-2px); /* 🎨 카드 올라감 효과 */
+/* 모바일 퍼스트 호버 효과 - 데스크톱에서만 적용 */
+@media (min-width: 769px) {
+  .service-card-premium:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--card-border-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+/* 모바일: 터치 피드백만 */
+@media (max-width: 768px) {
+  .service-card-premium:active {
+    transform: scale(0.98);
+    background: var(--card-bg-hover);
+  }
 }
 
 /* 컴팩트한 확장 상태 */
@@ -414,30 +434,65 @@ body::after {
   min-height: 160px;  /* 더 작은 높이 */
 }
 
-/* 📱 모바일 터치 최적화 */
-@media (max-width: 768px) {
-  /* 터치 타겟 크기 확대 (최소 44x44px) */
+/* 📱 모바일 퍼스트 디자인 - 기본 스타일을 모바일에 맞춤 */
+/* 기본: 모바일 스타일 (모든 화면 크기) */
+.btn-icon {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.125rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  min-height: 48px;
+  padding: 0.875rem 1.75rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+/* 서비스 카드 모바일 스타일 */
+.service-card-premium {
+  min-height: 160px;
+  padding: 1.25rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(139, 95, 254, 0.1);
+  border-radius: 16px;
+  margin-bottom: 1rem;
+}
+
+.service-card-premium.expanded {
+  min-height: 200px;
+}
+
+.service-card-premium:not(.expanded) {
+  min-height: 160px;
+}
+
+/* 데스크톱에서만 작은 크기로 조정 */
+@media (min-width: 769px) {
   .btn-icon {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0.625rem;
+    font-size: 1rem;
   }
   
   .btn-primary,
   .btn-secondary {
-    min-height: 44px;
-    padding: 0.75rem 1.5rem;
+    min-height: 40px;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
   }
   
-  /* 서비스 카드 터치 최적화 */
   .service-card-premium {
     min-height: 140px;
     padding: 1rem;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(139, 95, 254, 0.1);
+    margin-bottom: 0.75rem;
   }
   
   .service-card-premium.expanded {
@@ -445,8 +500,12 @@ body::after {
   }
   
   .service-card-premium:not(.expanded) {
-    min-height: 120px;
+    min-height: 140px;
   }
+}
+
+/* 📱 모바일 터치 최적화 (추가) */
+@media (max-width: 768px) {
   
   /* 카테고리 헤더 터치 최적화 */
   .category-header-premium {
@@ -704,30 +763,56 @@ body::after {
   gap: 0.75rem;
 }
 
-/* 모바일 GNB 최적화 */
-@media (max-width: 768px) {
+/* 모바일 퍼스트 GNB - 큰 터치 영역 기본 */
+.gnb-primary {
+  min-height: 56px;
+  padding: 0.75rem 0;
+}
+
+.gnb-secondary {
+  min-height: 48px;
+  padding: 0.75rem 0;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.gnb-secondary .btn-icon {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0.75rem;
+}
+
+.gnb-secondary .btn-secondary {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9375rem;
+  min-height: 48px;
+}
+
+/* 데스크톱에서 더 작게 */
+@media (min-width: 769px) {
   .gnb-primary {
-    min-height: 44px;
+    min-height: 48px;
     padding: 0.5rem 0;
   }
   
   .gnb-secondary {
-    min-height: 36px;
+    min-height: 40px;
     padding: 0.5rem 0;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
   }
   
   .gnb-secondary .btn-icon {
-    min-width: 36px;
-    min-height: 36px;
-    padding: 0.5rem;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0.625rem;
   }
   
   .gnb-secondary .btn-secondary {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    min-height: 40px;
   }
 }
 
@@ -1074,15 +1159,13 @@ body::after {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* 모바일에서 상태 표시기 최적화 */
-@media (max-width: 768px) {
-  .status-dot {
-    width: 0.625rem;
-    height: 0.625rem;
-  }
+/* 모바일 퍼스트 상태 표시기 - 큰 크기 기본 */
+.status-dot {
+  width: 12px;
+  height: 12px;
 }
 
-/* 데스크탑에서 상태 표시기 */
+/* 데스크톱에서 더 작게 */
 @media (min-width: 769px) {
   .status-dot {
     width: 0.75rem;
@@ -1249,10 +1332,19 @@ body::after {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 모바일 퍼스트 메인 컨텐츠 */
 .layout-sticky-both .main-content {
   flex: 1;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* 데스크톱에서 더 큰 패딩 */
+@media (min-width: 769px) {
+  .layout-sticky-both .main-content {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
 }
 
 .layout-sticky-both .footer-section {
@@ -1533,14 +1625,30 @@ body::after {
   );
 }
 
-/* 컨테이너 */
+/* 모바일 퍼스트 컨테이너 */
 .container {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
   padding-left: 1rem;
   padding-right: 1rem;
-  max-width: 1200px;
+  max-width: 100%;
+}
+
+/* 태블릿 이상에서 최대 너비 제한 */
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1200px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 /* 🎨 라이트 테마 유틸리티 클래스들 */
@@ -1572,13 +1680,23 @@ body::after {
   }
 }
 
-/* 타이포그래피 */
-.text-3xl { font-size: 1.875rem; line-height: 2.25rem; } /* 30px */
-.text-xl { font-size: 1.25rem; line-height: 1.75rem; } /* 20px */
-.text-lg { font-size: 1.125rem; line-height: 1.75rem; } /* 18px */
-.text-base { font-size: 1rem; line-height: 1.5rem; } /* 16px */
-.text-sm { font-size: 0.875rem; line-height: 1.25rem; } /* 14px */
-.text-xs { font-size: 0.75rem; line-height: 1rem; } /* 12px */
+/* 모바일 퍼스트 타이포그래피 - 큰 폰트 기본 */
+.text-3xl { font-size: 2rem; line-height: 2.5rem; } /* 모바일: 32px */
+.text-xl { font-size: 1.375rem; line-height: 1.875rem; } /* 모바일: 22px */
+.text-lg { font-size: 1.25rem; line-height: 1.75rem; } /* 모바일: 20px */
+.text-base { font-size: 1.0625rem; line-height: 1.625rem; } /* 모바일: 17px */
+.text-sm { font-size: 0.9375rem; line-height: 1.375rem; } /* 모바일: 15px */
+.text-xs { font-size: 0.8125rem; line-height: 1.125rem; } /* 모바일: 13px */
+
+/* 데스크톱에서 더 작게 */
+@media (min-width: 769px) {
+  .text-3xl { font-size: 1.875rem; line-height: 2.25rem; } /* 30px */
+  .text-xl { font-size: 1.25rem; line-height: 1.75rem; } /* 20px */
+  .text-lg { font-size: 1.125rem; line-height: 1.75rem; } /* 18px */
+  .text-base { font-size: 1rem; line-height: 1.5rem; } /* 16px */
+  .text-sm { font-size: 0.875rem; line-height: 1.25rem; } /* 14px */
+  .text-xs { font-size: 0.75rem; line-height: 1rem; } /* 12px */
+}
 
 .font-bold { font-weight: 700; }
 .font-semibold { font-weight: 600; }
@@ -1596,40 +1714,45 @@ body::after {
 /* 🎨 타이포그래피 시스템 - 세련되고 읽기 쉬운 */
 /* (이미 위에서 정의됨) */
 
-/* 컴팩트한 서비스 그리드 */
+/* 모바일 퍼스트 서비스 그리드 - 정사각형 카드용 */
 .service-grid {
   display: grid;
-  gap: 0.5rem;  /* 더 작은 간격 */
-  grid-template-columns: repeat(1, 1fr);
-  grid-auto-rows: 1fr;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: stretch;
+  padding: 0;
+  margin-top: 1rem;
 }
 
-/* 컴팩트한 반응형 그리드 */
+/* 매우 작은 화면: 3열 유지 */
+@media (max-width: 360px) {
+  .service-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.375rem;
+  }
+}
+
+/* 모바일/태블릿: 4열 */
+@media (min-width: 480px) {
+  .service-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+/* 태블릿: 5열 */
 @media (min-width: 640px) {
   .service-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.625rem;  /* 더 작은 간격 */
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
   }
 }
 
+/* 데스크탑: 6열 */
 @media (min-width: 768px) {
   .service-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;   /* 더 작은 간격 */
-  }
-}
-
-@media (min-width: 1024px) {
-  .service-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.875rem;  /* 더 작은 간격 */
-  }
-}
-
-@media (min-width: 1280px) {
-  .service-grid {
-    grid-template-columns: repeat(4, 1fr);  /* 더 많은 컬럼 */
-    gap: 1rem;      /* 적당한 간격 */
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
   }
 }
 
@@ -1811,11 +1934,11 @@ body::after {
   color: #26e09f;
 }
 
-/* 🎯 실용적인 서비스 타이틀 디자인 - 테마 적응형 */
+/* 모바일 퍼스트 타이틀 - 큰 폰트 기본 */
 .desktop-title {
-  font-size: 1.875rem; /* 30px */
+  font-size: 1.75rem; /* 모바일 기본 크기 */
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   color: rgb(var(--foreground));
   letter-spacing: -0.02em;
   line-height: 1.3;
@@ -1823,16 +1946,10 @@ body::after {
   transition: color 0.3s ease;
 }
 
-/* 🎯 실용적인 서비스 타이틀 - 모바일 반응형 */
-@media (max-width: 767px) {
+/* 데스크톱에서 더 작게 */
+@media (min-width: 769px) {
   .desktop-title {
-    font-size: 1.5rem; /* 24px - 모바일 적절한 크기 */
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-  
-  .text-gradient {
-    font-size: 1.5rem; /* 24px */
+    font-size: 1.875rem;
     font-weight: 600;
   }
 }
@@ -3275,5 +3392,363 @@ p {
   .filter-service-checkbox {
     width: 0.875rem;
     height: 0.875rem;
+  }
+}
+
+/* ============================================
+   📱 새로운 미니멀 카드 레이아웃 시스템
+   ============================================ */
+
+/* 대시보드 콘텐츠 래퍼 - 데스크탑에서 카드 6열에 맞춤 */
+.dashboard-content-wrapper {
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 태블릿 이상: 최대 너비 제한 */
+@media (min-width: 768px) {
+  .dashboard-content-wrapper {
+    max-width: 860px; /* 6 cards * 120px + 5 gaps * 16px + padding */
+  }
+}
+
+/* 미니멀 정사각형 카드 */
+.service-card-minimal {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 120px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  box-shadow: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  margin: 0 auto;
+}
+
+/* 모바일에서 카드 크기 조정 */
+@media (max-width: 479px) {
+  .service-card-minimal {
+    max-width: 100%;
+    border-radius: 10px;
+    padding: 6px;
+    gap: 2px;
+  }
+}
+
+/* 데스크탑에서 카드 크기 */
+@media (min-width: 768px) {
+  .service-card-minimal {
+    max-width: 120px;
+    border-radius: 16px;
+    padding: 12px;
+    gap: 8px;
+  }
+}
+
+.service-card-minimal:hover {
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+}
+
+.service-card-minimal:active {
+  transform: scale(0.96);
+}
+
+/* 카드 내부 아이콘 - 모바일 최적화 */
+.service-card-minimal .service-icon-premium {
+  --icon-size: 36px !important;
+}
+
+.service-card-minimal .service-icon-image {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.service-card-minimal .service-icon-fallback {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* 상태 아이콘 */
+.service-card-minimal .status-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.service-card-minimal .status-icon-wrapper svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* 상태 텍스트 */
+.service-card-minimal .status-text {
+  font-size: 9px;
+  font-weight: 500;
+  color: rgb(var(--muted-foreground)) !important;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* 모바일/태블릿에서 아이콘/텍스트 크기 */
+@media (min-width: 480px) {
+  .service-card-minimal .service-icon-premium {
+    --icon-size: 40px !important;
+  }
+  .service-card-minimal .service-icon-image {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .service-card-minimal .service-icon-fallback {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .service-card-minimal .status-icon-wrapper svg {
+    width: 16px;
+    height: 16px;
+  }
+  .service-card-minimal .status-text {
+    font-size: 10px;
+  }
+}
+
+/* 데스크탑에서 아이콘/텍스트 크기 */
+@media (min-width: 768px) {
+  .service-card-minimal .service-icon-premium {
+    --icon-size: 48px !important;
+  }
+  .service-card-minimal .service-icon-image {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .service-card-minimal .service-icon-fallback {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .service-card-minimal .status-icon-wrapper svg {
+    width: 20px;
+    height: 20px;
+  }
+  .service-card-minimal .status-icon-wrapper {
+    gap: 4px;
+  }
+  .service-card-minimal .status-text {
+    font-size: 11px;
+  }
+}
+
+/* 상태별 카드 테두리 색상 - 배경 대신 굵은 테두리 사용 */
+.service-card-minimal.status-operational {
+  background: var(--card-bg) !important;
+  border: 3px solid rgb(var(--status-operational)) !important;
+  box-shadow: none !important;
+}
+
+.service-card-minimal.status-operational:hover {
+  background: var(--card-bg-hover) !important;
+  transform: translateY(-2px);
+}
+
+.service-card-minimal.status-degraded {
+  background: var(--card-bg) !important;
+  border: 3px solid rgb(var(--status-degraded)) !important;
+  box-shadow: none !important;
+}
+
+.service-card-minimal.status-degraded:hover {
+  background: var(--card-bg-hover) !important;
+  transform: translateY(-2px);
+}
+
+.service-card-minimal.status-outage {
+  background: var(--card-bg) !important;
+  border: 3px solid rgb(var(--status-major-outage)) !important;
+  box-shadow: none !important;
+}
+
+.service-card-minimal.status-outage:hover {
+  background: var(--card-bg-hover) !important;
+  transform: translateY(-2px);
+}
+
+.service-card-minimal.status-maintenance {
+  background: var(--card-bg) !important;
+  border: 3px solid rgb(var(--status-maintenance)) !important;
+  box-shadow: none !important;
+}
+
+.service-card-minimal.status-maintenance:hover {
+  background: var(--card-bg-hover) !important;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   📱 서비스 상세 바텀시트 스타일
+   ============================================ */
+
+/* 오버레이 */
+.service-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 59;
+}
+
+/* 바텀시트 컨테이너 */
+.service-detail-bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  z-index: 60;
+  max-height: 70vh;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 드래그 핸들 컨테이너 */
+.sheet-handle-container {
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+}
+
+.sheet-handle-container:active {
+  cursor: grabbing;
+}
+
+/* 드래그 핸들 */
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: rgb(var(--muted-foreground));
+  opacity: 0.3;
+  border-radius: 2px;
+}
+
+/* 시트 헤더 */
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 16px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* 시트 콘텐츠 */
+.sheet-content {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 컴포넌트 아이템 */
+.component-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+.component-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(var(--foreground)) !important;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 12px;
+}
+
+.component-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.component-status.status-operational {
+  background: rgba(var(--status-operational), 0.15);
+  color: rgb(var(--status-operational)) !important;
+}
+
+.component-status.status-degraded {
+  background: rgba(var(--status-degraded), 0.15);
+  color: rgb(var(--status-degraded)) !important;
+}
+
+.component-status.status-major-outage {
+  background: rgba(var(--status-major-outage), 0.15);
+  color: rgb(var(--status-major-outage)) !important;
+}
+
+.component-status.status-maintenance {
+  background: rgba(var(--status-maintenance), 0.15);
+  color: rgb(var(--status-maintenance)) !important;
+}
+
+/* 시트 푸터 */
+.sheet-footer {
+  padding: 16px;
+  border-top: 1px solid var(--card-border);
+}
+
+.sheet-status-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(var(--primary)) !important;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.sheet-status-link:hover {
+  background: var(--card-bg-hover);
+}
+
+/* 768px 이상에서 바텀시트 최대 너비 제한 */
+@media (min-width: 768px) {
+  .service-detail-bottom-sheet {
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 480px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    bottom: auto;
+    top: 50%;
+    max-height: 80vh;
   }
 }

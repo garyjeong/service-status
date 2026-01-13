@@ -12,6 +12,7 @@ import LanguageSelector from './LanguageSelector';
 import SortDropdown from './SortDropdown';
 import Header from './Header';
 import ServiceCard, { ServiceIcon, getStatusIcon } from './ServiceCard';
+import ServiceDetailBottomSheet from './ServiceDetailBottomSheet';
 import SidebarFilter from './SidebarFilter';
 import BottomSheetFilter from './BottomSheetFilter';
 import KeyboardNavigation from './KeyboardNavigation';
@@ -173,6 +174,10 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   
   // 모바일 푸터 확장 상태
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
+
+  // 서비스 상세 바텀시트 상태
+  const [selectedService, setSelectedService] = useState<(Service & { status: string }) | null>(null);
+  const [isServiceDetailOpen, setIsServiceDetailOpen] = useState(false);
 
   // 상태별 필터링 - 문제 서비스만 표시
   const [statusFilter, setStatusFilter] = useState<'degraded_performance' | 'major_outage' | null>(null);
@@ -546,6 +551,57 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
     return () => clearInterval(interval);
   }, [filters, services]);
 
+  // 광고 위치 조정 - MutationObserver로 Kakao AdFit 광고 감지 및 이동
+  useEffect(() => {
+    const moveAdToTop = () => {
+      const topContainer = document.getElementById('top-ad-container');
+      if (!topContainer) return false;
+
+      // body의 직접 자식 중 kakao_ad_area 클래스를 가진 요소 찾기
+      const bodyChildren = document.body.children;
+      let moved = false;
+
+      for (let i = 0; i < bodyChildren.length; i++) {
+        const child = bodyChildren[i] as HTMLElement;
+        if (child.classList.contains('kakao_ad_area') &&
+            child.style.display === 'inline-block' &&
+            child.parentElement === document.body) {
+          topContainer.appendChild(child);
+          moved = true;
+        }
+      }
+      return moved;
+    };
+
+    // 초기 시도
+    moveAdToTop();
+
+    // MutationObserver로 body에 새 요소가 추가될 때 감지
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node instanceof HTMLElement &&
+                node.classList.contains('kakao_ad_area')) {
+              // 약간의 지연 후 이동 (스타일이 적용될 때까지 대기)
+              setTimeout(moveAdToTop, 100);
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.body, { childList: true });
+
+    // 백업: 일정 시간 후에도 시도
+    const timer = setTimeout(moveAdToTop, 2000);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
+  }, []);
+
   // 윈도우 리사이즈 이벤트 리스너
   useEffect(() => {
     const handleResize = () => {
@@ -757,7 +813,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
   // 모바일 푸터 토글 함수
   const toggleMobileFooter = () => {
     setIsFooterExpanded(prev => !prev);
-    
+
     const footerElement = document.querySelector('.mobile-footer-compact');
     if (footerElement) {
       footerElement.classList.add('tap-feedback');
@@ -766,6 +822,22 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
       }, 300);
     }
   };
+
+  // 서비스 카드 클릭 핸들러 - 바텀시트 열기
+  const handleServiceCardClick = useCallback((service: Service & { status: string }) => {
+    // 필터 바텀시트가 열려있으면 닫기
+    if (isFilterOpen) {
+      setIsFilterOpen(false);
+    }
+    setSelectedService(service);
+    setIsServiceDetailOpen(true);
+  }, [isFilterOpen]);
+
+  // 서비스 상세 바텀시트 닫기 핸들러
+  const handleServiceDetailClose = useCallback(() => {
+    setIsServiceDetailOpen(false);
+    setTimeout(() => setSelectedService(null), 300);
+  }, []);
 
   // 서비스의 선택 상태 계산
   const getServiceSelectionState = (serviceName: string): 'all' | 'none' | 'some' => {
@@ -1270,10 +1342,21 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                 }}
               />
             
-      {/* 메인 컨텐츠 */}
+      {/* 메인 컨텐츠 - 모바일 퍼스트 */}
       <main className="main-content">
-        <div className="container mx-auto px-4 py-6">
+        <div className="dashboard-content-wrapper px-4 py-4">
           
+          {/* 상단 광고 배너 */}
+          <div id="top-ad-container" className="mb-4 flex justify-center">
+            <ins
+              className="kakao_ad_area"
+              style={{ display: 'none' }}
+              data-ad-unit="DAN-Bms9gIB1eRHIUjoI"
+              data-ad-width="320"
+              data-ad-height="100"
+            />
+          </div>
+
           {/* 상태 요약 대시보드 */}
           <StatusSummaryPanel
             stats={stats}
@@ -1299,7 +1382,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
           
           {/* 활성 필터 표시 바 */}
           {statusFilter && (
-            <motion.div 
+            <motion.div
               className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1313,7 +1396,7 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                         <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-current animate-pulse"></div>
                 <span className="font-medium">
-                  {statusFilter === 'degraded_performance' 
+                  {statusFilter === 'degraded_performance'
                     ? (language === 'ko' ? '성능 저하 서비스만 표시 중' : 'Showing degraded services only')
                     : (language === 'ko' ? '장애 서비스만 표시 중' : 'Showing outage services only')
                   }
@@ -1327,11 +1410,6 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                       </button>
             </motion.div>
           )}
-
-          {/* 상단 광고 배너 */}
-          <div className="mb-6 flex justify-center">
-            <AdFitBanner />
-          </div>
 
           {/* 데스크톱: 사이드바 필터 */}
           <div className="hidden md:block">
@@ -1381,218 +1459,100 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
 
           {/* 즐겨찾기 섹션 */}
           {favoriteComponents.length > 0 && (
-            <div className="mb-6 md:mb-8">
-              <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-                <div className="relative">
-                  <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-400 fill-yellow-400" />
-                  <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-lg animate-pulse"></div>
-                </div>
-                <h2 className="text-lg md:text-2xl font-bold text-gradient">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <h2 className="text-base font-bold">
                   {t.favorites}
                 </h2>
-                <div className="flex items-center gap-1 md:gap-2 bg-yellow-500/10 px-2 md:px-3 py-1 rounded-full border border-yellow-500/20">
-                  <span className="text-yellow-400 font-medium text-xs md:text-sm">
-                    {favoriteComponents.length}
-                  </span>
-                </div>
+                <span className="text-xs text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full">
+                  {favoriteComponents.length}
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-                {favoriteComponents.map((item, index) => (
-                  <div key={`${item.serviceName}-${item.componentName}-${index}`} className="favorite-card hover-lift">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
-                        <ServiceIcon iconName={item.icon} size={20} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <div className={`status-dot ${getStatusColor(item.status)}`} />
-                            {getStatusIcon(item.status)}
-                          </div>
-                          <p className="text-xs md:text-sm font-medium text-foreground truncate">
-                            {item.componentName}
-                          </p>
-                        </div>
+              <div className="service-grid">
+                {favoriteComponents.map((item, index) => {
+                  const service = services.find(s => s.service_name === item.serviceName);
+                  if (!service) return null;
+                  const serviceWithStatus = {
+                    ...service,
+                    status: StatusUtils.calculateServiceStatus(service.components)
+                  };
+                  return (
+                    <div
+                      key={`${item.serviceName}-${item.componentName}-${index}`}
+                      className="service-card-minimal"
+                      onClick={() => handleServiceCardClick(serviceWithStatus)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <ServiceIcon iconName={item.icon} size={48} />
+                      <div className="status-icon-wrapper">
+                        {getStatusIcon(item.status)}
                       </div>
-                      <button
-                        onClick={() => toggleFavorite(item.serviceName, item.componentName)}
-                        className="btn-icon focus-ring flex-shrink-0"
-                        aria-label={`${item.serviceName} ${item.componentName} 즐겨찾기에서 제거`}
-                      >
-                        <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
-                      </button>
+                      <span className="status-text">{getStatusText(item.status)}</span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <div className="border-t border-border mt-6 md:mt-8 pt-6 md:pt-8">
-                <h2 className="text-lg md:text-2xl font-bold text-gradient mb-4 md:mb-6">
+              <div className="border-t border-border mt-6 pt-6">
+                <h2 className="text-base font-bold mb-4">
                   {t.allServices}
                 </h2>
               </div>
             </div>
           )}
 
-          {/* 서비스 표시 영역 - 카테고리 뷰 */}
-            <div className="space-y-4">
-              {Object.entries(categorizedServices).map(([categoryName, categoryServices]) => (
-                <motion.div 
-                  key={categoryName} 
-                  className="category-section-premium"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.5,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                    delay: 0.1
-                  }}
-                >
-                  {/* 카테고리 헤더 */}
-                  <motion.div 
-                    className={`category-header-premium ${visibleCategories.has(categoryName) ? 'visible' : 'hidden'}`}
-                    onClick={() => toggleCategoryVisibility(categoryName)}
-                    title={visibleCategories.has(categoryName) ? t.hideCategory : t.showCategory}
-                    role="button"
-                    tabIndex={0}
-                    whileHover={{
-                      scale: 1.01,
-                      transition: { duration: 0.2 }
-                    }}
-                    whileTap={{
-                      scale: 0.99,
-                      transition: { duration: 0.1 }
-                    }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                        toggleCategoryVisibility(categoryName);
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <motion.div 
-                        className="category-icon-premium"
-                        whileHover={{
-                          scale: 1.1,
-                          rotate: 5,
-                          transition: { duration: 0.2 }
-                        }}
-                      >
-                        {SERVICE_CATEGORIES.find(cat => cat.id === categoryName)?.icon || '📁'}
-                      </motion.div>
-                      <motion.h3 
-                        className="category-title-premium"
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2, duration: 0.3 }}
-                      >
-                        {SERVICE_CATEGORIES.find(cat => cat.id === categoryName)?.name || categoryName}
-                      </motion.h3>
-                      <motion.div 
-                        className="category-count-premium"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3, duration: 0.3 }}
-                        whileHover={{
-                          scale: 1.1,
-                          transition: { duration: 0.2 }
-                        }}
-                      >
-                        {getFilteredCategoryCount(categoryServices)}
-                      </motion.div>
-                              </div>
-                    <motion.div 
-                      className={`category-toggle-premium ${visibleCategories.has(categoryName) ? 'visible' : 'hidden'}`}
-                      whileHover={{
-                        scale: 1.1,
-                        rotate: visibleCategories.has(categoryName) ? 0 : 180,
-                        transition: { duration: 0.3 }
-                      }}
-                      whileTap={{
-                        scale: 0.9,
-                        transition: { duration: 0.1 }
-                      }}
-                    >
-                      <motion.div
-                        initial={false}
-                        animate={{
-                          rotate: visibleCategories.has(categoryName) ? 0 : 180,
-                          transition: { duration: 0.3 }
-                        }}
-                      >
-                        {visibleCategories.has(categoryName) ? (
-                          <Eye className="w-5 h-5" />
-                        ) : (
-                          <EyeOff className="w-5 h-5" />
-                        )}
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+          {/* 서비스 표시 영역 - 평면 그리드 (카테고리 헤더 없음) */}
+          <Stagger
+            className={`service-grid ${isAnimating ? 'moving' : ''}`}
+            delay={0.1}
+            staggerDelay={0.05}
+            direction="up"
+            distance={20}
+          >
+            {sortedServices.map((service) => {
+              const isLoading = serviceLoadingStates[service.service_name];
 
-                  {/* 카테고리 서비스 목록 */}
-                  {visibleCategories.has(categoryName) && (
-                    <Stagger
-                      className={`service-grid ${isAnimating ? 'moving' : ''} mt-3`}
-                      delay={0.1}
-                      staggerDelay={0.08}
-                      direction="up"
-                      distance={30}
-                    >
-                      {categoryServices
-                        .sort((a, b) => {
-                          // 상태별 우선순위 정렬: Critical → Warning → Normal
-                          const getStatusPriority = (service: Service) => {
-                            const status = StatusUtils.calculateServiceStatus(service.components);
-                            if (status === StatusType.MAJOR_OUTAGE || status === StatusType.PARTIAL_OUTAGE) return 0; // Critical
-                            if (status === StatusType.DEGRADED_PERFORMANCE || status === StatusType.UNDER_MAINTENANCE) return 1; // Warning
-                            return 2; // Normal
-                          };
-                          return getStatusPriority(a) - getStatusPriority(b);
-                        })
-                        .map((service) => {
-                const isLoading = serviceLoadingStates[service.service_name];
-                
-                if (isLoading) {
-                  return <ServiceCardSkeleton key={service.service_name} />;
-                }
+              if (isLoading) {
+                return <ServiceCardSkeleton key={service.service_name} />;
+              }
 
-                return (
-                        <ServiceCard
-                    key={service.service_name}
-                          service={service}
-                          isExpanded={expandedServices[service.service_name] || false}
-                          isLoading={serviceLoadingStates[service.service_name] || false}
-                          language={language}
-                          onToggleExpansion={() => toggleServiceExpansion(service.service_name)}
-                          onRefresh={() => loadServiceData(service.service_name as keyof typeof serviceFetchers, false)}
-                          getServiceDescription={getServiceDescription}
-                          getStatusText={getStatusText}
-                          getStatusColorClass={getStatusColorClass}
-                          getStatusColor={getStatusColor}
-                          translations={{
-                            refreshService: t.refreshService,
-                            statusPage: t.statusPage
-                          }}
-                        />
-                );
-              })}
-                    </Stagger>
-          )}
-                </motion.div>
-              ))}
-            </div>
+              return (
+                <ServiceCard
+                  key={service.service_name}
+                  service={service}
+                  isLoading={serviceLoadingStates[service.service_name] || false}
+                  language={language}
+                  onCardClick={() => handleServiceCardClick(service)}
+                  getStatusText={getStatusText}
+                  getStatusColor={getStatusColor}
+                />
+              );
+            })}
+          </Stagger>
 
         </div>
       </main>
 
-      {/* 푸터 위 광고 배너 */}
-      <div className="w-full flex justify-center py-4 bg-background border-t border-border/50">
-        <ins 
-          className="kakao_ad_area" 
-          style={{ display: 'none' }}
-          data-ad-unit="DAN-Bms9gIB1eRHIUjoI"
-          data-ad-width="320"
-          data-ad-height="100"
-        />
-      </div>
+      {/* 서비스 상세 바텀시트 */}
+      <ServiceDetailBottomSheet
+        isOpen={isServiceDetailOpen}
+        service={selectedService}
+        language={language}
+        isLoading={selectedService ? (serviceLoadingStates[selectedService.service_name] || false) : false}
+        onClose={handleServiceDetailClose}
+        onRefresh={() => {
+          if (selectedService) {
+            loadServiceData(selectedService.service_name as keyof typeof serviceFetchers, false);
+          }
+        }}
+        getStatusText={getStatusText}
+        getStatusColor={getStatusColor}
+        translations={{
+          refreshService: t.refreshService,
+          statusPage: t.statusPage
+        }}
+      />
 
       {/* 푸터 섹션 */}
       <footer className="footer-section">
