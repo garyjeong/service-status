@@ -180,18 +180,15 @@ const SERVICES_CONFIG: Record<string, ServiceConfig> = {
     service_name: 'anthropic',
     display_name: 'Anthropic Claude',
     description: 'Claude 채팅 인터페이스 및 Anthropic API',
-    page_url: 'https://status.anthropic.com',
+    page_url: 'https://status.claude.com',
     icon: 'anthropic',
     kind: 'statuspage',
-    api_url: 'https://status.anthropic.com/api/v2/status.json',
+    api_url: 'https://status.claude.com/api/v2/status.json',
     components: [
-      'Claude Chat',
-      'Anthropic API',
-      'Claude Pro',
-      'API Console',
-      'Claude-3 Opus',
-      'Claude-3 Sonnet',
-      'Claude-3 Haiku',
+      'claude.ai',
+      'platform.claude.com',
+      'Claude API',
+      'Claude Code',
     ],
   },
   github: {
@@ -392,52 +389,71 @@ export async function fetchNetlifyStatus(): Promise<Service> {
 }
 
 /**
- * Docker Hub 상태 조회 (웹 스크래핑 기반)
+ * Docker Hub 상태 조회 (Status.io API 사용)
  */
 export async function fetchDockerHubStatus(): Promise<Service> {
   try {
-    // 웹 스크래핑을 통해 Docker 상태 정보 가져오기
-    const scrapedStatus = await WebScrapingService.fetchDockerStatus();
-    
-    // ServiceStatus를 Service 인터페이스로 변환
-    const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
-      name: comp.name,
-      status: comp.status,
-    }));
+    // Status.io API를 통해 Docker 상태 정보 가져오기
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://api.status.io/1.0/status/533c6539221ae15e3f000031`
+    );
+    const data = response.data;
+
+    // Status.io API 응답에서 컴포넌트 정보 추출
+    const components: ServiceComponent[] = [];
+
+    if (data.result && data.result.status) {
+      data.result.status.forEach((container: any) => {
+        if (container.containers) {
+          container.containers.forEach((comp: any) => {
+            components.push({
+              name: comp.name,
+              status: StatusUtils.normalizeStatus(
+                comp.status === 'Operational' ? 'operational' :
+                comp.status === 'Degraded Performance' ? 'degraded' :
+                comp.status === 'Partial Service Disruption' ? 'partial_outage' :
+                comp.status === 'Service Disruption' ? 'major_outage' :
+                comp.status === 'Maintenance' ? 'maintenance' : 'operational'
+              ),
+            });
+          });
+        }
+      });
+    }
+
+    // 컴포넌트가 없으면 기본 컴포넌트 사용
+    if (components.length === 0) {
+      const defaultComponents = [
+        'Docker Hub Registry', 'Docker Authentication', 'Docker Hub Web Services',
+        'Docker Desktop', 'Docker Billing', 'Docker Scout', 'Docker Build Cloud',
+      ];
+      defaultComponents.forEach(name => {
+        components.push({ name, status: StatusType.OPERATIONAL });
+      });
+    }
 
     return {
       service_name: 'dockerhub',
       display_name: 'Docker Hub',
       description: '컨테이너 이미지 레지스트리 및 저장소',
-      status: scrapedStatus.overall_status,
+      status: StatusUtils.calculateServiceStatus(components),
       page_url: 'https://www.dockerstatus.com',
       icon: 'docker',
       components,
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('Docker Hub 웹 스크래핑 오류:', error);
+      console.error('Docker Hub API 오류:', error);
     }
 
-    // 웹 스크래핑 실패 시 기본 컴포넌트 반환
+    // API 실패 시 기본 컴포넌트 반환
     const components: ServiceComponent[] = [
       { name: 'Docker Hub Registry', status: StatusType.OPERATIONAL },
       { name: 'Docker Authentication', status: StatusType.OPERATIONAL },
       { name: 'Docker Hub Web Services', status: StatusType.OPERATIONAL },
       { name: 'Docker Desktop', status: StatusType.OPERATIONAL },
-      { name: 'Docker Billing', status: StatusType.OPERATIONAL },
-      { name: 'Docker Package Repositories', status: StatusType.OPERATIONAL },
-      { name: 'Docker Hub Automated Builds', status: StatusType.OPERATIONAL },
-      { name: 'Docker Hub Security Scanning', status: StatusType.OPERATIONAL },
-      { name: 'Docker Docs', status: StatusType.OPERATIONAL },
-      { name: 'Docker Community Forums', status: StatusType.OPERATIONAL },
-      { name: 'Docker Support', status: StatusType.OPERATIONAL },
-      { name: 'Docker.com Website', status: StatusType.OPERATIONAL },
       { name: 'Docker Scout', status: StatusType.OPERATIONAL },
       { name: 'Docker Build Cloud', status: StatusType.OPERATIONAL },
-      { name: 'Testcontainers Cloud', status: StatusType.OPERATIONAL },
-      { name: 'Docker Cloud', status: StatusType.OPERATIONAL },
-      { name: 'Docker Hardened Images', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -595,47 +611,64 @@ export async function fetchAWSStatus(): Promise<Service> {
 }
 
 /**
- * Slack 상태 조회 (웹 스크래핑 기반)
+ * Slack 상태 조회 (Slack Status API 사용)
  */
 export async function fetchSlackStatus(): Promise<Service> {
+  // Slack의 기본 서비스 컴포넌트 목록
+  const slackComponents = [
+    'Login/SSO', 'Connectivity', 'Messaging', 'Files', 'Notifications',
+    'Huddles', 'Search', 'Apps/Integrations/APIs', 'Workspace/Org Administration',
+    'Workflows', 'Canvases',
+  ];
+
   try {
-    // 웹 스크래핑을 통해 Slack 상태 정보 가져오기
-    const scrapedStatus = await WebScrapingService.fetchSlackStatus();
-    
-    // ServiceStatus를 Service 인터페이스로 변환
-    const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
-      name: comp.name,
-      status: comp.status,
+    // Slack Status API를 통해 전체 상태 정보 가져오기
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://slack-status.com/api/v2.0.0/current`
+    );
+    const data = response.data;
+
+    // 전체 상태 확인 (ok = operational, otherwise check active_incidents)
+    const hasActiveIncidents = data.active_incidents && data.active_incidents.length > 0;
+    const baseStatus = data.status === 'ok' && !hasActiveIncidents
+      ? StatusType.OPERATIONAL
+      : StatusType.DEGRADED_PERFORMANCE;
+
+    // 활성 장애가 있으면 영향받는 서비스 파악
+    const affectedServices = new Set<string>();
+    if (hasActiveIncidents) {
+      data.active_incidents.forEach((incident: any) => {
+        if (incident.services) {
+          incident.services.forEach((service: string) => affectedServices.add(service));
+        }
+      });
+    }
+
+    // 컴포넌트 상태 매핑
+    const components: ServiceComponent[] = slackComponents.map(name => ({
+      name,
+      status: affectedServices.has(name) ? StatusType.DEGRADED_PERFORMANCE : baseStatus,
     }));
 
     return {
       service_name: 'slack',
       display_name: 'Slack',
       description: '팀 커뮤니케이션 및 협업 플랫폼',
-      status: scrapedStatus.overall_status,
+      status: StatusUtils.calculateServiceStatus(components),
       page_url: 'https://slack-status.com',
       icon: 'slack',
       components,
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('Slack 웹 스크래핑 오류:', error);
+      console.error('Slack API 오류:', error);
     }
 
-    // 웹 스크래핑 실패 시 기본 컴포넌트 반환
-    const components: ServiceComponent[] = [
-      { name: 'Login/SSO', status: StatusType.OPERATIONAL },
-      { name: 'Connectivity', status: StatusType.OPERATIONAL },
-      { name: 'Messaging', status: StatusType.OPERATIONAL },
-      { name: 'Files', status: StatusType.OPERATIONAL },
-      { name: 'Notifications', status: StatusType.OPERATIONAL },
-      { name: 'Huddles', status: StatusType.OPERATIONAL },
-      { name: 'Search', status: StatusType.OPERATIONAL },
-      { name: 'Apps/Integrations/APIs', status: StatusType.OPERATIONAL },
-      { name: 'Workspace/Org Administration', status: StatusType.OPERATIONAL },
-      { name: 'Workflows', status: StatusType.OPERATIONAL },
-      { name: 'Canvases', status: StatusType.OPERATIONAL },
-    ];
+    // API 실패 시 기본 컴포넌트 반환
+    const components: ServiceComponent[] = slackComponents.map(name => ({
+      name,
+      status: StatusType.OPERATIONAL,
+    }));
 
     return {
       service_name: 'slack',
@@ -650,58 +683,82 @@ export async function fetchSlackStatus(): Promise<Service> {
 }
 
 /**
- * Firebase 상태 조회 (웹 스크래핑 기반)
+ * Firebase 상태 조회 (incidents.json API 사용)
  */
 export async function fetchFirebaseStatus(): Promise<Service> {
+  // Firebase의 주요 서비스 목록
+  const firebaseServices = [
+    'Authentication', 'Realtime Database', 'Cloud Firestore', 'Cloud Storage',
+    'Hosting', 'Cloud Functions', 'Cloud Messaging', 'Crashlytics',
+    'Analytics', 'Remote Config', 'App Check', 'Performance Monitoring',
+    'App Distribution', 'Test Lab', 'App Hosting', 'Firebase Studio',
+    'Console', 'Extensions', 'Dynamic Links',
+  ];
+
   try {
-    // 웹 스크래핑을 통해 Firebase 상태 정보 가져오기
-    const scrapedStatus = await WebScrapingService.fetchFirebaseStatus();
-    
-    // ServiceStatus를 Service 인터페이스로 변환
-    const components: ServiceComponent[] = scrapedStatus.components.map(comp => ({
-      name: comp.name,
-      status: comp.status,
+    // incidents.json API를 통해 현재 장애 정보 가져오기
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.firebase.google.com/incidents.json`
+    );
+    const incidents = response.data || [];
+
+    // 현재 진행 중인 장애 (end가 없는 장애)
+    const activeIncidents = incidents.filter((incident: any) => !incident.end);
+
+    // 영향받는 서비스 목록 추출
+    const affectedServices = new Map<string, StatusType>();
+    activeIncidents.forEach((incident: any) => {
+      const serviceName = incident.service_name || '';
+      const impact = incident.status_impact || '';
+
+      // 상태 결정
+      let status = StatusType.DEGRADED_PERFORMANCE;
+      if (impact === 'SERVICE_OUTAGE' || impact === 'SERVICE_DISRUPTION') {
+        status = StatusType.MAJOR_OUTAGE;
+      } else if (impact === 'SERVICE_INFORMATION') {
+        status = StatusType.DEGRADED_PERFORMANCE;
+      }
+
+      // 서비스 이름 매핑 (Firebase 서비스 이름 정규화)
+      const normalizedName = firebaseServices.find(s =>
+        serviceName.toLowerCase().includes(s.toLowerCase()) ||
+        s.toLowerCase().includes(serviceName.toLowerCase())
+      );
+
+      if (normalizedName) {
+        // 더 심각한 상태로 업데이트
+        const existing = affectedServices.get(normalizedName);
+        if (!existing || status === StatusType.MAJOR_OUTAGE) {
+          affectedServices.set(normalizedName, status);
+        }
+      }
+    });
+
+    // 컴포넌트 상태 매핑
+    const components: ServiceComponent[] = firebaseServices.map(name => ({
+      name,
+      status: affectedServices.get(name) || StatusType.OPERATIONAL,
     }));
 
     return {
       service_name: 'firebase',
       display_name: 'Firebase',
       description: 'Google 백엔드 서비스 플랫폼',
-      status: scrapedStatus.overall_status,
+      status: StatusUtils.calculateServiceStatus(components),
       page_url: 'https://status.firebase.google.com',
       icon: 'firebase',
       components,
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('Firebase 웹 스크래핑 오류:', error);
+      console.error('Firebase API 오류:', error);
     }
 
-    // 웹 스크래핑 실패 시 기본 컴포넌트 반환
-    const components: ServiceComponent[] = [
-      { name: 'AB Testing (BETA)', status: StatusType.OPERATIONAL },
-      { name: 'App Check', status: StatusType.OPERATIONAL },
-      { name: 'App Distribution', status: StatusType.OPERATIONAL },
-      { name: 'App Hosting', status: StatusType.OPERATIONAL },
-      { name: 'App Indexing', status: StatusType.OPERATIONAL },
-      { name: 'Authentication', status: StatusType.OPERATIONAL },
-      { name: 'Cloud Messaging', status: StatusType.OPERATIONAL },
-      { name: 'Console', status: StatusType.OPERATIONAL },
-      { name: 'Crashlytics', status: StatusType.OPERATIONAL },
-      { name: 'Data Connect', status: StatusType.OPERATIONAL },
-      { name: 'Dynamic Links', status: StatusType.OPERATIONAL },
-      { name: 'Extensions', status: StatusType.OPERATIONAL },
-      { name: 'Firebase AI Logic', status: StatusType.OPERATIONAL },
-      { name: 'Firebase Studio', status: StatusType.OPERATIONAL },
-      { name: 'Gemini in Firebase', status: StatusType.OPERATIONAL },
-      { name: 'Genkit', status: StatusType.OPERATIONAL },
-      { name: 'Hosting', status: StatusType.OPERATIONAL },
-      { name: 'Machine Learning (BETA)', status: StatusType.OPERATIONAL },
-      { name: 'Performance Monitoring', status: StatusType.OPERATIONAL },
-      { name: 'Realtime Database', status: StatusType.OPERATIONAL },
-      { name: 'Remote Config', status: StatusType.OPERATIONAL },
-      { name: 'Test Lab', status: StatusType.OPERATIONAL },
-    ];
+    // API 실패 시 기본 컴포넌트 반환
+    const components: ServiceComponent[] = firebaseServices.map(name => ({
+      name,
+      status: StatusType.OPERATIONAL,
+    }));
 
     return {
       service_name: 'firebase',
@@ -826,46 +883,88 @@ export async function fetchCursorStatus(): Promise<Service> {
 }
 
 /**
- * Google AI Studio 상태 조회 (공개 API가 없으므로 간단한 헬스체크)
+ * Google AI Studio 상태 조회 (Google Cloud incidents API 사용)
  */
 export async function fetchGoogleAIStatus(): Promise<Service> {
+  // Gemini/Vertex AI 관련 서비스 목록
+  const geminiServices = [
+    'Gemini API', 'AI Studio', 'Vertex AI', 'Gemini Pro',
+    'Gemini Flash', 'Model Garden', 'Gemini Vision',
+  ];
+
   try {
-    // Google AI Studio는 공개 상태 API가 없으므로 기본적으로 정상으로 처리
-    const components: ServiceComponent[] = [
-      { name: 'Gemini API', status: 'operational' },
-      { name: 'AI Studio', status: 'operational' },
-      { name: 'Model Garden', status: 'operational' },
-      { name: 'Vertex AI', status: 'operational' },
-      { name: 'Gemini Vision', status: 'operational' },
-    ];
+    // Google Cloud incidents API를 통해 장애 정보 가져오기
+    const response = await apiClient.get(
+      `${CORS_PROXY}https://status.cloud.google.com/incidents.json`
+    );
+    const incidents = response.data || [];
+
+    // 현재 진행 중인 Gemini/Vertex AI 관련 장애 필터링
+    const activeIncidents = incidents.filter((incident: any) => {
+      if (incident.end) return false; // 종료된 장애 제외
+
+      const affectedProducts = (incident.affected_products || []).map((p: any) =>
+        (p.title || '').toLowerCase()
+      );
+      const description = (incident.external_desc || '').toLowerCase();
+
+      // Gemini, Vertex AI 관련 장애만 필터링
+      return affectedProducts.some((p: string) =>
+        p.includes('vertex') || p.includes('gemini') || p.includes('ai platform')
+      ) || description.includes('gemini') || description.includes('vertex');
+    });
+
+    // 영향받는 서비스 추출
+    const affectedServices = new Map<string, StatusType>();
+    activeIncidents.forEach((incident: any) => {
+      const severity = (incident.severity || '').toLowerCase();
+      const status = severity === 'high' ? StatusType.MAJOR_OUTAGE :
+                     severity === 'medium' ? StatusType.PARTIAL_OUTAGE :
+                     StatusType.DEGRADED_PERFORMANCE;
+
+      // 관련 서비스 상태 업데이트
+      geminiServices.forEach(service => {
+        const desc = (incident.external_desc || '').toLowerCase();
+        const serviceLower = service.toLowerCase();
+        if (desc.includes(serviceLower) || desc.includes('gemini') || desc.includes('vertex')) {
+          const existing = affectedServices.get(service);
+          if (!existing || status === StatusType.MAJOR_OUTAGE) {
+            affectedServices.set(service, status);
+          }
+        }
+      });
+    });
+
+    // 컴포넌트 상태 매핑
+    const components: ServiceComponent[] = geminiServices.map(name => ({
+      name,
+      status: affectedServices.get(name) || StatusType.OPERATIONAL,
+    }));
 
     return {
       service_name: 'googleai',
       display_name: 'Google AI Studio',
       description: 'Google Gemini API 및 AI Studio 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://aistudio.google.com/status',
+      page_url: 'https://status.cloud.google.com',
       icon: 'googleai',
       components,
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('Google AI API 오류:', error);
+      console.error('Google AI API 오류:', error);
     }
-    const components: ServiceComponent[] = [
-      { name: 'Gemini API', status: 'operational' },
-      { name: 'AI Studio', status: 'operational' },
-      { name: 'Model Garden', status: 'operational' },
-      { name: 'Vertex AI', status: 'operational' },
-      { name: 'Gemini Vision', status: 'operational' },
-    ];
+    const components: ServiceComponent[] = geminiServices.map(name => ({
+      name,
+      status: StatusType.OPERATIONAL,
+    }));
 
     return {
       service_name: 'googleai',
       display_name: 'Google AI Studio',
       description: 'Google Gemini API 및 AI Studio 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://aistudio.google.com/status',
+      page_url: 'https://status.cloud.google.com',
       icon: 'googleai',
       components,
     };
@@ -877,25 +976,34 @@ export async function fetchGoogleAIStatus(): Promise<Service> {
  */
 export async function fetchPerplexityStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.perplexity.ai/api/v2/status.json`
+    // components API를 통해 실제 컴포넌트 상태 조회
+    const componentsResponse = await apiClient.get(
+      `${CORS_PROXY}https://status.perplexity.com/api/v2/components.json`
     );
-    const data = response.data;
+    const componentsData = componentsResponse.data.components || [];
 
-    const components: ServiceComponent[] = [
-      {
-        name: 'Website',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      { name: 'API', status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational') },
-    ];
+    // 실제 컴포넌트 데이터 매핑
+    const components: ServiceComponent[] = componentsData
+      .filter((component: any) => !component.group && component.name)
+      .map((component: any) => ({
+        name: component.name,
+        status: StatusUtils.normalizeStatus(component.status || 'operational'),
+      }));
+
+    // 컴포넌트가 없으면 기본 컴포넌트 사용
+    if (components.length === 0) {
+      components.push(
+        { name: 'Website', status: StatusType.OPERATIONAL },
+        { name: 'API', status: StatusType.OPERATIONAL }
+      );
+    }
 
     return {
       service_name: 'perplexity',
       display_name: 'Perplexity AI',
       description: 'AI 검색 엔진 및 대화형 AI 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.perplexity.ai',
+      page_url: 'https://status.perplexity.com',
       icon: 'perplexity',
       components,
     };
@@ -913,7 +1021,7 @@ export async function fetchPerplexityStatus(): Promise<Service> {
       display_name: 'Perplexity AI',
       description: 'AI 검색 엔진 및 대화형 AI 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.perplexity.ai',
+      page_url: 'https://status.perplexity.com',
       icon: 'perplexity',
       components,
     };
@@ -921,30 +1029,39 @@ export async function fetchPerplexityStatus(): Promise<Service> {
 }
 
 /**
- * v0 상태 조회 (Vercel 상태 페이지 통합)
+ * v0 상태 조회 (Vercel components API 사용)
  */
 export async function fetchV0Status(): Promise<Service> {
   try {
-    // Vercel 상태 페이지에서 v0 관련 정보 조회
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.vercel-status.com/api/v2/status.json`
+    // Vercel components API를 통해 실제 컴포넌트 상태 조회
+    const componentsResponse = await apiClient.get(
+      `${CORS_PROXY}https://www.vercel-status.com/api/v2/components.json`
     );
-    const data = response.data;
+    const componentsData = componentsResponse.data.components || [];
 
-    const components: ServiceComponent[] = [
-      {
-        name: 'v0 Platform',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'AI Generation',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Code Export',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+    // v0 관련 컴포넌트 필터링 (v0 Platform, AI 관련)
+    const v0RelatedNames = ['v0', 'ai', 'generation', 'serverless', 'edge'];
+    const v0Components = componentsData
+      .filter((component: any) => {
+        if (component.group) return false;
+        const nameLower = (component.name || '').toLowerCase();
+        return v0RelatedNames.some(term => nameLower.includes(term)) ||
+               nameLower.includes('api') || nameLower.includes('dashboard');
+      })
+      .slice(0, 8)
+      .map((component: any) => ({
+        name: component.name,
+        status: StatusUtils.normalizeStatus(component.status || 'operational'),
+      }));
+
+    // 컴포넌트가 없으면 기본 컴포넌트 사용
+    const components: ServiceComponent[] = v0Components.length > 0
+      ? v0Components
+      : [
+          { name: 'v0 Platform', status: StatusType.OPERATIONAL },
+          { name: 'AI Generation', status: StatusType.OPERATIONAL },
+          { name: 'Code Export', status: StatusType.OPERATIONAL },
+        ];
 
     return {
       service_name: 'v0',
@@ -957,12 +1074,12 @@ export async function fetchV0Status(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('v0 API 오류:', error);
+      console.error('v0 API 오류:', error);
     }
     const components: ServiceComponent[] = [
-      { name: 'v0 Platform', status: 'operational' },
-      { name: 'AI Generation', status: 'operational' },
-      { name: 'Code Export', status: 'operational' },
+      { name: 'v0 Platform', status: StatusType.OPERATIONAL },
+      { name: 'AI Generation', status: StatusType.OPERATIONAL },
+      { name: 'Code Export', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -978,78 +1095,77 @@ export async function fetchV0Status(): Promise<Service> {
 }
 
 /**
- * Replit 상태 조회
+ * Replit 상태 조회 (instatus.com API 사용)
  */
 export async function fetchReplitStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.replit.com/api/v2/status.json`
-    );
-    const data = response.data;
+  // Replit의 서비스 컴포넌트 목록
+  const replitComponents = [
+    'Website', 'App', 'Repls', 'AI', 'Hosting',
+    'Auth', 'Deployments', 'Database', 'Package Manager',
+  ];
 
-    // Replit의 복잡한 8개 컴포넌트 구조
-    const components: ServiceComponent[] = [
-      {
-        name: 'Website',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Repls',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      { name: 'AI', status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational') },
-      {
-        name: 'Hosting',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Auth',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Deployments',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Database',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Package Manager',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+  try {
+    // instatus.com components API를 통해 상태 조회
+    const componentsResponse = await apiClient.get(
+      `${CORS_PROXY}https://replit.instatus.com/v2/components.json`
+    );
+    const componentsData = componentsResponse.data.components || [];
+
+    // API에서 가져온 컴포넌트 상태 매핑
+    const apiComponents = new Map<string, StatusType>();
+    componentsData.forEach((comp: any) => {
+      const status = comp.status === 'OPERATIONAL' ? StatusType.OPERATIONAL :
+                     comp.status === 'DEGRADEDPERFORMANCE' ? StatusType.DEGRADED_PERFORMANCE :
+                     comp.status === 'PARTIALOUTAGE' ? StatusType.PARTIAL_OUTAGE :
+                     comp.status === 'MAJOROUTAGE' ? StatusType.MAJOR_OUTAGE :
+                     comp.status === 'UNDERMAINTENANCE' ? StatusType.UNDER_MAINTENANCE :
+                     StatusType.OPERATIONAL;
+      apiComponents.set(comp.name, status);
+    });
+
+    // 전체 상태도 확인
+    let baseStatus = StatusType.OPERATIONAL;
+    try {
+      const summaryResponse = await apiClient.get(
+        `${CORS_PROXY}https://replit.instatus.com/summary.json`
+      );
+      if (summaryResponse.data.page?.status !== 'UP') {
+        baseStatus = StatusType.DEGRADED_PERFORMANCE;
+      }
+    } catch {
+      // summary 실패 시 무시
+    }
+
+    // 컴포넌트 상태 결정
+    const components: ServiceComponent[] = replitComponents.map(name => ({
+      name,
+      status: apiComponents.get(name) || baseStatus,
+    }));
 
     return {
       service_name: 'replit',
       display_name: 'Replit',
       description: '온라인 코딩 환경 및 협업 개발 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.replit.com',
+      page_url: 'https://replit.instatus.com',
       icon: 'replit',
       components,
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('Replit API 오류:', error);
+      console.error('Replit API 오류:', error);
     }
-    const components: ServiceComponent[] = [
-      { name: 'Website', status: 'operational' },
-      { name: 'Repls', status: 'operational' },
-      { name: 'AI', status: 'operational' },
-      { name: 'Hosting', status: 'operational' },
-      { name: 'Auth', status: 'operational' },
-      { name: 'Deployments', status: 'operational' },
-      { name: 'Database', status: 'operational' },
-      { name: 'Package Manager', status: 'operational' },
-    ];
+    const components: ServiceComponent[] = replitComponents.map(name => ({
+      name,
+      status: StatusType.OPERATIONAL,
+    }));
 
     return {
       service_name: 'replit',
       display_name: 'Replit',
       description: '온라인 코딩 환경 및 협업 개발 플랫폼',
       status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.replit.com',
+      page_url: 'https://replit.instatus.com',
       icon: 'replit',
       components,
     };
@@ -1714,54 +1830,34 @@ export async function fetchZetaGlobalStatus(): Promise<Service> {
 }
 
 /**
- * Vercel 플랫폼 상태 조회 (v0와 별도)
+ * Vercel 플랫폼 상태 조회 (components API 사용)
  */
 export async function fetchVercelStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://www.vercel-status.com/api/v2/status.json`
+    // components API를 통해 실제 컴포넌트 상태 조회
+    const componentsResponse = await apiClient.get(
+      `${CORS_PROXY}https://www.vercel-status.com/api/v2/components.json`
     );
-    const data = response.data;
+    const componentsData = componentsResponse.data.components || [];
 
-    const components: ServiceComponent[] = [
-      {
-        name: 'Edge Network',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Serverless Functions',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Edge Functions',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Build System',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Dashboard',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      { name: 'CLI', status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational') },
-      {
-        name: 'Domains',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Analytics',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Postgres',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Blob Storage',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+    // 실제 컴포넌트 데이터 매핑 (그룹이 아닌 실제 컴포넌트만)
+    const components: ServiceComponent[] = componentsData
+      .filter((component: any) => !component.group && component.name)
+      .map((component: any) => ({
+        name: component.name,
+        status: StatusUtils.normalizeStatus(component.status || 'operational'),
+      }));
+
+    // 컴포넌트가 없으면 기본 컴포넌트 사용
+    if (components.length === 0) {
+      const defaultComponents = [
+        'Dashboard', 'Builds', 'Serverless Functions', 'Edge Functions',
+        'API', 'DNS', 'SSL Certificates', 'Web Analytics',
+      ];
+      defaultComponents.forEach(name => {
+        components.push({ name, status: StatusType.OPERATIONAL });
+      });
+    }
 
     return {
       service_name: 'vercel',
@@ -1774,19 +1870,15 @@ export async function fetchVercelStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('Vercel API 오류:', error);
+      console.error('Vercel API 오류:', error);
     }
     const components: ServiceComponent[] = [
-      { name: 'Edge Network', status: 'operational' },
-      { name: 'Serverless Functions', status: 'operational' },
-      { name: 'Edge Functions', status: 'operational' },
-      { name: 'Build System', status: 'operational' },
-      { name: 'Dashboard', status: 'operational' },
-      { name: 'CLI', status: 'operational' },
-      { name: 'Domains', status: 'operational' },
-      { name: 'Analytics', status: 'operational' },
-      { name: 'Postgres', status: 'operational' },
-      { name: 'Blob Storage', status: 'operational' },
+      { name: 'Dashboard', status: StatusType.OPERATIONAL },
+      { name: 'Builds', status: StatusType.OPERATIONAL },
+      { name: 'Serverless Functions', status: StatusType.OPERATIONAL },
+      { name: 'Edge Functions', status: StatusType.OPERATIONAL },
+      { name: 'API', status: StatusType.OPERATIONAL },
+      { name: 'DNS', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -1802,145 +1894,34 @@ export async function fetchVercelStatus(): Promise<Service> {
 }
 
 /**
- * Stripe 상태 조회
- */
-export async function fetchStripeStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.stripe.com/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      { name: 'API', status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational') },
-      {
-        name: 'Dashboard',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Webhooks',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Connect',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Checkout',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Billing',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Issuing',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Terminal',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Sigma',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
-
-    return {
-      service_name: 'stripe',
-      display_name: 'Stripe',
-      description: '온라인 결제 처리 및 금융 인프라 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.stripe.com',
-      icon: 'stripe',
-      components,
-    };
-  } catch (error) {
-    if (import.meta.env.DEV) {
-    console.error('Stripe API 오류:', error);
-    }
-    const components: ServiceComponent[] = [
-      { name: 'API', status: 'operational' },
-      { name: 'Dashboard', status: 'operational' },
-      { name: 'Webhooks', status: 'operational' },
-      { name: 'Connect', status: 'operational' },
-      { name: 'Checkout', status: 'operational' },
-      { name: 'Billing', status: 'operational' },
-      { name: 'Issuing', status: 'operational' },
-      { name: 'Terminal', status: 'operational' },
-      { name: 'Sigma', status: 'operational' },
-      { name: 'Atlas', status: 'operational' },
-    ];
-
-    return {
-      service_name: 'stripe',
-      display_name: 'Stripe',
-      description: '온라인 결제 처리 및 금융 인프라 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.stripe.com',
-      icon: 'stripe',
-      components,
-    };
-  }
-}
-
-/**
- * MongoDB Atlas 상태 조회
+ * MongoDB Atlas 상태 조회 (components API 사용)
  */
 export async function fetchMongoDBStatus(): Promise<Service> {
   try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.mongodb.com/api/v2/status.json`
+    // components API를 통해 실제 컴포넌트 상태 조회
+    const componentsResponse = await apiClient.get(
+      `${CORS_PROXY}https://status.mongodb.com/api/v2/components.json`
     );
-    const data = response.data;
+    const componentsData = componentsResponse.data.components || [];
 
-    const components: ServiceComponent[] = [
-      {
-        name: 'Clusters',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas Data API',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas Search',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas Device Sync',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Charts',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas Functions',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas Triggers',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Atlas GraphQL',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Data Lake',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Online Archive',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+    // 실제 컴포넌트 데이터 매핑 (그룹이 아닌 실제 컴포넌트만)
+    const components: ServiceComponent[] = componentsData
+      .filter((component: any) => !component.group && component.name)
+      .map((component: any) => ({
+        name: component.name,
+        status: StatusUtils.normalizeStatus(component.status || 'operational'),
+      }));
+
+    // 컴포넌트가 없으면 기본 컴포넌트 사용
+    if (components.length === 0) {
+      const defaultComponents = [
+        'MongoDB Cloud', 'MongoDB Atlas App Services', 'MongoDB Atlas Search',
+        'MongoDB Charts', 'MongoDB Support Portal',
+      ];
+      defaultComponents.forEach(name => {
+        components.push({ name, status: StatusType.OPERATIONAL });
+      });
+    }
 
     return {
       service_name: 'mongodb',
@@ -1953,19 +1934,14 @@ export async function fetchMongoDBStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('MongoDB API 오류:', error);
+      console.error('MongoDB API 오류:', error);
     }
     const components: ServiceComponent[] = [
-      { name: 'Clusters', status: 'operational' },
-      { name: 'Atlas Data API', status: 'operational' },
-      { name: 'Atlas Search', status: 'operational' },
-      { name: 'Atlas Device Sync', status: 'operational' },
-      { name: 'Charts', status: 'operational' },
-      { name: 'Atlas Functions', status: 'operational' },
-      { name: 'Atlas Triggers', status: 'operational' },
-      { name: 'Atlas GraphQL', status: 'operational' },
-      { name: 'Data Lake', status: 'operational' },
-      { name: 'Online Archive', status: 'operational' },
+      { name: 'MongoDB Cloud', status: StatusType.OPERATIONAL },
+      { name: 'MongoDB Atlas App Services', status: StatusType.OPERATIONAL },
+      { name: 'MongoDB Atlas Search', status: StatusType.OPERATIONAL },
+      { name: 'MongoDB Charts', status: StatusType.OPERATIONAL },
+      { name: 'MongoDB Support Portal', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -1981,132 +1957,48 @@ export async function fetchMongoDBStatus(): Promise<Service> {
 }
 
 /**
- * Hugging Face 상태 조회
- */
-export async function fetchHuggingFaceStatus(): Promise<Service> {
-  try {
-    const response = await apiClient.get(
-      `${CORS_PROXY}https://status.huggingface.co/api/v2/status.json`
-    );
-    const data = response.data;
-
-    const components: ServiceComponent[] = [
-      { name: 'Hub', status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational') },
-      {
-        name: 'Inference API',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Inference Endpoints',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Spaces',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Datasets',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'AutoTrain',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Model Cards',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Transformers Library',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
-
-    return {
-      service_name: 'huggingface',
-      display_name: 'Hugging Face',
-      description: 'AI 모델 허브 및 머신러닝 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.huggingface.co',
-      icon: 'huggingface',
-      components,
-    };
-  } catch (error) {
-    if (import.meta.env.DEV) {
-    console.error('Hugging Face API 오류:', error);
-    }
-    const components: ServiceComponent[] = [
-      { name: 'Hub', status: 'operational' },
-      { name: 'Inference API', status: 'operational' },
-      { name: 'Inference Endpoints', status: 'operational' },
-      { name: 'Spaces', status: 'operational' },
-      { name: 'Datasets', status: 'operational' },
-      { name: 'AutoTrain', status: 'operational' },
-      { name: 'Model Cards', status: 'operational' },
-      { name: 'Transformers Library', status: 'operational' },
-    ];
-
-    return {
-      service_name: 'huggingface',
-      display_name: 'Hugging Face',
-      description: 'AI 모델 허브 및 머신러닝 플랫폼',
-      status: StatusUtils.calculateServiceStatus(components),
-      page_url: 'https://status.huggingface.co',
-      icon: 'huggingface',
-      components,
-    };
-  }
-}
-
-/**
- * GitLab 상태 조회
+ * GitLab 상태 조회 (Status.io API 사용)
  */
 export async function fetchGitLabStatus(): Promise<Service> {
   try {
+    // Status.io API를 통해 GitLab 상태 정보 가져오기
     const response = await apiClient.get(
-      `${CORS_PROXY}https://status.gitlab.com/api/v2/status.json`
+      `${CORS_PROXY}https://api.status.io/1.0/status/5b36dc6502d06804c08349f7`
     );
     const data = response.data;
 
-    const components: ServiceComponent[] = [
-      {
-        name: 'GitLab.com',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Git Operations',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'CI/CD',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Container Registry',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Package Registry',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Pages',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      { name: 'API', status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational') },
-      {
-        name: 'Webhooks',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Merge Requests',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-      {
-        name: 'Issues',
-        status: StatusUtils.normalizeStatus(data.status?.indicator || 'operational'),
-      },
-    ];
+    // Status.io API 응답에서 컴포넌트 정보 추출
+    const components: ServiceComponent[] = [];
+
+    if (data.result && data.result.status) {
+      data.result.status.forEach((container: any) => {
+        if (container.containers) {
+          container.containers.forEach((comp: any) => {
+            components.push({
+              name: comp.name,
+              status: StatusUtils.normalizeStatus(
+                comp.status === 'Operational' ? 'operational' :
+                comp.status === 'Degraded Performance' ? 'degraded' :
+                comp.status === 'Partial Service Disruption' ? 'partial_outage' :
+                comp.status === 'Service Disruption' ? 'major_outage' :
+                comp.status === 'Maintenance' ? 'maintenance' : 'operational'
+              ),
+            });
+          });
+        }
+      });
+    }
+
+    // 컴포넌트가 없으면 기본 컴포넌트 사용
+    if (components.length === 0) {
+      const defaultComponents = [
+        'Website', 'API', 'Git Operations', 'CI/CD', 'GitLab Pages',
+        'Container Registry', 'GitLab Duo', 'SAML SSO',
+      ];
+      defaultComponents.forEach(name => {
+        components.push({ name, status: StatusType.OPERATIONAL });
+      });
+    }
 
     return {
       service_name: 'gitlab',
@@ -2119,19 +2011,15 @@ export async function fetchGitLabStatus(): Promise<Service> {
     };
   } catch (error) {
     if (import.meta.env.DEV) {
-    console.error('GitLab API 오류:', error);
+      console.error('GitLab API 오류:', error);
     }
     const components: ServiceComponent[] = [
-      { name: 'GitLab.com', status: 'operational' },
-      { name: 'Git Operations', status: 'operational' },
-      { name: 'CI/CD', status: 'operational' },
-      { name: 'Container Registry', status: 'operational' },
-      { name: 'Package Registry', status: 'operational' },
-      { name: 'Pages', status: 'operational' },
-      { name: 'API', status: 'operational' },
-      { name: 'Webhooks', status: 'operational' },
-      { name: 'Merge Requests', status: 'operational' },
-      { name: 'Issues', status: 'operational' },
+      { name: 'Website', status: StatusType.OPERATIONAL },
+      { name: 'API', status: StatusType.OPERATIONAL },
+      { name: 'Git Operations', status: StatusType.OPERATIONAL },
+      { name: 'CI/CD', status: StatusType.OPERATIONAL },
+      { name: 'GitLab Pages', status: StatusType.OPERATIONAL },
+      { name: 'Container Registry', status: StatusType.OPERATIONAL },
     ];
 
     return {
@@ -2175,9 +2063,7 @@ export async function fetchAllServicesStatus(): Promise<Service[]> {
     fetchDatadogStatus,
     fetchZetaGlobalStatus,
     fetchVercelStatus,
-    fetchStripeStatus,
     fetchMongoDBStatus,
-    fetchHuggingFaceStatus,
     fetchGitLabStatus,
     // statuspage 기반 추가 서비스들
     () => ServiceStatusFetcher.fetchServiceStatus('groq'),
@@ -2240,9 +2126,7 @@ export const serviceFetchers = {
   datadog: fetchDatadogStatus,
   zetaglobal: fetchZetaGlobalStatus,
   vercel: fetchVercelStatus,
-  stripe: fetchStripeStatus,
   mongodb: fetchMongoDBStatus,
-  huggingface: fetchHuggingFaceStatus,
   gitlab: fetchGitLabStatus,
   groq: () => ServiceStatusFetcher.fetchServiceStatus('groq'),
   deepseek: () => ServiceStatusFetcher.fetchServiceStatus('deepseek'),
