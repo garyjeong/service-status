@@ -227,7 +227,7 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
       }}
       tabIndex={0}
       role="button"
-      aria-label={`${service.display_name} 서비스 상세 정보 보기`}
+      aria-label={language === 'ko' ? `${service.display_name} 서비스 상세 정보 보기` : `View ${service.display_name} service details`}
       aria-haspopup="dialog"
       variants={cardVariants}
       initial="hidden"
@@ -237,19 +237,22 @@ const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
       {/* 서비스 아이콘 */}
       <ServiceIcon iconName={service.icon} size={48} />
 
-      {/* 상태 아이콘 */}
-      <div className="status-icon-wrapper">
+      {/* 서비스 이름 */}
+      <span className="service-name-text">
+        {service.display_name}
+      </span>
+
+      {/* 상태 아이콘 + 텍스트 */}
+      <div className="status-row">
         {isLoading ? (
-          <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
+          <RefreshCw className="status-row-icon animate-spin text-muted-foreground" />
         ) : (
           getStatusIcon(service.status)
         )}
+        <span className="status-text">
+          {getStatusText(service.status)}
+        </span>
       </div>
-
-      {/* 상태 텍스트 */}
-      <span className="status-text">
-        {getStatusText(service.status)}
-      </span>
     </motion.div>
   );
 });

@@ -1486,10 +1486,11 @@ const CompactDashboard: React.FC<CompactDashboardProps> = ({ className = '' }) =
                       tabIndex={0}
                     >
                       <ServiceIcon iconName={item.icon} size={48} />
-                      <div className="status-icon-wrapper">
+                      <span className="service-name-text">{item.serviceDisplayName}</span>
+                      <div className="status-row">
                         {getStatusIcon(item.status)}
+                        <span className="status-text">{getStatusText(item.status)}</span>
                       </div>
-                      <span className="status-text">{getStatusText(item.status)}</span>
                     </div>
                   );
                 })}
