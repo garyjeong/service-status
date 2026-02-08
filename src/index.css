@@ -1160,66 +1160,36 @@ body::after {
   transition: opacity 0.3s ease;
 }
 
-/* 상태별 색상 정의 - 🎨 대시보드 강조 색상 적용 */
-.status-operational {
-  background-color: var(--success-accent) !important; /* 🎨 생생한 그린 */
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important; /* 🎨 더 강한 그림자 */
+/* 상태별 색상 정의 - status-dot 전용 (카드에는 적용하지 않음) */
+.status-dot.status-operational {
+  background-color: var(--success-accent);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-.status-operational:hover {
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important; /* 🎨 호버 시 더 강한 효과 */
-  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
+.status-dot.status-degraded {
+  background-color: var(--warning-accent);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
-.status-degraded {
-  background-color: var(--warning-accent) !important; /* 🎨 생생한 옐로우 */
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4) !important; /* 🎨 더 강한 그림자 */
+.status-dot.status-partial-outage {
+  background-color: var(--danger-accent);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
-.status-degraded:hover {
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5) !important; /* 🎨 호버 시 더 강한 효과 */
-  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
+.status-dot.status-major-outage {
+  background-color: var(--danger-accent);
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.5);
+  animation: statusPulse 2s infinite;
 }
 
-.status-partial-outage {
-  background-color: var(--danger-accent) !important; /* 🎨 생생한 레드 */
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4) !important; /* 🎨 더 강한 그림자 */
+.status-dot.status-maintenance {
+  background-color: var(--primary-accent);
+  box-shadow: 0 2px 8px rgba(139, 95, 254, 0.4);
 }
 
-.status-partial-outage:hover {
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5) !important; /* 🎨 호버 시 더 강한 효과 */
-  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
-}
-
-.status-major-outage {
-  background-color: var(--danger-accent) !important; /* 🎨 생생한 레드 */
-  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.5) !important; /* 🎨 더 강한 그림자 */
-  animation: statusPulse 2s infinite; /* 🎨 펄스 애니메이션 유지 */
-}
-
-.status-major-outage:hover {
-  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.6) !important; /* 🎨 호버 시 매우 강한 효과 */
-  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
-}
-
-.status-maintenance {
-  background-color: var(--primary-accent) !important; /* 🎨 드롭다운과 동일한 보라색! */
-  box-shadow: 0 2px 8px rgba(139, 95, 254, 0.4) !important; /* 🎨 더 강한 그림자 */
-}
-
-.status-maintenance:hover {
-  box-shadow: 0 4px 12px rgba(139, 95, 254, 0.5) !important; /* 🎨 호버 시 더 강한 효과 */
-  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
-}
-
-.status-unknown {
-  background-color: var(--secondary-accent) !important; /* 🎨 라이트 그레이 */
-  box-shadow: 0 2px 6px rgba(156, 163, 175, 0.3) !important; /* 🎨 더 명확한 그림자 */
-}
-
-.status-unknown:hover {
-  box-shadow: 0 3px 8px rgba(156, 163, 175, 0.4) !important; /* 🎨 호버 효과 */
-  transform: translateY(-1px); /* 🎨 미묘한 올라감 효과 */
+.status-dot.status-unknown {
+  background-color: var(--secondary-accent);
+  box-shadow: 0 2px 6px rgba(156, 163, 175, 0.3);
 }
 
 /* 애니메이션 - 더 절제된 버전 */
@@ -3546,49 +3516,54 @@ p {
   }
 }
 
-/* 상태별 카드 테두리 색상 - 배경 대신 굵은 테두리 사용 */
+/* 상태별 카드 스타일 - 깔끔한 중립 배경 + 미니멀 상태 표시 */
 .service-card-minimal.status-operational {
   background: var(--card-bg);
-  border: 3px solid rgb(var(--status-operational));
-  box-shadow: none;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
 }
 
 .service-card-minimal.status-operational:hover {
   background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
   transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .service-card-minimal.status-degraded {
   background: var(--card-bg);
-  border: 3px solid rgb(var(--status-degraded));
-  box-shadow: none;
+  border: 1px solid rgb(var(--status-degraded));
+  box-shadow: 0 0 8px rgba(var(--status-degraded), 0.15);
 }
 
 .service-card-minimal.status-degraded:hover {
   background: var(--card-bg-hover);
   transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(var(--status-degraded), 0.25);
 }
 
 .service-card-minimal.status-outage {
   background: var(--card-bg);
-  border: 3px solid rgb(var(--status-major-outage));
-  box-shadow: none;
+  border: 1px solid rgb(var(--status-major-outage));
+  box-shadow: 0 0 8px rgba(var(--status-major-outage), 0.15);
 }
 
 .service-card-minimal.status-outage:hover {
   background: var(--card-bg-hover);
   transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(var(--status-major-outage), 0.25);
 }
 
 .service-card-minimal.status-maintenance {
   background: var(--card-bg);
-  border: 3px solid rgb(var(--status-maintenance));
-  box-shadow: none;
+  border: 1px solid rgb(var(--status-maintenance));
+  box-shadow: 0 0 8px rgba(var(--status-maintenance), 0.15);
 }
 
 .service-card-minimal.status-maintenance:hover {
   background: var(--card-bg-hover);
   transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(var(--status-maintenance), 0.25);
 }
 
 /* ============================================
