@@ -117,6 +117,21 @@
   --filter-hover-border: rgba(139, 95, 254, 0.15);
   --filter-list-border: rgba(139, 95, 254, 0.1);
   --shimmer-color: rgba(0, 0, 0, 0.04);
+
+  /* === 텍스트/유틸리티 색상 (라이트 테마) === */
+  --gray-secondary: #4B5563;
+  --black-primary: #1F2937;
+  --gradient-primary: linear-gradient(135deg, #8B5FFE 0%, #6366F1 100%);
+  --bg-accent: #F3F4F6;
+  --icon-gradient: linear-gradient(135deg, #8B5FFE 0%, #6366F1 100%);
+  --btn-icon-color: rgba(75, 85, 99, 0.8);
+  --btn-icon-color-disabled: rgba(75, 85, 99, 0.5);
+  --text-muted-alpha: rgba(75, 85, 99, 0.6);
+  --text-sm-alpha: rgba(75, 85, 99, 0.8);
+  --filter-checkbox-border: rgba(203, 213, 225, 0.6);
+  --filter-component-label-color: rgba(75, 85, 99, 0.8);
+  --skeleton-shimmer-from: rgba(0, 0, 0, 0.04);
+  --skeleton-shimmer-mid: rgba(0, 0, 0, 0.08);
 }
 
 /* === 다크 테마 === */
@@ -210,13 +225,27 @@
   --filter-hover-border: rgba(139, 95, 254, 0.15);
   --filter-list-border: rgba(139, 95, 254, 0.1);
   --shimmer-color: rgba(255, 255, 255, 0.08);
+
+  /* === 텍스트/유틸리티 색상 (다크 테마) === */
+  --gray-secondary: #94A3B8;
+  --black-primary: #E2E8F0;
+  --gradient-primary: linear-gradient(135deg, #8B5FFE 0%, #6366F1 100%);
+  --bg-accent: #334155;
+  --icon-gradient: linear-gradient(135deg, #8B5FFE 0%, #6366F1 100%);
+  --btn-icon-color: rgba(237, 236, 232, 0.8);
+  --btn-icon-color-disabled: rgba(237, 236, 232, 0.5);
+  --text-muted-alpha: rgba(237, 236, 232, 0.6);
+  --text-sm-alpha: rgba(237, 236, 232, 0.8);
+  --filter-checkbox-border: rgba(237, 236, 232, 0.3);
+  --filter-component-label-color: rgba(237, 236, 232, 0.8);
+  --skeleton-shimmer-from: rgba(237, 236, 232, 0.08);
+  --skeleton-shimmer-mid: rgba(237, 236, 232, 0.15);
 }
 
 /* Base styles - 테마 적응형 시스템 */
 * {
   border-color: rgb(var(--border));
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-  color: rgb(var(--foreground));
 }
 
 /* 테마 전환 시 부드러운 전환 - 필요한 요소에만 적용 */
@@ -296,88 +325,16 @@ body::after {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(46, 255, 180, 0.02) 0%, transparent 25%),
-    radial-gradient(circle at 75% 75%, rgba(103, 126, 234, 0.015) 0%, transparent 25%),
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(139, 95, 254, 0.02) 0%, transparent 25%),
+    radial-gradient(circle at 75% 75%, rgba(99, 102, 241, 0.015) 0%, transparent 25%),
     radial-gradient(circle at 50% 50%, rgba(118, 75, 162, 0.01) 0%, transparent 25%);
   z-index: -1;
   opacity: 0.6;
   animation: glass-shimmer 15s ease-in-out infinite;
 }
 
-/* 🎨 프리미엄 글래스모피즘 카드 시스템 */
-.card-base {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop);
-  -webkit-backdrop-filter: var(--glass-backdrop);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 2rem;
-  box-shadow: var(--glass-shadow);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-base::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.card-base:hover {
-  background: var(--glass-bg-strong);
-  border-color: rgba(46, 255, 180, 0.3);
-  box-shadow: var(--glass-shadow-lg), 0 0 40px rgba(46, 255, 180, 0.1);
-}
-
-.card-base:hover::before {
-  left: 100%;
-}
-
-/* 글래스 카드 Pro 버전 */
-.card-glass-pro {
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-backdrop-strong);
-  -webkit-backdrop-filter: var(--glass-backdrop-strong);
-  border: 1px solid var(--glass-border);
-  border-radius: calc(var(--radius) + 4px);
-  padding: 2.5rem;
-  box-shadow: var(--glass-shadow-lg);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-glass-pro::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(46, 255, 180, 0.5),
-    transparent
-  );
-}
-
-.card-glass-pro:hover {
-  box-shadow: var(--glass-shadow-lg), 0 0 60px rgba(46, 255, 180, 0.15);
-  border-color: rgba(46, 255, 180, 0.4);
-}
+/* 글래스모피즘 카드 시스템 - card-base, card-glass-pro 제거됨 (미사용) */
 
 /* 🎨 프리미엄 글래스모피즘 서비스 카드 */
 .service-card {
@@ -423,27 +380,7 @@ body::after {
   }
 }
 
-/* 단순 그레이 카드 스타일 (카테고리별 색상 제거) */
-.service-card-aiml,
-.service-card-cloud,
-.service-card-devtools,
-.service-card-business {
-  background: var(--card-bg);
-  color: rgb(var(--foreground));
-  border: 1px solid var(--card-border);
-  box-shadow: var(--card-shadow);
-}
-
-/* 호버 시에도 단순하게 */
-.service-card-aiml:hover,
-.service-card-cloud:hover,
-.service-card-devtools:hover,
-.service-card-business:hover {
-  background: var(--card-bg-hover);
-  border-color: var(--card-border-hover);
-}
-
-/* 불필요한 효과 제거 - 미니멀 디자인 */
+/* 카테고리별 카드 색상 - 제거됨 (미사용, service-card-minimal로 통합) */
 
 /* 모바일 퍼스트 호버 효과 - 데스크톱에서만 적용 */
 @media (min-width: 769px) {
@@ -765,10 +702,10 @@ body::after {
 }
 
 .service-icon-fallback:hover {
-  box-shadow: 
+  box-shadow:
     var(--glass-shadow-lg),
     0 10px 30px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(46, 255, 180, 0.2);
+    0 0 20px rgba(139, 95, 254, 0.2);
 }
 
 /* 🌟 Premium Header System - 🔥 빌게이츠 긴급 수정: overflow 제거 */
@@ -882,10 +819,10 @@ body::after {
 /* 스크롤 시 헤더 효과 */
 .header-premium.scrolled {
   background: var(--glass-bg-strong);
-  box-shadow: 
+  box-shadow:
     var(--glass-shadow-lg),
     0 10px 40px rgba(0, 0, 0, 0.3);
-  border-bottom-color: rgba(46, 255, 180, 0.2);
+  border-bottom-color: rgba(139, 95, 254, 0.2);
 }
 
 /* 🎯 Progress Ring System */
@@ -903,7 +840,7 @@ body::after {
 }
 
 .progress-ring-container:hover .progress-ring {
-  filter: drop-shadow(0 4px 12px rgba(46, 255, 180, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(139, 95, 254, 0.3));
 }
 
 .progress-ring-text {
@@ -921,8 +858,8 @@ body::after {
   margin: -28px 0 0 -28px;
   background: radial-gradient(
     circle,
-    rgba(46, 255, 180, 0.3) 0%,
-    rgba(46, 255, 180, 0.1) 50%,
+    rgba(139, 95, 254, 0.3) 0%,
+    rgba(139, 95, 254, 0.1) 50%,
     transparent 70%
   );
   border-radius: 50%;
@@ -1126,7 +1063,7 @@ body::after {
   -webkit-backdrop-filter: var(--glass-backdrop);
   border: 1px solid var(--glass-border);
   cursor: pointer;
-  color: rgba(237, 236, 232, 0.8);
+  color: var(--btn-icon-color);
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   display: flex;
@@ -1181,7 +1118,7 @@ body::after {
 .btn-icon:disabled:hover {
   background: var(--glass-bg);
   border-color: var(--glass-border);
-  color: rgba(237, 236, 232, 0.5);
+  color: var(--btn-icon-color-disabled);
   transform: none;
   box-shadow: var(--glass-shadow);
 }
@@ -1653,8 +1590,7 @@ body::after {
   );
 }
 
-:root[data-theme="dark"] .btn-icon::before,
-:root[data-theme="dark"] .card-base::before {
+:root[data-theme="dark"] .btn-icon::before {
   background: linear-gradient(
     90deg,
     transparent,
@@ -1969,7 +1905,7 @@ body::after {
 }
 
 .text-gradient:hover {
-  color: #26e09f;
+  color: #7C3AED;
 }
 
 /* 모바일 퍼스트 타이틀 - 큰 폰트 기본 */
@@ -1997,7 +1933,7 @@ body::after {
 /* 텍스트 유틸리티 클래스 개선 */
 .text-primary { color: var(--primary-accent); }
 .text-secondary { color: var(--gray-secondary); }
-.text-muted { color: rgba(237, 236, 232, 0.6); }
+.text-muted { color: var(--text-muted-alpha); }
 .text-black { color: var(--black-primary); }
 
 /* 링크 스타일 */
@@ -2008,7 +1944,7 @@ a {
 }
 
 a:hover {
-  color: #26e09f;
+  color: #7C3AED;
 }
 
 /* 헤딩 계층 구조 */
@@ -2045,10 +1981,10 @@ p {
 }
 
 /* 작은 텍스트 */
-.text-sm, .text-xs { 
-  color: rgba(237, 236, 232, 0.8); 
+.text-sm, .text-xs {
+  color: var(--text-sm-alpha);
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-  line-height: 1.5; 
+  line-height: 1.5;
 }
 
 /* 상태 페이지 링크 스타일 */
@@ -2058,8 +1994,8 @@ p {
 }
 
 .link-status-page:hover {
-  color: #26e09f;
-  background: rgba(46, 255, 180, 0.1);
+  color: #7C3AED;
+  background: rgba(139, 95, 254, 0.1);
 }
 
 /* 🎨 필터 모달 시스템 - Bottega Veneta 감성 */
@@ -2267,7 +2203,7 @@ p {
   width: 1rem;
   height: 1rem;
   border-radius: 4px;
-  border: 1px solid rgba(237, 236, 232, 0.3);
+  border: 1px solid var(--filter-checkbox-border);
   background: transparent;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2281,7 +2217,7 @@ p {
 .filter-component-label {
   font-size: 0.875rem;
   font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-  color: rgba(237, 236, 232, 0.8);
+  color: var(--filter-component-label-color);
   flex: 1;
   transition: color 0.2s ease;
 }
@@ -2308,9 +2244,9 @@ p {
 .service-card.animate-pulse > * {
   background: linear-gradient(
     90deg,
-    rgba(237, 236, 232, 0.08) 25%,
-    rgba(237, 236, 232, 0.15) 50%,
-    rgba(237, 236, 232, 0.08) 75%
+    var(--skeleton-shimmer-from) 25%,
+    var(--skeleton-shimmer-mid) 50%,
+    var(--skeleton-shimmer-from) 75%
   );
   background-size: 200% 100%;
   animation: skeletonShimmer 2s infinite;
@@ -2367,7 +2303,7 @@ p {
 }
 
 .filter-master-toggle:hover {
-  background: #26e09f;
+  background: #7C3AED;
 }
 
 /* 서비스별 전체 선택 체크박스 */
@@ -2375,7 +2311,7 @@ p {
   width: 1.125rem;
   height: 1.125rem;
   border-radius: 4px;
-  border: 1px solid rgba(237, 236, 232, 0.3);
+  border: 1px solid var(--filter-checkbox-border);
   background: transparent;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2400,7 +2336,7 @@ p {
   transform: translate(-50%, -50%);
   width: 8px;
   height: 2px;
-  background: var(--black-primary);
+  background: #FFFFFF;
   border-radius: 1px;
 }
 
@@ -3612,46 +3548,46 @@ p {
 
 /* 상태별 카드 테두리 색상 - 배경 대신 굵은 테두리 사용 */
 .service-card-minimal.status-operational {
-  background: var(--card-bg) !important;
-  border: 3px solid rgb(var(--status-operational)) !important;
-  box-shadow: none !important;
+  background: var(--card-bg);
+  border: 3px solid rgb(var(--status-operational));
+  box-shadow: none;
 }
 
 .service-card-minimal.status-operational:hover {
-  background: var(--card-bg-hover) !important;
+  background: var(--card-bg-hover);
   transform: translateY(-2px);
 }
 
 .service-card-minimal.status-degraded {
-  background: var(--card-bg) !important;
-  border: 3px solid rgb(var(--status-degraded)) !important;
-  box-shadow: none !important;
+  background: var(--card-bg);
+  border: 3px solid rgb(var(--status-degraded));
+  box-shadow: none;
 }
 
 .service-card-minimal.status-degraded:hover {
-  background: var(--card-bg-hover) !important;
+  background: var(--card-bg-hover);
   transform: translateY(-2px);
 }
 
 .service-card-minimal.status-outage {
-  background: var(--card-bg) !important;
-  border: 3px solid rgb(var(--status-major-outage)) !important;
-  box-shadow: none !important;
+  background: var(--card-bg);
+  border: 3px solid rgb(var(--status-major-outage));
+  box-shadow: none;
 }
 
 .service-card-minimal.status-outage:hover {
-  background: var(--card-bg-hover) !important;
+  background: var(--card-bg-hover);
   transform: translateY(-2px);
 }
 
 .service-card-minimal.status-maintenance {
-  background: var(--card-bg) !important;
-  border: 3px solid rgb(var(--status-maintenance)) !important;
-  box-shadow: none !important;
+  background: var(--card-bg);
+  border: 3px solid rgb(var(--status-maintenance));
+  box-shadow: none;
 }
 
 .service-card-minimal.status-maintenance:hover {
-  background: var(--card-bg-hover) !important;
+  background: var(--card-bg-hover);
   transform: translateY(-2px);
 }
 
