@@ -1,16 +1,19 @@
 {
-  "name": "외부 서비스 상태 모니터링",
+  "name": "Service Status Dashboard - 실시간 서비스 상태 모니터링",
   "short_name": "Service Status",
-  "description": "외부 서비스 상태 모니터링 대시보드 - 다양한 외부 서비스들의 실시간 상태를 확인하세요",
+  "description": "실시간 서비스 상태 모니터링 대시보드 - AWS, GitHub, Vercel 등 주요 서비스의 가동 상태를 확인하세요",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
+  "lang": "ko",
+  "categories": ["utilities", "productivity"],
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
-} 
+}

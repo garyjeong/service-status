@@ -5,6 +5,9 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
+User-agent: Googlebot-Image
+Allow: /
+
 User-agent: AdsBot-Google
 Allow: /
 
@@ -32,8 +35,5 @@ Allow: /
 User-agent: DuckDuckBot
 Allow: /
 
-# 사이트맵 위치 (네이버, 구글 모두 참조)
+# 사이트맵 위치
 Sitemap: https://services.garyzone.pro/sitemap.xml
-
-# 네이버 RSS 피드 (선택사항)
-# Sitemap: https://services.garyzone.pro/rss.xml
