@@ -36,4 +36,4 @@ User-agent: DuckDuckBot
 Allow: /
 
 # 사이트맵 위치
-Sitemap: https://services.garyzone.pro/sitemap.xml
+Sitemap: https://service-status.gary-world.app/sitemap.xml
